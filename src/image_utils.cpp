@@ -6,6 +6,10 @@
  */
 #include <png.h>
 namespace image_utils {
+void WriteRowCallback(png_structp png_ptr, png_uint_32 row_number, int pass) {
+	if (png_ptr == NULL || row_number > PNG_UINT_31_MAX || pass > 7)
+		return;
+}
 bool WritePNG(const char* file_name, const u_char* rgb_bytes, uint32_t width,
 		uint32_t height) {
 	bool success = false;
@@ -52,9 +56,5 @@ bool WritePNG(const char* file_name, const u_char* rgb_bytes, uint32_t width,
 	png_destroy_write_struct(&write_ptr, &info_ptr);
 	fclose(file);
 	return success;
-}
-void WriteRowCallback(png_structp png_ptr, png_uint_32 row_number, int pass) {
-	if (png_ptr == NULL || row_number > PNG_UINT_31_MAX || pass > 7)
-		return;
 }
 }
