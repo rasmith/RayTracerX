@@ -4,57 +4,53 @@
  *  Created on: Sep 11, 2013
  *      Author: agrippa
  */
-#include <png.h>
+#include <GraphicsMagick/Magick++.h>
 namespace image_utils {
-void WriteRowCallback(png_structp png_ptr, png_uint_32 row_number, int pass) {
-	if (png_ptr == NULL || row_number > PNG_UINT_31_MAX || pass > 7)
-		return;
+const std::vector<u_char>& Image::bytes() const {
+    return bytes_;
 }
-bool WritePNG(const char* file_name, const u_char* rgb_bytes, uint32_t width,
-		uint32_t height) {
-	bool success = false;
 
-	// open file for writing
-	FILE* file = fopen(file_name, "wb");
-	if (!file)
-		return false;
+void Image::set_bytes(const std::vector<u_char>& bytes) {
+    bytes_ = bytes;
+}
 
-	// setup write struct and info struct
-	png_structp write_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-	NULL, NULL, NULL);
-	if (!write_ptr)
-		return false;
-	png_infop info_ptr = png_create_info_struct(write_ptr);
-	if (!info_ptr) {
-		png_destroy_write_struct(&write_ptr, NULL);
-		return false;
-	}
+uint32_t Image::height() const {
+    return height_;
+}
 
-	// setup error handling
-	if (setjmp(png_jmpbuf(write_ptr))) {
-		png_destroy_info_struct(write_ptr, &info_ptr);
-		png_destroy_write_struct(&write_ptr, &info_ptr);
-		fclose(file);
-		return false;
-	}
+void Image::set_height(uint32_t height) {
+    height_ = height;
+}
 
-	// setup output code
-	png_init_io(write_ptr, file);
+uint32_t Image::width() const {
+    return width_;
+}
 
-	// setup write callback
-	png_set_write_status_fn(write_ptr, WriteRowCallback);
+void Image::set_width(uint32_t width) {
+    width_ = width;
+}
 
-	// write using high-level write interface
-	png_bytep* row_pointers = png_malloc(write_ptr, height * sizeof(png_bytep));
-	for (int i = 0; i < height; ++i) {
-		row_pointers[i] = static_cast<png_bytep>(rgb_bytes + i * width * 3);
-	}
-	png_set_rows(write_ptr, info_ptr, row_pointers);
-	png_write_png(write_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+ImageStorage::ImageStorage() {
+}
 
-	png_destroy_info_struct(write_ptr, &info_ptr);
-	png_destroy_write_struct(&write_ptr, &info_ptr);
-	fclose(file);
-	return success;
+ImageStorage::ImageStorage(const ImageStorage&) {
+}
+
+ImageStorage::~ImageStorage() {
+
+}
+
+bool ImageStorage::ReadImage(const std::string& file_name, Image& image) {
+    return false;
+}
+
+bool ImageStorage::WriteImage(const std::string& file_name,
+        const Image& image) {
+    return false;
+}
+
+ImageStorage& ImageStorage::GetInstance() {
+    static ImageStorage instance;
+    return instance;
 }
 }
