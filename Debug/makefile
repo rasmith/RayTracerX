@@ -16,18 +16,18 @@ RM := rm -rf
 -include tests/gmock/gtest/samples/subdir.mk
 -include tests/gmock/gtest/fused-src/gtest/subdir.mk
 -include tests/gmock/gtest/codegear/subdir.mk
--include tests/gmock/gtest/CMakeFiles/gtest_main.dir/src/subdir.mk
--include tests/gmock/gtest/CMakeFiles/gtest.dir/src/subdir.mk
 -include tests/gmock/fused-src/subdir.mk
--include tests/gmock/CMakeFiles/gmock_main.dir/src/subdir.mk
--include tests/gmock/CMakeFiles/gmock.dir/src/subdir.mk
--include tests/CMakeFiles/CompilerIdCXX/subdir.mk
--include tests/CMakeFiles/CompilerIdC/subdir.mk
 -include tests/subdir.mk
 -include src/subdir.mk
--include CMakeFiles/Ray.dir/src/subdir.mk
--include CMakeFiles/CompilerIdCXX/subdir.mk
--include CMakeFiles/CompilerIdC/subdir.mk
+-include build/tests/gmock/gtest/CMakeFiles/gtest_main.dir/src/subdir.mk
+-include build/tests/gmock/gtest/CMakeFiles/gtest.dir/src/subdir.mk
+-include build/tests/gmock/CMakeFiles/gmock_main.dir/src/subdir.mk
+-include build/tests/gmock/CMakeFiles/gmock.dir/src/subdir.mk
+-include build/tests/CMakeFiles/parse_utils_test.dir/__/src/subdir.mk
+-include build/tests/CMakeFiles/parse_utils_test.dir/subdir.mk
+-include build/src/CMakeFiles/Ray.dir/subdir.mk
+-include build/CMakeFiles/CompilerIdCXX/subdir.mk
+-include build/CMakeFiles/CompilerIdC/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -63,7 +63,7 @@ all: Ray
 Ray: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross G++ Linker'
-	g++  -o "Ray" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/home/agrippa/sdks/Graphics-Magick_1.3.18/lib -o "Ray" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
