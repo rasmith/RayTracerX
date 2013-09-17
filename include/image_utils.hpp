@@ -26,8 +26,10 @@ class ImageStorage {
 public:
     static ImageStorage& GetInstance();
     ~ImageStorage();
-    bool ReadImage(const std::string& file_name, Image& image);
-    bool WriteImage(const std::string& file_name, const Image& image);
+    bool ReadImage(const std::string& file_name, Image& image,
+            std::string& status)
+    bool WriteImage(const std::string& file_name, const Image& image,
+            std::string& status)
 private:
     ImageStorage();
     ImageStorage(const ImageStorage&);
