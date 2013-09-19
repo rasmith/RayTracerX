@@ -39,6 +39,10 @@ glm::bvec3& Image::operator()(int i, int j) {
     return pixels_[i * width_ + j];
 }
 
+const std::vector<glm::bvec3>& Image::pixels() const {
+    return pixels_;
+}
+
 ImageStorage::ImageStorage() {
 }
 

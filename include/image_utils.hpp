@@ -20,6 +20,7 @@ public:
     uint32_t width() const;
     void set_width(uint32_t width);
     glm::bvec3& operator()(int i, int j);
+    const std::vector<glm::bvec3>& pixels() const;
 private:
     std::vector<glm::bvec3> pixels_;
     uint32_t width_;

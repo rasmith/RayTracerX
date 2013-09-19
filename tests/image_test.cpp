@@ -14,21 +14,16 @@
 #include "gtest/gtest.h"
 #include "image_utils.hpp"
 
-TEST(ParseIntTest, ExtremeValues) {
-    int value;
-    bool result;
-
-    // check 0
-    result = ray::parse_utils::ParseInt("0", &value);
-    EXPECT_EQ(0, value);
-
-    // check INT_MAX
-    int max_int = INT_MAX;
-    char buffer[256];
-    snprintf(buffer, sizeof(buffer), "%d", max_int);
-    ray::parse_utils::ParseInt(buffer, &value);
-    EXPECT_EQ(max_int, value);
-    EXPECT_TRUE(result);
+namespace ray {
+TEST(ParseIntTest, ImageCreation) {
+    image_utils::Image image0;
+    EXPECT_EQ(0, image0.width());
+    EXPECT_EQ(0, image0.height());
+    EXPECT_EQ(0, image0.pixels().size());
+    image_utils::Image image1(640, 480);
+    EXPECT_EQ(640, image0.width());
+    EXPECT_EQ(480, image0.height());
+    EXPECT_EQ(640 * 480, image0.pixels().size());
 }
-
+}
 
