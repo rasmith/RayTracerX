@@ -8,6 +8,7 @@
 #include <climits>
 #include <ctype.h>
 #include "parse_utils.hpp"
+namespace ray {
 namespace parse_utils {
 bool ParseInt(const char* str, int* value) {
     int base = 10;
@@ -20,11 +21,13 @@ bool ParseInt(const char* str, int* value) {
     while (--pos >= 0 && (success = !overflow && isdigit(str[pos]))) {
         digit = static_cast<int>(str[pos] - '0');
         overflow |= (pos > 0 && digit != 0) && (offset > INT_MAX / digit);
-        overflow |= (pos > 0 && digit != 0) && (*value > INT_MAX - digit * offset);
+        overflow |= (pos > 0 && digit != 0)
+                && (*value > INT_MAX - digit * offset);
         *value += digit * offset;
         overflow |= (pos > 0) && (offset > INT_MAX / base);
         offset *= base;
     }
     return success;
+}
 }
 }

@@ -8,6 +8,8 @@ enable_testing()
 
 include_directories(${Ray_SOURCE_DIR}/include)
 
+find_package(GLM REQUIRED
+
 add_subdirectory(src)
 add_subdirectory(tests)
  

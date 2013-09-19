@@ -17,14 +17,14 @@ TEST(ParseIntTest, ExtremeValues) {
     bool result;
 
     // check 0
-    result = parse_utils::ParseInt("0", &value);
+    result = ray::parse_utils::ParseInt("0", &value);
     EXPECT_EQ(0, value);
 
     // check INT_MAX
     int max_int = INT_MAX;
     char buffer[256];
     snprintf(buffer, sizeof(buffer), "%d", max_int);
-    parse_utils::ParseInt(buffer, &value);
+    ray::parse_utils::ParseInt(buffer, &value);
     EXPECT_EQ(max_int, value);
     EXPECT_TRUE(result);
 }
@@ -40,12 +40,12 @@ TEST(ParseIntTest, EvenAndOdd) {
         odd = even - 1;
         snprintf(buffer, sizeof(buffer), "%d", even);
         //std::cout << even << " " << buffer << std::endl;
-        result = parse_utils::ParseInt(buffer, &value);
+        result = ray::parse_utils::ParseInt(buffer, &value);
         EXPECT_EQ(even, value);
         EXPECT_TRUE(result);
 
         snprintf(buffer, sizeof(buffer), "%d", odd);
-        result = parse_utils::ParseInt(buffer, &value);
+        result = ray::parse_utils::ParseInt(buffer, &value);
         EXPECT_EQ(odd, value);
         EXPECT_TRUE(result);
     }
@@ -54,21 +54,21 @@ TEST(ParseIntTest, EvenAndOdd) {
 TEST(ParseIntTest, NotAnInt) {
     int value;
     bool result;
-    result = parse_utils::ParseInt("not_an_int", &value);
+    result = ray::parse_utils::ParseInt("not_an_int", &value);
     EXPECT_FALSE(result);
 }
 
 TEST(ParseIntTest, SpuriousNonDigit) {
     int value;
     bool result;
-    result = parse_utils::ParseInt("102d102", &value);
+    result = ray::parse_utils::ParseInt("102d102", &value);
     EXPECT_FALSE(result);
 }
 
 TEST(ParseIntTest, LeadingZero) {
     int value;
     bool result;
-    result = parse_utils::ParseInt("01", &value);
+    result = ray::parse_utils::ParseInt("01", &value);
     EXPECT_TRUE(result);
     EXPECT_EQ(1, value);
 }
@@ -76,14 +76,14 @@ TEST(ParseIntTest, LeadingZero) {
 TEST(ParseIntTest, Empty) {
     int value;
     bool result;
-    result = parse_utils::ParseInt("", &value);
+    result = ray::parse_utils::ParseInt("", &value);
     EXPECT_FALSE(result);
 }
 
 TEST(ParseIntTest, Overflow) {
     int value;
     bool result;
-    result = parse_utils::ParseInt("11111111111111111111111111", &value);
+    result = ray::parse_utils::ParseInt("11111111111111111111111111", &value);
     EXPECT_FALSE(result);
 }
 
