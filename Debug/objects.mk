@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -lGraphicsMagick -lGraphicsMagic++ -ltiff -ljpeg
+LIBS := -lGraphicsMagick++ -lpthread
 

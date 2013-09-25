@@ -8,26 +8,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include tests/gmock/test/subdir.mk
--include tests/gmock/src/subdir.mk
--include tests/gmock/gtest/xcode/Samples/FrameworkSample/subdir.mk
--include tests/gmock/gtest/test/subdir.mk
--include tests/gmock/gtest/src/subdir.mk
--include tests/gmock/gtest/samples/subdir.mk
--include tests/gmock/gtest/fused-src/gtest/subdir.mk
--include tests/gmock/gtest/codegear/subdir.mk
--include tests/gmock/fused-src/subdir.mk
--include tests/subdir.mk
 -include src/subdir.mk
--include build/tests/gmock/gtest/CMakeFiles/gtest_main.dir/src/subdir.mk
--include build/tests/gmock/gtest/CMakeFiles/gtest.dir/src/subdir.mk
--include build/tests/gmock/CMakeFiles/gmock_main.dir/src/subdir.mk
--include build/tests/gmock/CMakeFiles/gmock.dir/src/subdir.mk
--include build/tests/CMakeFiles/parse_utils_test.dir/__/src/subdir.mk
--include build/tests/CMakeFiles/parse_utils_test.dir/subdir.mk
--include build/src/CMakeFiles/Ray.dir/subdir.mk
--include build/CMakeFiles/CompilerIdCXX/subdir.mk
--include build/CMakeFiles/CompilerIdC/subdir.mk
 -include subdir.mk
 -include objects.mk
 

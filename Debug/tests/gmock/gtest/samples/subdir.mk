@@ -53,7 +53,7 @@ CC_DEPS += \
 tests/gmock/gtest/samples/%.o: ../tests/gmock/gtest/samples/%.cc
 	@echo 'Building file: $<'
 	@echo 'Invoking: Cross G++ Compiler'
-	g++ -I/home/agrippa/sdks/Graphics-Magick_1.3.18/include -I/home/agrippa/sdks/glm_0.9.4.5/include -I"/home/agrippa/workspace_CDT_8.2.0/Ray/include" -I"/home/agrippa/workspace_CDT_8.2.0/Ray/tests/gmock/include" -I"/home/agrippa/workspace_CDT_8.2.0/Ray/tests/gmock/include" -O0 -g3 -Wall -c -fmessage-length=0 -std=c++0x -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -I/home/agrippa/sdks/Graphics-Magick_1.3.18/include/GraphicsMagick -I/home/agrippa/sdks/glm_0.9.4.5/include -I"/home/agrippa/workspace_CDT_8.2.0/Ray/include" -I"/home/agrippa/workspace_CDT_8.2.0/Ray/tests/gmock/include" -I"/home/agrippa/workspace_CDT_8.2.0/Ray/tests/gmock/include" -O0 -g3 -Wall -c -fmessage-length=0 -std=c++0x -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

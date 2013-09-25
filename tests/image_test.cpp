@@ -15,15 +15,15 @@
 #include "image_utils.hpp"
 
 namespace ray {
-TEST(ParseIntTest, ImageCreation) {
+TEST(ImageTest, ImageCreation) {
     image_utils::Image image0;
-    EXPECT_EQ(0, image0.width());
-    EXPECT_EQ(0, image0.height());
-    EXPECT_EQ(0, image0.pixels().size());
+    EXPECT_EQ(0u, image0.width());
+    EXPECT_EQ(0u, image0.height());
+    EXPECT_EQ(0u, image0.pixels().size());
     image_utils::Image image1(640, 480);
-    EXPECT_EQ(640, image0.width());
-    EXPECT_EQ(480, image0.height());
-    EXPECT_EQ(640 * 480, image0.pixels().size());
+    EXPECT_EQ(640u, image1.width());
+    EXPECT_EQ(480u, image1.height());
+    EXPECT_EQ(640u * 480u, image1.pixels().size());
 }
 }
 

@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "parse_utils.hpp"
+#include "image_utils.hpp"
 
 namespace ray {
 const char* kUsageString = "Usage:\n."
@@ -41,6 +42,5 @@ int main(int argc, char** argv) {
 
     std::cout << "w=" << width << " h=" << height << "input=" << input
             << " output=" << output << std::endl;
-
     return 0;
 }

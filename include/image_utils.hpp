@@ -7,8 +7,12 @@
 
 #ifndef IMAGE_UTILS_HPP_
 #define IMAGE_UTILS_HPP_
-
+#include <stdint.h>
+#include <vector>
+#define GLM_FORCE_PURE
+#define GLM_FORCE_CXX98
 #include <glm/glm.hpp>
+
 namespace ray {
 namespace image_utils {
 class Image {
@@ -21,6 +25,8 @@ public:
     void set_width(uint32_t width);
     glm::bvec3& operator()(int i, int j);
     const std::vector<glm::bvec3>& pixels() const;
+    void resize(int width, int height);
+    void resize();
 private:
     std::vector<glm::bvec3> pixels_;
     uint32_t width_;

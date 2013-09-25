@@ -8,11 +8,16 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 #foreach(dir ${dirs})
 #  message(STATUS "dir='${dir}'")
 #endforeach()
-add_executable(parse_utils_test parse_utils_test.cpp ${Ray_SOURCE_DIR}/src/parse_utils.cpp )
-add_executable(image_test image_test.cpp ${Ray_SOURCE_DIR}/src/image_utils.cpp )
+add_executable(parse_utils_test parse_utils_test.cpp 
+                                ${Ray_SOURCE_DIR}/src/parse_utils.cpp)
+add_executable(image_test image_test.cpp ${Ray_SOURCE_DIR}/src/image_utils.cpp)
+add_executable(image_storage_test image_storage_test.cpp 
+                                  ${Ray_SOURCE_DIR}/src/image_utils.cpp)
 
 target_link_libraries(parse_utils_test  gtest gtest_main)
-target_link_libraries(image_test  gtest gtest_main)
+target_link_libraries(image_test  ${LIBS} gtest gtest_main)
+target_link_libraries(image_storage_test  ${LIBS} gtest gtest_main)
 
 add_test(parse_utils_test parse_utils_test)
 add_test(image_test image_test)
+add_test(image_storage_test image_storage_test)

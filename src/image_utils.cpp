@@ -4,8 +4,9 @@
  *  Created on: Sep 11, 2013
  *      Author: agrippa
  */
-#include <GraphicsMagick/Magick++.h>
-#include <glm/glm.hpp>
+#include <iostream>
+#include <vector>
+#include <Magick++.h>
 #include "image_utils.hpp"
 
 namespace ray {
@@ -15,7 +16,7 @@ Image::Image() :
 }
 
 Image::Image(int width, int height) :
-        width_(width), height_(height_) {
+        width_(width), height_(height) {
     pixels_.resize(width_ * height_);
 }
 
@@ -33,6 +34,16 @@ uint32_t Image::width() const {
 
 void Image::set_width(uint32_t width) {
     width_ = width;
+}
+
+void Image::resize(int width, int height) {
+    set_width(width);
+    set_height(height);
+    resize();
+}
+
+void Image::resize() {
+    pixels_.resize(width_ * height_);
 }
 
 glm::bvec3& Image::operator()(int i, int j) {
@@ -59,18 +70,18 @@ bool ImageStorage::ReadImage(const std::string& file_name, Image& image,
     status = "OK";
     try {
         image_gm.read(file_name);
-        image_gm.type(TrueColorType);
+        image_gm.type(Magick::TrueColorType);
         Magick::PixelPacket* pixels = image_gm.getPixels(0, 0,
                 image_gm.columns(), image_gm.rows());
         Magick::ColorRGB color;
-        int pos;
-        for (int i = 0; i < image_gm.rows(); ++i) {
-            for (int j = 0; j < image_gm.columns(); ++j) {
-                pos = i * image_gm.columns() + j
-                color = Magick::ColorRGB(
-                        Magick::Color(pixels[pos], Magick::Color::RGBPixel));
+        uint32_t pos;
+        image.resize(image_gm.columns(), image_gm.rows());
+        for (uint32_t i = 0; i < image_gm.rows(); ++i) {
+            for (uint32_t j = 0; j < image_gm.columns(); ++j) {
+                pos = i * image_gm.columns() + j;
+                color = pixels[pos];
                 image(i, j) = static_cast<glm::bvec3>(255.0f
-                        * glm::vec3(color.red(), color.green(), color.blue));
+                        * glm::vec3(color.red(), color.green(), color.blue()));
             }
         }
     } catch (Magick::WarningCoder &warning) {
@@ -90,8 +101,9 @@ bool ImageStorage::ReadImage(const std::string& file_name, Image& image,
 bool ImageStorage::WriteImage(const std::string& file_name, const Image& image,
         std::string& status) {
     bool success = true;
+    const std::vector<glm::bvec3>& pixels = image.pixels();
     Magick::Image image_gm(image.width(), image.height(), "RGB",
-            Magick::CharPixel, image.bytes());
+            Magick::CharPixel, &pixels[0]);
     status = "OK";
     try {
         image_gm.write(file_name);
