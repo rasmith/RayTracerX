@@ -26,7 +26,22 @@ TEST(ImageStorageTest, ImageReadTest) {
     EXPECT_EQ(1024u, image.width());
     EXPECT_EQ(768u, image.height());
 }
+TEST(ImageStorageTest, ImageWriteTest) {
+    image_utils::ImageStorage& storage =
+            image_utils::ImageStorage::GetInstance();
+    image_utils::Image image;
+    std::string path = "../assets/colors.jpg";
+    std::string status = "";
+    u_char num_colors = 10;
+    u_char color = 0;
+    image.resize(640, 480);
+    for (int i = 0; i < 480; ++i) {
+        for (int j = 0; j < 640; ++j) {
+            color = ((255u / num_colors) * i) % num_colors
+            ;
+            image(i, j) = glm::bvec3(color, color, color);
+        }
+    }
 }
-
-
+}
 
