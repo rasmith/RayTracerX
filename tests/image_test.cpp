@@ -25,5 +25,18 @@ TEST(ImageTest, ImageCreation) {
     EXPECT_EQ(480u, image1.height());
     EXPECT_EQ(640u * 480u, image1.pixels().size());
 }
+TEST(ImageTest, ImageModify) {
+    image_utils::Image image(640, 480);
+    EXPECT_EQ(640u, image.width());
+    EXPECT_EQ(480u, image.height());
+    EXPECT_EQ(640u * 480u, image.pixels().size());
+    for (int i = 0; i < 480; ++i) {
+        for (int j = 0; j < 640; ++j) {
+            image(i,j) = ucvec3(0u, 255u, 0u);
+            EXPECT_EQ(ucvec3(0, 255u, 0u), image(i, j));
+            EXPECT_NE(ucvec3(0u, 0u, 0u), image(i, j));
+        }
+    }
+}
 }
 

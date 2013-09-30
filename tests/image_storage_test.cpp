@@ -8,10 +8,12 @@
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
+#include <stdint.h>
 #include <string>
 #include <glm/glm.hpp>
 #include "gtest/gtest.h"
 #include "image_utils.hpp"
+#include "types.hpp"
 
 namespace ray {
 TEST(ImageStorageTest, ImageReadTest) {
@@ -32,16 +34,30 @@ TEST(ImageStorageTest, ImageWriteTest) {
     image_utils::Image image;
     std::string path = "../assets/colors.jpg";
     std::string status = "";
-    u_char num_colors = 10;
-    u_char color = 0;
     image.resize(640, 480);
     for (int i = 0; i < 480; ++i) {
         for (int j = 0; j < 640; ++j) {
-            color = ((255u / num_colors) * i) % num_colors
-            ;
-            image(i, j) = glm::bvec3(color, color, color);
+            image(i, j) = ucvec3(0u, 255u, 0u);
         }
     }
+    bool successful_write = storage.WriteImage("../assets/colors.jpg", image,
+            status);
+    std::cout << "STATUS=" << status << std::endl;
+    EXPECT_TRUE(successful_write);
+}
+TEST(ImageStorageTest, ImageReadWrite) {
+    image_utils::ImageStorage& storage =
+            image_utils::ImageStorage::GetInstance();
+    image_utils::Image image;
+    std::string src_path = "../assets/checkerboard.jpg";
+    std::string dest_path = "../assets/checkerboard_copy.jpg";
+    std::string status = "";
+    bool success = storage.ReadImage(src_path, image, status);
+    EXPECT_TRUE(success);
+    EXPECT_EQ("OK", status);
+    bool successful_write = storage.WriteImage(dest_path, image, status);
+    EXPECT_EQ("OK", status);
+    EXPECT_TRUE(successful_write);
 }
 }
 
