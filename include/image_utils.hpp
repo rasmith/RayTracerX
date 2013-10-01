@@ -12,7 +12,7 @@
 #include "types.hpp"
 
 namespace ray {
-namespace image_utils {
+namespace image {
 class Image {
 public:
     Image();

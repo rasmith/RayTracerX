@@ -17,9 +17,9 @@
 
 namespace ray {
 TEST(ImageStorageTest, ImageReadTest) {
-    image_utils::ImageStorage& storage =
-            image_utils::ImageStorage::GetInstance();
-    image_utils::Image image;
+    image::ImageStorage& storage =
+            image::ImageStorage::GetInstance();
+    image::Image image;
     std::string path = "../assets/red.JPG";
     std::string status = "";
     bool success = storage.ReadImage(path, image, status);
@@ -29,9 +29,9 @@ TEST(ImageStorageTest, ImageReadTest) {
     EXPECT_EQ(768u, image.height());
 }
 TEST(ImageStorageTest, ImageWriteTest) {
-    image_utils::ImageStorage& storage =
-            image_utils::ImageStorage::GetInstance();
-    image_utils::Image image;
+    image::ImageStorage& storage =
+            image::ImageStorage::GetInstance();
+    image::Image image;
     std::string path = "../assets/colors.jpg";
     std::string status = "";
     image.resize(640, 480);
@@ -45,9 +45,9 @@ TEST(ImageStorageTest, ImageWriteTest) {
     EXPECT_TRUE(successful_write);
 }
 TEST(ImageStorageTest, ImageReadWrite) {
-    image_utils::ImageStorage& storage =
-            image_utils::ImageStorage::GetInstance();
-    image_utils::Image image_src;
+    image::ImageStorage& storage =
+            image::ImageStorage::GetInstance();
+    image::Image image_src;
 
     std::string src_path = "../assets/checkerboard.jpg";
     std::string dest_path = "../assets/checkerboard_copy.jpg";
@@ -64,7 +64,7 @@ TEST(ImageStorageTest, ImageReadWrite) {
     EXPECT_TRUE(successful_write);
 
     // read result back in
-    image_utils::Image image_dest;
+    image::Image image_dest;
     success = storage.ReadImage(dest_path, image_dest, status);
     EXPECT_EQ("OK", status);
     EXPECT_TRUE(success);

@@ -10,7 +10,7 @@
 #include "image_utils.hpp"
 
 namespace ray {
-namespace image_utils {
+namespace image {
 Image::Image() :
         width_(0), height_(0) {
 }
