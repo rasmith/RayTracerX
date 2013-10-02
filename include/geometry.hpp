@@ -1,12 +1,11 @@
 /*
- * geom.hpp
+ * geometry.hpp
  *
  *  Created on: Oct 2, 2013
  *      Author: agrippa
  */
-
-#ifndef GEOM_HPP_
-#define GEOM_HPP_
+#ifndef GEOMETRY_HPP_
+#define GEOMETRY_HPP_
 #include "types.hpp"
 namespace ray {
 namespace geom {
@@ -18,4 +17,4 @@ struct Triangle {
 };
 } // namespace geom
 } // namespace ray
-#endif /* GEOM_HPP_ */
+#endif /* GEOMETRY_HPP_ */

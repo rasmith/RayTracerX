@@ -4,13 +4,11 @@
  *  Created on: Sep 12, 2013
  *      Author: agrippa
  */
-
 #ifndef IMAGE_HPP_
 #define IMAGE_HPP_
 #include <stdint.h>
 #include <vector>
 #include "types.hpp"
-
 namespace ray {
 namespace image {
 class Image {

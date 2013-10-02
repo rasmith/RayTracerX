@@ -4,7 +4,6 @@
  *  Created on: Oct 2, 2013
  *      Author: agrippa
  */
-
 #ifndef MATERIAL_HPP_
 #define MATERIAL_HPP_
 #include <vector>
