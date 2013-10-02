@@ -3,7 +3,7 @@
 #include <cstring>
 #include <cstdlib>
 #include "parse_utils.hpp"
-#include "image_utils.hpp"
+#include "image.hpp"
 
 namespace ray {
 const char* kUsageString = "Usage:\n."

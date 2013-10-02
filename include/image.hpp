@@ -1,12 +1,12 @@
 /*
- * image_utils.hpp
+ * image.hpp
  *
  *  Created on: Sep 12, 2013
  *      Author: agrippa
  */
 
-#ifndef IMAGE_UTILS_HPP_
-#define IMAGE_UTILS_HPP_
+#ifndef IMAGE_HPP_
+#define IMAGE_HPP_
 #include <stdint.h>
 #include <vector>
 #include "types.hpp"
@@ -45,4 +45,4 @@ private:
 };
 }
 }
-#endif /* IMAGE_UTILS_HPP_ */
+#endif /* IMAGE_HPP_ */

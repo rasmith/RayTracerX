@@ -7,7 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <Magick++.h>
-#include "image_utils.hpp"
+#include "image.hpp"
 
 namespace ray {
 namespace image {
