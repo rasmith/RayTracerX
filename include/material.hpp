@@ -36,6 +36,6 @@ public:
     void AddMaterial(const std::string& name, const Material& m);
     int last_id;
 };
-}
-}
+} // namespace mat
+} // namespace ray
 #endif /* MATERIAL_HPP_ */

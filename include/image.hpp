@@ -43,6 +43,6 @@ private:
     ImageStorage();
     ImageStorage(const ImageStorage&);
 };
-}
-}
+} // namespace image
+} // namespace ray
 #endif /* IMAGE_HPP_ */

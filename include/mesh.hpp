@@ -4,17 +4,13 @@
  *  Created on: Oct 1, 2013
  *      Author: agrippa
  */
-
 #ifndef MESH_HPP_
 #define MESH_HPP_
-
 #include <vector>
 #include "types.hpp"
 #include "geometry.hpp"
-
 namespace ray {
 namespace mesh {
-
 struct TrimeshFace {
     TrimeshFace();
     TrimeshFace(const TrimeshFace& face);
@@ -46,8 +42,6 @@ private:
     std::vector<TrimeshFace> faces_;
     int material_index;
 };
-
-}
-}
-
+} // namespace mesh
+} // namespace ray
 #endif /* MESH_HPP_ */

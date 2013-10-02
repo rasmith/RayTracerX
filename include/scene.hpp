@@ -7,10 +7,8 @@
 
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
-
 namespace ray {
 namespace scene {
-}
-}
-
+} // namespace scene
+} // namespace ray
 #endif /* SCENE_HPP_ */

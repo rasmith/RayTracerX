@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include "parse_utils.hpp"
 #include "image.hpp"
-
 namespace ray {
 const char* kUsageString = "Usage:\n."
         "/ray <input-file> <output-file>\n."
@@ -17,8 +16,7 @@ void VerifyOrDie(bool check, const char* message) {
         exit(-1);
     }
 }
-}
-
+} // namespace ray
 int main(int argc, char** argv) {
     std::string input;
     std::string output;

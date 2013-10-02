@@ -29,5 +29,5 @@ bool ParseInt(const char* str, int* value) {
     }
     return success;
 }
-}
-}
+} // namespace parse_utils
+} // namespace ray

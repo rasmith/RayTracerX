@@ -12,9 +12,8 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "gtest/gtest.h"
-#include "image_utils.hpp"
+#include "image.hpp"
 #include "types.hpp"
-
 namespace ray {
 TEST(ImageStorageTest, ImageReadTest) {
     image::ImageStorage& storage =
@@ -84,5 +83,5 @@ TEST(ImageStorageTest, ImageReadWrite) {
     }
     EXPECT_LT(error, thresh);
 }
-}
+} // namespace ray
 

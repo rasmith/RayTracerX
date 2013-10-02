@@ -12,8 +12,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "gtest/gtest.h"
-#include "image_utils.hpp"
-
+#include "image.hpp"
 namespace ray {
 TEST(ImageTest, ImageCreation) {
     image::Image image0;
@@ -38,5 +37,5 @@ TEST(ImageTest, ImageModify) {
         }
     }
 }
-}
+} // namespace ray
 

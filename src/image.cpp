@@ -8,7 +8,6 @@
 #include <vector>
 #include <Magick++.h>
 #include "image.hpp"
-
 namespace ray {
 namespace image {
 Image::Image() :
@@ -124,5 +123,5 @@ ImageStorage& ImageStorage::GetInstance() {
     }
     return instance;
 }
-}
-}
+} // namespace image
+} // namespace ray

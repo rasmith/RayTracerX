@@ -4,18 +4,12 @@
  *  Created on: Oct 2, 2013
  *      Author: agrippa
  */
-
-#ifndef MATERIAL_CPP_
-#define MATERIAL_CPP_
-
 #include <vector>
 #include <boost/unordered_map.hpp>
 #include <algorithm>
 #include "material.hpp"
-
 namespace ray {
 namespace mat {
-
 Material::Material() :
         kd(0.0f, 0.0f, 0.0f), ks(0.0f, 0.0f, 0.0f), ka(0.0, 0.0, 0.0),
                 ke(0.0, 0.0, 0.0), tr(0.0f), ns(0.0f), id(-1) {
@@ -55,7 +49,5 @@ void MaterialList::AddMaterial(const std::string& name,
     id_to_name_lookup[m.id] = name;
     name_to_id_lookup[name] = m.id;
 }
-
-}
-}
-#endif /* MATERIAL_CPP_ */
+} // namespace ray
+} // namespace mat

@@ -11,9 +11,7 @@
 #define GLM_FORCE_PURE
 #define GLM_FORCE_CXX98
 #include <glm/glm.hpp>
-
 namespace ray {
 typedef glm::detail::tvec3<unsigned char> ucvec3;
-}
-
+} // namespace ray
 #endif /* TYPES_HPP_ */
