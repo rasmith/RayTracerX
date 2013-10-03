@@ -7,7 +7,6 @@
 #include "texture.hpp"
 #include "image.hpp"
 namespace ray {
-namespace tex {
 TexCoord::TexCoord() {
 }
 
@@ -21,6 +20,5 @@ TexCoord::TexCoord(const glm::vec3& values) :
 
 TexInfo::TexInfo() {
 }
-} // namespace tex
 } // namespace ray
 

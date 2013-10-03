@@ -9,7 +9,6 @@
 #include <algorithm>
 #include "material.hpp"
 namespace ray {
-namespace mat {
 Material::Material() :
         kd(0.0f, 0.0f, 0.0f), ks(0.0f, 0.0f, 0.0f), ka(0.0, 0.0, 0.0),
                 ke(0.0, 0.0, 0.0), tr(0.0f), ns(0.0f), id(-1) {
@@ -50,4 +49,3 @@ void MaterialList::AddMaterial(const std::string& name,
     name_to_id_lookup[name] = m.id;
 }
 } // namespace ray
-} // namespace mat

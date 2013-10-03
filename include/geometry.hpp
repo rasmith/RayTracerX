@@ -8,13 +8,11 @@
 #define GEOMETRY_HPP_
 #include "types.hpp"
 namespace ray {
-namespace geom {
 struct Triangle {
     Triangle();
     Triangle(const Triangle& triangle);
     Triangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c);
     glm::vec3 vertices[3];
 };
-} // namespace geom
 } // namespace ray
 #endif /* GEOMETRY_HPP_ */

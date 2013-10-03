@@ -10,7 +10,6 @@
 #include <vector>
 #include "types.hpp"
 namespace ray {
-namespace image {
 class Image {
 public:
     Image();
@@ -41,6 +40,5 @@ private:
     ImageStorage();
     ImageStorage(const ImageStorage&);
 };
-} // namespace image
 } // namespace ray
 #endif /* IMAGE_HPP_ */

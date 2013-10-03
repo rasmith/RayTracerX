@@ -5,7 +5,5 @@
  *      Author: agrippa
  */
 namespace ray {
-namespace scene {
-} // namespace scene
 } // namespace ray
 

@@ -9,7 +9,6 @@
 #include <Magick++.h>
 #include "image.hpp"
 namespace ray {
-namespace image {
 Image::Image() :
         width_(0), height_(0) {
 }
@@ -123,5 +122,4 @@ ImageStorage& ImageStorage::GetInstance() {
     }
     return instance;
 }
-} // namespace image
 } // namespace ray

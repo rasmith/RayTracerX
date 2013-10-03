@@ -9,7 +9,6 @@
 #include "mesh.hpp"
 #include "geometry.hpp"
 namespace ray {
-namespace mesh {
 TrimeshFace::TrimeshFace() {
 }
 
@@ -55,10 +54,9 @@ void Trimesh::AddTexCoord(const tex::TexCoord& tex_coord) {
     tex_coords_.push_back(tex_coord);
 }
 
-geom::Triangle Trimesh::GetPatch(int face_index) {
+Triangle Trimesh::GetPatch(int face_index) {
     TrimeshFace face = faces_[face_index];
-    return geom::Triangle(vertices_[face.vertices[0]], vertices_[face.vertices[1]],
+    return Triangle(vertices_[face.vertices[0]], vertices_[face.vertices[1]],
             vertices_[face.vertices[0]]);
 }
-} // namespace mesh
 } // namespace ray

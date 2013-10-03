@@ -9,7 +9,6 @@
 #include <ctype.h>
 #include "parse_utils.hpp"
 namespace ray {
-namespace parse_utils {
 bool ParseInt(const char* str, int* value) {
     int base = 10;
     int offset = 1;
@@ -29,5 +28,4 @@ bool ParseInt(const char* str, int* value) {
     }
     return success;
 }
-} // namespace parse_utils
 } // namespace ray

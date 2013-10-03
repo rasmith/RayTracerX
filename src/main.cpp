@@ -28,11 +28,11 @@ int main(int argc, char** argv) {
     ray::VerifyOrDie(argc != 2 && argc != 4, ray::kUsageString);
 
     // get width if argc > 2 and verify width
-    ray::VerifyOrDie(2 == argc && ray::parse_utils::ParseInt(argv[++i], &width),
+    ray::VerifyOrDie(2 == argc && ray::ParseInt(argv[++i], &width),
             ray::kUsageString);
 
     // get height if argc > 2 and verify height
-    ray::VerifyOrDie(2 == argc && ray::parse_utils::ParseInt(argv[++i], &height),
+    ray::VerifyOrDie(2 == argc && ray::ParseInt(argv[++i], &height),
             ray::kUsageString);
 
     input = std::string(argv[++i]);

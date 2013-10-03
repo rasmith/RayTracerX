@@ -6,11 +6,18 @@
  */
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
+#include <vector>
+#include "mesh.hpp"
+#include "material.hpp"
 namespace ray {
-namespace scene {
 class Scene {
+public:
+
+private:
+    std::vector<Light> lights_;
+    std::vector<Trimesh*> meshes_;
+    MaterialList material_list_;
 
 };
-} // namespace scene
 } // namespace ray
 #endif /* SCENE_HPP_ */

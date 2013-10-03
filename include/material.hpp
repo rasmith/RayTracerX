@@ -11,7 +11,6 @@
 #include <boost/unordered_map.hpp>
 #include "types.hpp"
 namespace ray {
-namespace mat {
 struct Material {
     Material();
     Material(const Material& m);
@@ -35,6 +34,5 @@ public:
     void AddMaterial(const std::string& name, const Material& m);
     int last_id;
 };
-} // namespace mat
 } // namespace ray
 #endif /* MATERIAL_HPP_ */

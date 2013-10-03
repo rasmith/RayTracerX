@@ -9,7 +9,6 @@
 #define TEXTURE_HPP_
 #include "image.hpp"
 namespace ray {
-namespace tex {
 struct TexCoord {
     TexCoord();
     TexCoord(const TexCoord& texcoord);
@@ -19,8 +18,7 @@ struct TexCoord {
 struct TexInfo {
     TexInfo();
     std::string filepath;
-    image::Image image;
+    Image image;
 };
-} // namespace tex
 } // namespace ray
 #endif /* TEXTURE_HPP_ */

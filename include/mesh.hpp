@@ -11,7 +11,6 @@
 #include "geometry.hpp"
 #include "texture.hpp"
 namespace ray {
-namespace mesh {
 struct TrimeshFace {
     TrimeshFace();
     TrimeshFace(const TrimeshFace& face);
@@ -29,7 +28,7 @@ public:
     void AddNormal(const glm::vec3& vertex);
     void AddFace(const TrimeshFace& face);
     void AddTexCoord(const tex::TexCoord& tex_coord);
-    geom::Triangle GetPatch(int face_index);
+    Triangle GetPatch(int face_index);
 private:
     std::vector<glm::vec3> vertices_;
     std::vector<glm::vec3> normals_;
@@ -37,6 +36,5 @@ private:
     std::vector<TrimeshFace> faces_;
     int material_index;
 };
-} // namespace mesh
 } // namespace ray
 #endif /* MESH_HPP_ */
