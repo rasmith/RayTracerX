@@ -8,6 +8,9 @@
 #define SCENE_HPP_
 namespace ray {
 namespace scene {
+class Scene {
+
+};
 } // namespace scene
 } // namespace ray
 #endif /* SCENE_HPP_ */

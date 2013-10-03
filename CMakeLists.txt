@@ -4,8 +4,8 @@ project(Ray)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Werror")
-set(GLM_ROOT_DIR "/home/agrippa/sdks/glm_0.9.4.5")
-set(GraphicsMagick++_ROOT_DIR "/home/agrippa/sdks/Graphics-Magick_1.3.18")
+set(GLM_ROOT_DIR "/u/agrippa/sdks/glm_0.9.4.5")
+set(GraphicsMagick++_ROOT_DIR "/u/agrippa/sdks/Graphics-Magick_1.3.18")
 
 enable_testing()
 

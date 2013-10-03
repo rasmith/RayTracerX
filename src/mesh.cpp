@@ -23,17 +23,6 @@ TrimeshFace::TrimeshFace(int i, int j, int k) {
     vertices[2] = k;
 }
 
-TexCoord::TexCoord() {
-}
-
-TexCoord::TexCoord(const TexCoord& texcoord) :
-        coords(texcoord.coords) {
-}
-
-TexCoord::TexCoord(const glm::vec3& values) :
-        coords(values) {
-}
-
 const std::vector<TrimeshFace>& Trimesh::faces() const {
     return faces_;
 }
@@ -60,6 +49,10 @@ void Trimesh::AddNormal(const glm::vec3& normal) {
 
 void Trimesh::AddFace(const TrimeshFace& face) {
     faces_.push_back(face);
+}
+
+void Trimesh::AddTexCoord(const tex::TexCoord& tex_coord) {
+    tex_coords_.push_back(tex_coord);
 }
 
 geom::Triangle Trimesh::GetPatch(int face_index) {
