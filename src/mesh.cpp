@@ -50,7 +50,7 @@ void Trimesh::AddFace(const TrimeshFace& face) {
     faces_.push_back(face);
 }
 
-void Trimesh::AddTexCoord(const tex::TexCoord& tex_coord) {
+void Trimesh::AddTexCoord(const TexCoord& tex_coord) {
     tex_coords_.push_back(tex_coord);
 }
 

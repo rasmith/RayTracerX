@@ -27,12 +27,12 @@ public:
     void AddVertex(const glm::vec3& vertex);
     void AddNormal(const glm::vec3& vertex);
     void AddFace(const TrimeshFace& face);
-    void AddTexCoord(const tex::TexCoord& tex_coord);
+    void AddTexCoord(const TexCoord& tex_coord);
     Triangle GetPatch(int face_index);
 private:
     std::vector<glm::vec3> vertices_;
     std::vector<glm::vec3> normals_;
-    std::vector<tex::TexCoord> tex_coords_;
+    std::vector<TexCoord> tex_coords_;
     std::vector<TrimeshFace> faces_;
     int material_index;
 };

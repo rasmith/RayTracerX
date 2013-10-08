@@ -50,8 +50,8 @@ private:
     glm::vec3 at_;
     glm::vec3 position_;
     glm::vec3 up_;
-    glm::mat4x4 transform_;
     glm::mat4x4 view_;
+    glm::mat4x4 transform_;
     glm::mat4x4 project_;
     glm::mat4x4 unproject_;
 };
