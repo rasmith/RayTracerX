@@ -26,7 +26,6 @@ public:
     glm::vec3 WorldToCamera(const glm::vec3& point); // world to camera
     glm::vec3 CameraToWorld(const glm::vec3& point); // camera to world
     const glm::mat4x4& transform() const;
-    void set_transform(const glm::mat4x4& transform);
     const glm::mat4x4& projection() const;
     int screen_height() const;
     int screen_width() const;
