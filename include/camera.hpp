@@ -13,47 +13,33 @@ class Camera {
 public:
     Camera();
     Camera(const Camera& cam);
-    Camera(float near, float far, float aspect, float fov,
-            const glm::vec3& at, const glm::vec3& position,
-            const glm::vec3& up);
-    glm::vec4 Project(const glm::vec3& point);
-    glm::vec4 Unproject(const glm::vec3& point);
-
-    // getters/setters
-    float aspect() const;
-    void set_aspect(float aspect);
-    const glm::vec3& at() const;
-    void set_at(const glm::vec3& at);
-    float far() const;
-    void set_far(float far);
-    float fov() const;
-    void set_fov(float fov);
-    const std::string& name() const;
-    void set_name(const std::string& name);
-    float near() const;
-    void set_near(float near);
-    const glm::vec3& position() const;
-    void set_position(const glm::vec3& position);
+    Camera(float screen_width, float screen_height,
+            const glm::mat4x4& projection,
+            const glm::mat4x4& look_at);
+    // To use Project(), the point has to be in world coordinates,
+    // so remember to transform points from object to world space first,
+    // if necessary.
+    glm::vec3 Project(const glm::vec3& point); // world to screen
+    // The point returned by UnProject() will be in world coordinates,
+    // so remember to transform to object coordinates, if necessary.
+    glm::vec3 UnProject(const glm::vec3& point); // screen to world
+    glm::vec3 WorldToCamera(const glm::vec3& point); // world to camera
+    glm::vec3 CameraToWorld(const glm::vec3& point); // camera to world
     const glm::mat4x4& transform() const;
     void set_transform(const glm::mat4x4& transform);
-    const glm::vec3& up() const;
-    void set_up(const glm::vec3& up);
-    const glm::mat4x4& project() const;
-    const glm::mat4x4& unproject() const;
+    const glm::mat4x4& projection() const;
+    int screen_height() const;
+    int screen_width() const;
+    const glm::mat4x4& unprojection() const;
     const glm::mat4x4& view() const;
 private:
-    float near_;
-    float far_;
-    float aspect_;
-    float fov_;
-    std::string name_;
-    glm::vec3 at_;
-    glm::vec3 position_;
-    glm::vec3 up_;
+    int screen_width_;
+    int screen_height_;
+    glm::vec4 viewport_;
     glm::mat4x4 view_;
     glm::mat4x4 transform_;
-    glm::mat4x4 project_;
-    glm::mat4x4 unproject_;
+    glm::mat4x4 projection_;
+    glm::mat4x4 unprojection_;
 };
 } // namespace ray
 #endif /* CAMERA_HPP_ */
