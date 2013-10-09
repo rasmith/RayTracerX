@@ -13,6 +13,15 @@
 namespace ray {
 class Scene {
 public:
+    Scene();
+    void AddCamera(const Camera& camera);
+    void AddMaterial(const std::string& name, const Material& material);
+    void AddMesh(Trimesh* mesh);
+    const std::vector<Camera>& cameras() const;
+    const std::vector<Light>& lights() const;
+    const MaterialList& material_list() const;
+    const std::vector<Trimesh*>& meshes() const;
+
 private:
     std::vector<Camera> cameras_;
     std::vector<Light> lights_;
