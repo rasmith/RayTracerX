@@ -13,6 +13,10 @@ struct Light {
     enum LightType {
         kUndefined, kDirectional, kPoint, kSpot
     };
+    // 0 -> inner angle, 1 -> outer angle
+    glm::vec3 spot_coefficients;
+    // 0 -> constant, 1 -> linear, 2 -> quadratic
+    glm::vec3 attenuation_coefficients;
     glm::vec3 ka;
     glm::vec3 kd;
     glm::vec3 ks;

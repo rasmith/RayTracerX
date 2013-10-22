@@ -53,10 +53,6 @@ const glm::mat4x4& Camera::transform() const {
     return transform_;
 }
 
-void Camera::set_transform(const glm::mat4x4& transform) {
-    transform_ = transform;
-}
-
 const glm::mat4x4& Camera::projection() const {
     return projection_;
 }
