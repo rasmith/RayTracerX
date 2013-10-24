@@ -14,9 +14,13 @@ class SceneLoader {
 public:
     static SceneLoader& GetInstance();
     ~SceneLoader();
-    bool LoadScene(const std::string& file_name, const Scene& image,
-                std::string& status);
-
+    bool LoadScene(
+            const std::string& file_name,
+            const Scene& image,
+            std::string& status);
+private:
+    SceneLoader();
+    SceneLoader(const SceneLoader&);
 };
 }
 #endif /* SCENE_UTILS_HPP_ */
