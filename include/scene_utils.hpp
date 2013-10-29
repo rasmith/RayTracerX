@@ -16,11 +16,17 @@ public:
     ~SceneLoader();
     bool LoadScene(
             const std::string& file_name,
-            const Scene& image,
+            Scene& scene,
+            int width,
+            int height,
             std::string& status);
 private:
     SceneLoader();
     SceneLoader(const SceneLoader&);
+    void ImportCamera(Scene& scene, const aiCamera* const camera);
+    void ImportLight(Scene& scene, const aiLight* const light);
+    void ImportMaterial(Scene& scene, const aiMaterial* const material);
+    void ImportMesh(Scene& scene, const aiMesh* const mesh);
 };
 }
 #endif /* SCENE_UTILS_HPP_ */
