@@ -62,6 +62,7 @@ bool SceneLoader::LoadScene(
     for (int i = 0; i < assimp_scene->mNumLights; ++i) {
         ImportLight(scene, assimp_scene->mLights[i]);
     }
+    // FIXME
     for (int i = 0; i < assimp_scene->mNumMaterials; ++i) {
         ImportMaterial(scene, assimp_scene->mMaterials[i]);
     }
@@ -111,9 +112,47 @@ void SceneLoader::ImportLight(Scene& scene, const aiLight* const light) {
 void SceneLoader::ImportMaterial(
         Scene& scene,
         const aiMaterial* const material) {
+    aiString ai_name;
+    material->Get(AI_MATKEY_NAME, ai_name);
+    aiColor4D diffuse_color(0.0f, 0.0f, 0.0f, 1.0f);
+    material->Get(AI_MATKEY_COLOR_DIFFUSE, diffuse_color);
+    aiColor4D specular_color(0.0f, 0.0f, 0.0f, 1.0f);
+    material->Get(AI_MATKEY_COLOR_SPECULAR, specular_color);
+    aiColor4D ambient_color(0.0f, 0.0f, 0.0f, 1.0f);
+    material->Get(AI_MATKEY_COLOR_AMBIENT, ambient_color);
+    aiColor4D emissive_color(0.0f, 0.0f, 0.0f, 1.0f);
+    material->Get(AI_MATKEY_COLOR_EMISSIVE, emissive_color);
+    float shininess = 0.0f;
+    material->Get(AI_MATKEY_SHININESS, shininess);
+    std::string name;
+    name = std::string(ai_name.C_Str());
+    Material mat;
+    mat.kd = glm::vec3(diffuse_color[0], diffuse_color[1], diffuse_color[2]);
+    mat.ks = glm::vec3(specular_color[0], specular_color[1], specular_color[2]);
+    mat.ka = glm::vec3(ambient_color[0], ambient_color[1], ambient_color[2]);
+    mat.ke = glm::vec3(emissive_color[0], emissive_color[1], emissive_color[2]);
+    mat.ns = shininess;
+    scene.AddMaterial(name, mat);
 }
 
 void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
+    Trimesh* trimesh = new Trimesh();
+    for (int i = 0; i < mesh->mNumVertices; ++i) {
+        aiVector3D v = mesh->mVertices[i];
+        trimesh->AddVertex(glm::vec3(v[0], v[1], v[2]));
+    }
+    for (int i = 0; i < mesh->mNumVertices; ++i) {
+        aiVector3D n = mesh->mNormals[i];
+        trimesh->AddNormal(glm::vec3(n[0], n[1], n[2]));
+    }
+    for (int i = 0; i < mesh->mNumFaces; ++i) {
+        aiFace f = mesh->mFaces[i];
+        if (3 == f.mNumIndices) {
+            trimesh->AddFace(
+                    TrimeshFace(f.mIndices[0], f.mIndices[1], f.mIndices[2]));
+        }
+    }
+    scene.AddMesh(trimesh);
 }
 
 } // namespace ray
