@@ -64,7 +64,7 @@ bool SceneLoader::LoadScene(
     }
     // FIXME
     for (int i = 0; i < assimp_scene->mNumMaterials; ++i) {
-        ImportMaterial(scene, assimp_scene->mMaterials[i]);
+        ImportMaterial(scene, i, assimp_scene->mMaterials[i]);
     }
     for (int i = 0; i < assimp_scene->mNumMeshes; ++i) {
         ImportMesh(scene, assimp_scene->mMeshes[i]);
@@ -111,6 +111,7 @@ void SceneLoader::ImportLight(Scene& scene, const aiLight* const light) {
 
 void SceneLoader::ImportMaterial(
         Scene& scene,
+        int mesh_id,
         const aiMaterial* const material) {
     aiString ai_name;
     material->Get(AI_MATKEY_NAME, ai_name);
@@ -132,7 +133,7 @@ void SceneLoader::ImportMaterial(
     mat.ka = glm::vec3(ambient_color[0], ambient_color[1], ambient_color[2]);
     mat.ke = glm::vec3(emissive_color[0], emissive_color[1], emissive_color[2]);
     mat.ns = shininess;
-    scene.AddMaterial(name, mat);
+    scene.AddMaterial(name, mesh_id, mat);
 }
 
 void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {

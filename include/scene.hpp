@@ -15,7 +15,10 @@ class Scene {
 public:
     Scene();
     void AddCamera(const Camera& camera);
-    void AddMaterial(const std::string& name, const Material& material);
+    void AddMaterial(
+            const std::string& name,
+            int mesh_id,
+            const Material& material);
     void AddMesh(Trimesh* mesh);
     const std::vector<Camera>& cameras() const;
     const std::vector<Light>& lights() const;
@@ -25,7 +28,7 @@ private:
     std::vector<Camera> cameras_;
     std::vector<Light> lights_;
     std::vector<Trimesh*> meshes_;
-    MaterialList material_list_;
+    std::vector<MaterialList> material_lists_;
 };
 } // namespace ray
 #endif /* SCENE_HPP_ */
