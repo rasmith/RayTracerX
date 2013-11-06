@@ -8,10 +8,13 @@
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
 #include <string>
 #include "gtest/gtest.h"
+#include "gmock/gmock.h"
+#include "io_utils.hpp"
 #include "scene_utils.hpp"
-
+using ::testing::AnyOf;
 namespace ray {
 TEST(SceneLoaderTest, SceneReadTest) {
     SceneLoader& loader = SceneLoader::GetInstance();
@@ -27,8 +30,25 @@ TEST(SceneLoaderTest, SceneReadTest) {
     const std::vector<Trimesh*>& meshes = scene.meshes();
     EXPECT_EQ(meshes.size(), 1u);
     Trimesh* mesh = meshes[0];
-    EXPECT_EQ(mesh->num_vertices(), 8);
-    EXPECT_EQ(mesh->num_faces(), 12);
+    // Assimp can duplicate vertices, so either 8 or 24 is fine
+    EXPECT_THAT(mesh->num_vertices(), AnyOf(8, 24));
+    // Make sure we have all the vertices
+    bool check[8];
+    memset(check, 0, sizeof(bool) * 8);
+    for(int i = 0; i < mesh->num_vertices(); ++i) {
+        const glm::vec3& v = mesh->vertices()[i];
+        uint32_t I = static_cast<uint32_t>(v[0]);
+        uint32_t J = static_cast<uint32_t>(v[1]);
+        uint32_t K = static_cast<uint32_t>(v[2]);
+        uint32_t idx = (K << 2) | (J << 1) | I;
+        check[idx] = true;
+    }
+    bool have_all_vertices = true;
+    for(int i = 0; i < 8; ++i) {
+        have_all_vertices &= check[i];
+    }
+    EXPECT_TRUE(have_all_vertices);
+    EXPECT_EQ(12, mesh->num_faces());
 }
 } // namespace ray
 

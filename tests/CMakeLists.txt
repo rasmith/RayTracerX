@@ -16,6 +16,7 @@ add_executable(image_storage_test image_storage_test.cpp
 add_executable(scene_loader_test scene_loader_test.cpp 
                                   ${Ray_SOURCE_DIR}/src/camera.cpp
                                   ${Ray_SOURCE_DIR}/src/geometry.cpp
+                                  ${Ray_SOURCE_DIR}/src/io_utils.cpp
                                   ${Ray_SOURCE_DIR}/src/image.cpp
                                   ${Ray_SOURCE_DIR}/src/light.cpp
                                   ${Ray_SOURCE_DIR}/src/material.cpp

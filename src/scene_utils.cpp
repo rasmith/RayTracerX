@@ -52,6 +52,7 @@ bool SceneLoader::LoadScene(
     if (!status.empty() || NULL == assimp_scene) {
         return false;
     }
+    status = "OK";
     for (uint32_t i = 0; i < assimp_scene->mNumCameras; ++i) {
         ImportCamera(scene, assimp_scene->mCameras[i]);
     }
@@ -130,7 +131,6 @@ void SceneLoader::ImportMaterial(
     mat.ns = shininess;
     scene.AddMaterial(name, mat);
 }
-
 void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
     Trimesh* trimesh = new Trimesh();
     for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {

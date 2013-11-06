@@ -22,7 +22,8 @@ TrimeshFace::TrimeshFace(int i, int j, int k) {
     vertices[2] = k;
 }
 
-Trimesh::Trimesh() : material_index_(-1) {
+Trimesh::Trimesh() :
+        vertices_(), normals_(), tex_coords_(), faces_(), material_index_(-1) {
 }
 
 const std::vector<TrimeshFace>& Trimesh::faces() const {
