@@ -7,6 +7,7 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 #include <vector>
+#include "light.hpp"
 #include "mesh.hpp"
 #include "material.hpp"
 #include "camera.hpp"
@@ -15,6 +16,7 @@ class Scene {
 public:
     Scene();
     void AddCamera(const Camera& camera);
+    void AddLight(const Light& light);
     void AddMaterial(const std::string& name, const Material& material);
     void AddMesh(Trimesh* mesh);
     const std::vector<Camera>& cameras() const;

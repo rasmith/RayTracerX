@@ -7,6 +7,8 @@
 
 #ifndef LIGHT_HPP_
 #define LIGHT_HPP_
+#include <glm/glm.hpp>
+#include "ray.hpp"
 #include "types.hpp"
 namespace ray {
 struct Light {

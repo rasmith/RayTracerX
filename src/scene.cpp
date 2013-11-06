@@ -4,12 +4,24 @@
  *  Created on: Oct 2, 2013
  *      Author: agrippa
  */
+#include <string>
+#include <vector>
+#include "camera.hpp"
+#include "light.hpp"
+#include "material.hpp"
+#include "mesh.hpp"
+#include "scene.hpp"
 namespace ray {
-Scene::Scene() {
+Scene::Scene() :
+        cameras_(), lights_(), meshes_(), material_list_() {
 }
 
 void Scene::AddCamera(const Camera& camera) {
     cameras_.push_back(camera);
+}
+
+void Scene::AddLight(const Light& light) {
+    lights_.push_back(light);
 }
 
 void Scene::AddMaterial(const std::string& name, const Material& material) {

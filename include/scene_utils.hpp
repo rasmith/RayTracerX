@@ -7,6 +7,8 @@
 
 #ifndef SCENE_UTILS_HPP_
 #define SCENE_UTILS_HPP_
+#include <assimp/scene.h>
+#include <assimp/camera.h>
 #include "scene.hpp"
 #include "types.hpp"
 namespace ray {
@@ -17,8 +19,6 @@ public:
     bool LoadScene(
             const std::string& file_name,
             Scene& scene,
-            int width,
-            int height,
             std::string& status);
 private:
     SceneLoader();

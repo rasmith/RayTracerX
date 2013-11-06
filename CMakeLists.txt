@@ -6,15 +6,18 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Werror")
 set(GLM_ROOT_DIR "/home/agrippa/sdks/glm_0.9.4.5")
 set(GraphicsMagick++_ROOT_DIR "/home/agrippa/sdks/Graphics-Magick_1.3.18")
-set(ASSIMP_DIR, "/home/agrippa/sdks/assimp_3.0.1270")
+set(BOOST_ROOT "/home/agrippa/sdks/boost_1.54.0")
+set(ASSIMP_ROOT_DIR "/home/agrippa/sdks/assimp_3.0.1270")
 enable_testing()
 
 include_directories(${Ray_SOURCE_DIR}/include)
 
+find_package(Boost 1.54 REQUIRED)
+include_directories(${Boost_INCLUDE_DIR}) 
+
 find_package(GLM REQUIRED)
 include_directories(${GLM_INCLUDE_DIRS})
-
-
+ 
 find_package(Assimp REQUIRED)
 include_directories(${ASSIMP_INCLUDE_DIRS})
 set(LIBS ${LIBS} ${ASSIMP_LIBRARIES})

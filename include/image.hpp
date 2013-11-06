@@ -7,6 +7,7 @@
 #ifndef IMAGE_HPP_
 #define IMAGE_HPP_
 #include <stdint.h>
+#include <string>
 #include <vector>
 #include "types.hpp"
 namespace ray {

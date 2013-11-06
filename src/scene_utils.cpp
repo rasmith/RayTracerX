@@ -14,9 +14,6 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-#define AI_CONFIG_PP_SBP_REMOVE \
-    (aiPrimitiveType_POINTS | aiPrimitiveType_LINES)
-
 namespace ray {
 SceneLoader::SceneLoader() {
 }
@@ -39,11 +36,10 @@ SceneLoader::~SceneLoader() {
 bool SceneLoader::LoadScene(
         const std::string& file_name,
         Scene& scene,
-        int image_width,
-        int image_height,
         std::string& status) {
-    struct aiLogStream stream;
     Assimp::Importer importer;
+    importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
+            aiPrimitiveType_POINT | aiPrimitiveType_LINE);
     const aiScene* assimp_scene = importer.ReadFile(file_name,
             aiProcess_Triangulate | aiProcess_GenNormals
                     | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
@@ -56,16 +52,16 @@ bool SceneLoader::LoadScene(
     if (!status.empty() || NULL == assimp_scene) {
         return false;
     }
-    for (int i = 0; i < assimp_scene->mNumCameras; ++i) {
+    for (uint32_t i = 0; i < assimp_scene->mNumCameras; ++i) {
         ImportCamera(scene, assimp_scene->mCameras[i]);
     }
-    for (int i = 0; i < assimp_scene->mNumLights; ++i) {
+    for (uint32_t i = 0; i < assimp_scene->mNumLights; ++i) {
         ImportLight(scene, assimp_scene->mLights[i]);
     }
-    for (int i = 0; i < assimp_scene->mNumMaterials; ++i) {
+    for (uint32_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
         ImportMaterial(scene, assimp_scene->mMaterials[i]);
     }
-    for (int i = 0; i < assimp_scene->mNumMeshes; ++i) {
+    for (uint32_t i = 0; i < assimp_scene->mNumMeshes; ++i) {
         ImportMesh(scene, assimp_scene->mMeshes[i]);
     }
     return true;
@@ -105,7 +101,8 @@ void SceneLoader::ImportLight(Scene& scene, const aiLight* const light) {
     L.attenuation_coefficients = glm::vec3(light->mAttenuationConstant,
             light->mAttenuationLinear, light->mAttenuationQuadratic);
     L.spot_coefficients = glm::vec3(light->mAngleInnerCone,
-            light->mAngleOuterCone);
+            light->mAngleOuterCone, 0.0f);
+    scene.AddLight(L);
 }
 
 void SceneLoader::ImportMaterial(
@@ -136,15 +133,15 @@ void SceneLoader::ImportMaterial(
 
 void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
     Trimesh* trimesh = new Trimesh();
-    for (int i = 0; i < mesh->mNumVertices; ++i) {
+    for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
         aiVector3D v = mesh->mVertices[i];
         trimesh->AddVertex(glm::vec3(v[0], v[1], v[2]));
     }
-    for (int i = 0; i < mesh->mNumVertices; ++i) {
+    for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
         aiVector3D n = mesh->mNormals[i];
         trimesh->AddNormal(glm::vec3(n[0], n[1], n[2]));
     }
-    for (int i = 0; i < mesh->mNumFaces; ++i) {
+    for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
         aiFace f = mesh->mFaces[i];
         if (3 == f.mNumIndices) {
             trimesh->AddFace(

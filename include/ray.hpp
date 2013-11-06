@@ -7,6 +7,8 @@
 
 #ifndef RAY_HPP_
 #define RAY_HPP_
+#include <glm/glm.hpp>
+#include "types.hpp"
 namespace ray {
 class Ray {
 public:

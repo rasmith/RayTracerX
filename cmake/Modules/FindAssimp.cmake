@@ -1,74 +1,50 @@
-# - Find Assimp Installation
-#
-# Users can set the following variables before calling the module:
-#  ASSIMP_DIR - The preferred installation prefix for searching for ASSIMP. Set by the user.
-#
-# ASSIMP_ROOT_DIR - the root directory where the installation can be found
-# ASSIMP_CXX_FLAGS - extra flags for compilation
-# ASSIMP_LINK_FLAGS - extra flags for linking
-# ASSIMP_INCLUDE_DIRS - include directories
-# ASSIMP_LIBRARY_DIRS - link directories
-# ASSIMP_LIBRARIES - libraries to link plugins with
-# ASSIMP_Boost_VERSION - the boost version assimp was compiled with
-get_filename_component(_PREFIX "${CMAKE_CURRENT_LIST_FILE}" PATH)
-get_filename_component(_PREFIX "${_PREFIX}" PATH)
-get_filename_component(_PREFIX "${_PREFIX}" PATH)
-get_filename_component(ASSIMP_ROOT_DIR "${_PREFIX}" PATH)
+# find headers
+set(_ASSIMP_HEADER_SEARCH_DIRS,
+    "/usr/include"
+    "/usr/local/include")
+set(_ASSIMP_ENV_ROOT_DIR "$ENV{_ASSIMP_ROOT_DIR}")    
 
-if( MSVC )
-  # in order to prevent DLL hell, each of the DLLs have to be suffixed with the major version and msvc prefix
-  if( MSVC70 OR MSVC71 )
-    set(MSVC_PREFIX "vc70")
-  elseif( MSVC80 )
-    set(MSVC_PREFIX "vc80")
-  elseif( MSVC90 )
-    set(MSVC_PREFIX "vc90")
-  else()
-    set(MSVC_PREFIX "vc100")
-  endif()
-  set(ASSIMP_LIBRARY_SUFFIX "-${MSVC_PREFIX}-mt" CACHE STRING "the suffix for the assimp windows library" FORCE)
-else()
-  set(ASSIMP_LIBRARY_SUFFIX "" CACHE STRING "the suffix for the openrave libraries" FORCE)
-endif()
+if(NOT _ASSIMP_ROOT_DIR AND _ASSIMP_ENV_ROOT_DIR)
+    set(ASSIMP_ROOT_DIR "${_ASSIMP_ENV_ROOT_DIR}")
+endif(NOT _ASSIMP_ROOT_DIR AND _ASSIMP_ENV_ROOT_DIR)
 
-set( ASSIMP_CXX_FLAGS ) # dynamically linked library
-if( WIN32 )
-  # for visual studio linking, most of the time boost dlls will be used
-  set( ASSIMP_CXX_FLAGS " -DBOOST_ALL_DYN_LINK -DBOOST_ALL_NO_LIB")
-endif()
-set( ASSIMP_LINK_FLAGS "" )
-set( ASSIMP_LIBRARY_DIRS "${ASSIMP_ROOT_DIR}/lib")
-set( ASSIMP_INCLUDE_DIRS "${ASSIMP_ROOT_DIR}/include")
-set( ASSIMP_LIBRARIES assimp${ASSIMP_LIBRARY_SUFFIX})
+if(ASSIMP_ROOT_DIR)
+    set(_ASSIMP_HEADER_SEARCH_DIRS "${ASSIMP_ROOT_DIR}"
+                          "${ASSIMP_ROOT_DIR}/include"
+                          ${_ASSIMP_HEADER_SEARCH_DIRS})
+endif(ASSIMP_ROOT_DIR)                                
+ 
+find_path(ASSIMP_INCLUDE_DIR "config.h"
+    PATHS ${_ASSIMP_HEADER_SEARCH_DIRS}
+    PATH_SUFFIXES assimp)
+     
+# find libraries
+set(_ASSIMP_LIBRARY_SEARCH_DIRS,
+    "/usr/lib"
+    "/usr/local/lib")
+    
+if(ASSIMP_ROOT_DIR)
+    set(_ASSIMP_LIBRARY_SEARCH_DIRS  "${ASSIMP_ROOT_DIR}"                             
+                                 ${_ASSIMP_LIBRARY_SEARCH_DIRS})
+endif(ASSIMP_ROOT_DIR)
+                              
+find_library(ASSIMP_LIBRARY NAMES assimp
+             PATHS "${_ASSIMP_LIBRARY_SEARCH_DIRS}"
+             PATH_SUFFIXES lib)
+             
+message(STATUS "ASSIMP_INCLUDE_DIR = ${ASSIMP_INCLUDE_DIR}" )                              
+message(STATUS "ASSIMP_LIBRARY = ${ASSIMP_LIBRARY}")
 
-# the boost version assimp was compiled with
-set( ASSIMP_Boost_VERSION ".")
+include(FindPackageHandleStandardArgs)
 
-if( WIN32 )
-  # search for the boost version assimp was compiled with
-  set(Boost_USE_MULTITHREAD ON)
-  set(Boost_USE_STATIC_LIBS OFF)
-  set(Boost_USE_STATIC_RUNTIME OFF)
-  find_package(Boost ${ASSIMP_Boost_VERSION} EXACT COMPONENTS thread date_time)
-  if(Boost_VERSION AND NOT "${Boost_VERSION}" STREQUAL "0")
-    set( ASSIMP_INCLUDE_DIRS "${ASSIMP_INCLUDE_DIRS}" ${Boost_INCLUDE_DIRS})
-  else(Boost_VERSION AND NOT "${Boost_VERSION}" STREQUAL "0")
-    message(WARNING "Failed to find Boost ${ASSIMP_Boost_VERSION} necessary for assimp")
-  endif(Boost_VERSION AND NOT "${Boost_VERSION}" STREQUAL "0")
-endif( WIN32 )
-
-# for compatibility wiht pkg-config
-set(ASSIMP_CFLAGS_OTHER "${ASSIMP_CXX_FLAGS}")
-set(ASSIMP_LDFLAGS_OTHER "${ASSIMP_LINK_FLAGS}")
-
-MARK_AS_ADVANCED(
-  ASSIMP_ROOT_DIR
-  ASSIMP_CXX_FLAGS
-  ASSIMP_LINK_FLAGS
-  ASSIMP_INCLUDE_DIRS
-  ASSIMP_LIBRARIES
-  ASSIMP_Boost_VERSION
-  ASSIMP_CFLAGS_OTHER
-  ASSIMP_LDFLAGS_OTHER
-  ASSIMP_LIBRARY_SUFFIX
-)
+find_package_handle_standard_args(Assimp REQUIRED_VARS
+                                  ASSIMP_LIBRARY 
+                                  ASSIMP_INCLUDE_DIR)
+                                  
+message(STATUS "ASSIMP_FOUND = ${ASSIMP_FOUND}")  
+                              
+if(ASSIMP_FOUND)
+    set(ASSIMP_FOUND "${ASSIMP_FOUND}")
+    set(ASSIMP_INCLUDE_DIRS "${ASSIMP_INCLUDE_DIR}")   
+    set(ASSIMP_LIBRARIES "${ASSIMP_LIBRARY}")     
+endif(ASSIMP_FOUND)

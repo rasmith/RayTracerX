@@ -20,6 +20,7 @@ add_executable(scene_loader_test scene_loader_test.cpp
                                   ${Ray_SOURCE_DIR}/src/light.cpp
                                   ${Ray_SOURCE_DIR}/src/material.cpp
                                   ${Ray_SOURCE_DIR}/src/mesh.cpp
+                                  ${Ray_SOURCE_DIR}/src/ray.cpp
                                   ${Ray_SOURCE_DIR}/src/scene.cpp
                                   ${Ray_SOURCE_DIR}/src/scene_utils.cpp
                                   ${Ray_SOURCE_DIR}/src/texture.cpp)

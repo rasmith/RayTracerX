@@ -5,8 +5,8 @@
  *      Author: agrippa
  */
 #include <vector>
-#include <boost/unordered_map.hpp>
 #include <algorithm>
+#include <boost/unordered_map.hpp>
 #include "material.hpp"
 namespace ray {
 Material::Material() :
@@ -19,33 +19,27 @@ Material::Material(const Material& m) :
 }
 
 MaterialList::MaterialList() :
-        last_id(-1) {
-    materials.clear();
-    name_to_id_lookup.clear();
-    id_to_name_lookup.clear();
+        last_id(-1), materials(), name_to_id_lookup(), id_to_name_lookup() {
 }
 
 MaterialList::MaterialList(const MaterialList& l) :
-        last_id(l.last_id) {
-    std::copy(l.materials.begin(), l.materials.end(), materials.begin());
-    std::copy(l.name_to_id_lookup.begin(), l.name_to_id_lookup.end(),
-            name_to_id_lookup.begin());
-    std::copy(l.id_to_name_lookup.begin(), l.id_to_name_lookup.end(),
-            id_to_name_lookup.begin());
+        last_id(l.last_id), materials(l.materials),
+                name_to_id_lookup(l.name_to_id_lookup),
+                id_to_name_lookup(l.id_to_name_lookup) {
 }
 
 int MaterialList::GetMaterialID(const std::string& name) {
     return name_to_id_lookup[name];
 }
 
-int MaterialList::GetMaterialName(int id) {
+const std::string& MaterialList::GetMaterialName(int id) {
     return id_to_name_lookup[id];
 }
 
-void MaterialList::AddMaterial(const std::string& name,
-        const Material& m) {
-    m.id = ++last_id;
-    id_to_name_lookup[m.id] = name;
-    name_to_id_lookup[name] = m.id;
+void MaterialList::AddMaterial(const std::string& name, const Material& m) {
+    Material mat(m);
+    mat.id = ++last_id;
+    id_to_name_lookup[mat.id] = name;
+    name_to_id_lookup[name] = mat.id;
 }
 } // namespace ray
