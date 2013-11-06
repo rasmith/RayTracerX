@@ -22,6 +22,9 @@ TrimeshFace::TrimeshFace(int i, int j, int k) {
     vertices[2] = k;
 }
 
+Trimesh::Trimesh() : material_index_(-1) {
+}
+
 const std::vector<TrimeshFace>& Trimesh::faces() const {
     return faces_;
 }
@@ -58,5 +61,13 @@ Triangle Trimesh::GetPatch(int face_index) {
     TrimeshFace face = faces_[face_index];
     return Triangle(vertices_[face.vertices[0]], vertices_[face.vertices[1]],
             vertices_[face.vertices[0]]);
+}
+
+int Trimesh::material_index() const {
+    return material_index_;
+}
+
+void Trimesh::set_material_index(int material_index) {
+    material_index_ = material_index;
 }
 } // namespace ray

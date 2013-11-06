@@ -15,17 +15,17 @@
 #include "image.hpp"
 namespace ray {
 TEST(ImageTest, ImageCreation) {
-    image::Image image0;
+    Image image0;
     EXPECT_EQ(0u, image0.width());
     EXPECT_EQ(0u, image0.height());
     EXPECT_EQ(0u, image0.pixels().size());
-    image::Image image1(640, 480);
+    Image image1(640, 480);
     EXPECT_EQ(640u, image1.width());
     EXPECT_EQ(480u, image1.height());
     EXPECT_EQ(640u * 480u, image1.pixels().size());
 }
 TEST(ImageTest, ImageModify) {
-    image::Image image(640, 480);
+    Image image(640, 480);
     EXPECT_EQ(640u, image.width());
     EXPECT_EQ(480u, image.height());
     EXPECT_EQ(640u * 480u, image.pixels().size());

@@ -25,10 +25,7 @@ private:
     SceneLoader(const SceneLoader&);
     void ImportCamera(Scene& scene, const aiCamera* const camera);
     void ImportLight(Scene& scene, const aiLight* const light);
-    void ImportMaterial(
-            Scene& scene,
-            int mesh_id,
-            const aiMaterial* const material);
+    void ImportMaterial(Scene& scene, const aiMaterial* const material);
     void ImportMesh(Scene& scene, const aiMesh* const mesh);
 };
 }

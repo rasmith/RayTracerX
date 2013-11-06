@@ -20,6 +20,7 @@ struct TrimeshFace {
 
 class Trimesh {
 public:
+    Trimesh();
     const std::vector<TrimeshFace>& faces() const;
     int num_faces() const;
     int num_vertices() const;
@@ -29,12 +30,15 @@ public:
     void AddFace(const TrimeshFace& face);
     void AddTexCoord(const TexCoord& tex_coord);
     Triangle GetPatch(int face_index);
+    int material_index() const;
+    void set_material_index(int material_index);
+
 private:
     std::vector<glm::vec3> vertices_;
     std::vector<glm::vec3> normals_;
     std::vector<TexCoord> tex_coords_;
     std::vector<TrimeshFace> faces_;
-    int material_index;
+    int material_index_;
 };
 } // namespace ray
 #endif /* MESH_HPP_ */
