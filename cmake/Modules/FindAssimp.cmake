@@ -14,9 +14,8 @@ if(ASSIMP_ROOT_DIR)
                           ${_ASSIMP_HEADER_SEARCH_DIRS})
 endif(ASSIMP_ROOT_DIR)                                
  
-find_path(ASSIMP_INCLUDE_DIR "config.h"
-    PATHS ${_ASSIMP_HEADER_SEARCH_DIRS}
-    PATH_SUFFIXES assimp)
+find_path(ASSIMP_INCLUDE_DIR "assimp/config.h"
+    PATHS ${_ASSIMP_HEADER_SEARCH_DIRS})
      
 # find libraries
 set(_ASSIMP_LIBRARY_SEARCH_DIRS,
