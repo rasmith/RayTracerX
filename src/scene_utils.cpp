@@ -43,11 +43,11 @@ bool SceneLoader::LoadScene(
     const aiScene* assimp_scene = importer.ReadFile(file_name,
             aiProcess_Triangulate | aiProcess_GenNormals
                     | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
-                    | aiProcess_ValidateDataStructure
-                    | aiProcess_ImproveCacheLocality
-                    | aiProcess_RemoveRedundantMaterials
-                    | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates
-                    | aiProcess_OptimizeGraph | aiProcess_OptimizeMeshes);
+                    | aiProcess_ValidateDataStructure);
+                   // | aiProcess_ImproveCacheLocality
+                  //  | aiProcess_RemoveRedundantMaterials
+                  //  | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates
+                   // | aiProcess_OptimizeGraph | aiProcess_OptimizeMeshes);
     status = std::string(importer.GetErrorString());
     if (!status.empty() || NULL == assimp_scene) {
         return false;
@@ -59,9 +59,11 @@ bool SceneLoader::LoadScene(
     for (uint32_t i = 0; i < assimp_scene->mNumLights; ++i) {
         ImportLight(scene, assimp_scene->mLights[i]);
     }
+    std::cout << "mNumMaterials = " <<  assimp_scene->mNumMaterials << std::endl;
     for (uint32_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
         ImportMaterial(scene, assimp_scene->mMaterials[i]);
     }
+    std::cout << "mNumMeshes = " <<  assimp_scene->mNumMeshes << std::endl;
     for (uint32_t i = 0; i < assimp_scene->mNumMeshes; ++i) {
         ImportMesh(scene, assimp_scene->mMeshes[i]);
     }
@@ -137,10 +139,12 @@ void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
         aiVector3D v = mesh->mVertices[i];
         trimesh->AddVertex(glm::vec3(v[0], v[1], v[2]));
     }
+    std::cout << "mNumVertices = " <<  mesh->mNumVertices << std::endl;
     for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
         aiVector3D n = mesh->mNormals[i];
         trimesh->AddNormal(glm::vec3(n[0], n[1], n[2]));
     }
+    std::cout << "mNumFaces = " <<  mesh->mNumFaces << std::endl;
     for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
         aiFace f = mesh->mFaces[i];
         if (3 == f.mNumIndices) {

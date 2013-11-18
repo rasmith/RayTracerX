@@ -18,7 +18,7 @@ using ::testing::AnyOf;
 namespace ray {
 TEST(SceneLoaderTest, SimpleReadTest) {
     SceneLoader& loader = SceneLoader::GetInstance();
-    std::string path = "/u/agrippa/workspace_cdt_8.2.0/Ray/assets/cube.ply";
+    std::string path = "../assets/cube.ply";
     std::string status = "";
     Scene scene;
     bool success = loader.LoadScene(path, scene, status);
@@ -50,23 +50,14 @@ TEST(SceneLoaderTest, SimpleReadTest) {
     EXPECT_TRUE(have_all_vertices);
     EXPECT_EQ(12, mesh->num_faces());
 }
-TEST(SceneLoaderTest, BasicReadTest) {
+TEST(SceneLoaderTest, BlenderReadTest) {
     SceneLoader& loader = SceneLoader::GetInstance();
-    std::string path = "../assets/CornellBox-Original.obj";
+    std::string path = "../assets/bunny_blender.obj";
     std::string status = "";
     Scene scene;
     bool success = loader.LoadScene(path, scene, status);
     EXPECT_TRUE(success);
     EXPECT_EQ("OK", status);
-    EXPECT_EQ(scene.cameras().size(), 0u);
-    EXPECT_EQ(scene.lights().size(), 1u);
-    EXPECT_EQ(scene.material_list().materials.size(), 8u);
-    const std::vector<Trimesh*>& meshes = scene.meshes();
-    EXPECT_EQ(meshes.size(), 1u);
-    Trimesh* mesh = meshes[0];
-    // Assimp can duplicate vertices, so either 36 or 108 is fine
-    EXPECT_THAT(mesh->num_vertices(), AnyOf(36, 108));
-    EXPECT_EQ(68, mesh->num_faces());
 }
 } // namespace ray
 

@@ -7,28 +7,68 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "camera.hpp"
+#include "transform.hpp"
+#include "ray.hpp"
 namespace ray {
-Camera::Camera() : screen_width_(640.0f), screen_height_(480.0f),
-        viewport_(glm::vec4(0.0f, 0.0f, screen_width_, screen_height_)),
-        view_(glm::lookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f),
-                glm::vec3(0.0f, 1.0f, 0.0f))),
-        transform_(glm::inverse(view_)),
-        projection_(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f)),
-        unprojection_(glm::inverse(projection_)) {
+Camera::Camera() :
+        screen_width_(640.0f), screen_height_(480.0f),
+                viewport_(glm::vec4(0.0f, 0.0f, screen_width_, screen_height_)),
+                view_(
+                        LookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f),
+                                glm::vec3(0.0f, 1.0f, 0.0f))),
+                transform_(Inverse(view_)),
+                projection_(Orthographic(0.0f, 1.0f)),
+                unprojection_(Inverse(projection_)), focal_length_(0.0f),
+                up_(
+                        glm::normalize(
+                                transform_
+                                        * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f))),
+                direction_(
+                        glm::normalize(
+                                transform_
+                                        * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f))),
+                tangent_(
+                        glm::normalize(
+                                transform_
+                                        * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f))),
+                center_(transform_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)),
+                screen_center_(center_ + direction_ * focal_length_) {
 }
 
-Camera::Camera(const Camera& cam) :  screen_width_(cam.screen_width_),
-        screen_height_(cam.screen_height_), viewport_(cam.viewport_),
-        view_(cam.view_), transform_(cam.transform_),
-        projection_(cam.projection_), unprojection_(cam.unprojection_)  {
+Camera::Camera(const Camera& cam) :
+        screen_width_(cam.screen_width_), screen_height_(cam.screen_height_),
+                viewport_(cam.viewport_), view_(cam.view_),
+                transform_(cam.transform_), projection_(cam.projection_),
+                unprojection_(cam.unprojection_),
+                focal_length_(cam.focal_length_), up_(cam.up_),
+                direction_(cam.direction_), tangent_(cam.tangent_),
+                center_(cam.center_), screen_center_(cam.screen_center_) {
 }
 
-Camera::Camera(float screen_width, float screen_height,
-        const glm::mat4x4& projection, const glm::mat4x4& look_at) :
-            screen_width_(screen_width), screen_height_(screen_height),
-            viewport_(glm::vec4(0.0f, 0.0f, screen_width_, screen_height_)),
-            view_(look_at), transform_(glm::inverse(view_)),
-            projection_(projection), unprojection_(glm::inverse(projection_)) {
+Camera::Camera(
+        float screen_width,
+        float screen_height,
+        const glm::mat4x4& projection,
+        const glm::mat4x4& look_at) :
+        screen_width_(screen_width), screen_height_(screen_height),
+                viewport_(glm::vec4(0.0f, 0.0f, screen_width_, screen_height_)),
+                view_(look_at), transform_(Inverse(view_)),
+                projection_(projection), unprojection_(Inverse(projection_)),
+                focal_length_(0.0f),
+                up_(
+                        glm::normalize(
+                                transform_
+                                        * glm::vec4(0.0f, 1.0f, 0.0f, 0.0f))),
+                direction_(
+                        glm::normalize(
+                                transform_
+                                        * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f))),
+                tangent_(
+                        glm::normalize(
+                                transform_
+                                        * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f))),
+                center_(transform_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)),
+                screen_center_(center_ + direction_ * focal_length_) {
 }
 
 glm::vec3 Camera::Project(const glm::vec3& point) {
@@ -45,6 +85,10 @@ glm::vec3 Camera::WorldToCamera(const glm::vec3& point) {
 
 glm::vec3 Camera::CameraToWorld(const glm::vec3& point) {
     return glm::vec3(transform_ * glm::vec4(point, 1.0f));
+}
+
+void Camera::Resize(int width, int height) {
+    *this = Camera(width, height, projection_, view_);
 }
 
 const glm::mat4x4& Camera::transform() const {
@@ -69,6 +113,32 @@ const glm::mat4x4& Camera::unprojection() const {
 
 const glm::mat4x4& Camera::view() const {
     return view_;
+}
+
+Ray Camera::GenerateRay(float screen_x, float screen_y) const {
+    glm::vec4 origin = screen_center_ + screen_x * up_ + screen_y * tangent_;
+    glm::vec4 direction = direction_;
+    return Ray(glm::vec3(origin[0], origin[1], origin[2]),
+            glm::vec3(direction[0], direction[1], direction[2]));
+}
+
+Camera& Camera::operator=(const Camera& cam) {
+    if (this == &cam) {
+        return *this;
+    }
+    screen_width_ = cam.screen_width_;
+    screen_height_ = cam.screen_height_;
+    viewport_ = cam.viewport_;
+    view_ = cam.view_;
+    transform_ = cam.transform_;
+    projection_ = cam.projection_;
+    unprojection_ = cam.unprojection_;
+    up_ = cam.up_;
+    direction_ = cam.direction_;
+    tangent_ = cam.tangent_;
+    center_ = cam.center_;
+    screen_center_ = cam.screen_center_;
+    return *this;
 }
 } // namespace ray
 

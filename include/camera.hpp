@@ -8,6 +8,7 @@
 #ifndef CAMERA_HPP_
 #define CAMERA_HPP_
 #include "types.hpp"
+#include "ray.hpp"
 namespace ray {
 class Camera {
 public:
@@ -25,12 +26,15 @@ public:
     glm::vec3 UnProject(const glm::vec3& point); // screen to world
     glm::vec3 WorldToCamera(const glm::vec3& point); // world to camera
     glm::vec3 CameraToWorld(const glm::vec3& point); // camera to world
+    void Resize(int width, int height); // resize screen width / height
+    Ray GenerateRay(float screen_x, float screen_y) const;
     const glm::mat4x4& transform() const;
     const glm::mat4x4& projection() const;
     int screen_height() const;
     int screen_width() const;
     const glm::mat4x4& unprojection() const;
     const glm::mat4x4& view() const;
+    Camera& operator=(const Camera& cam);
 private:
     int screen_width_;
     int screen_height_;
@@ -39,6 +43,13 @@ private:
     glm::mat4x4 transform_;
     glm::mat4x4 projection_;
     glm::mat4x4 unprojection_;
+    float focal_length_;
+    glm::vec4 up_;
+    glm::vec4 direction_;
+    glm::vec4 tangent_;
+    glm::vec4 center_;
+    glm::vec4 screen_center_;
+
 };
 } // namespace ray
 #endif /* CAMERA_HPP_ */
