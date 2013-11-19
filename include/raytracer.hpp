@@ -20,6 +20,7 @@ public:
     void Render(Image& image);
 private:
     glm::vec3 TraceRay(int pixel_x, int pixel_y);
+    glm::vec3 TraceRay(const Ray& ray, int depth);
     Scene* scene_;
     Camera* camera_;
 };

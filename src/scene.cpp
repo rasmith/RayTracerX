@@ -47,5 +47,9 @@ const MaterialList& Scene::material_list() const {
 const std::vector<Trimesh*>& Scene::meshes() const {
     return meshes_;
 }
+
+bool Scene::Intersect(const Ray& ray, Isect& isect) const {
+	return false;
+}
 } // namespace ray
 

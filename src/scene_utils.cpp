@@ -121,6 +121,12 @@ void SceneLoader::ImportMaterial(
     material->Get(AI_MATKEY_COLOR_AMBIENT, ambient_color);
     aiColor4D emissive_color(0.0f, 0.0f, 0.0f, 1.0f);
     material->Get(AI_MATKEY_COLOR_EMISSIVE, emissive_color);
+    float opacity = 0.0f;
+    material->Get(AI_MATKEY_OPACITY, opacity);
+    float reflectivity = 0.0f;
+    material->Get(AI_MATKEY_REFLECTIVITY, reflectivity);
+    float refractivity = 0.0f;
+    material->Get(AI_MATKEY_REFRACTI, refractivity);
     float shininess = 0.0f;
     material->Get(AI_MATKEY_SHININESS, shininess);
     std::string name;
@@ -130,6 +136,9 @@ void SceneLoader::ImportMaterial(
     mat.ks = glm::vec3(specular_color[0], specular_color[1], specular_color[2]);
     mat.ka = glm::vec3(ambient_color[0], ambient_color[1], ambient_color[2]);
     mat.ke = glm::vec3(emissive_color[0], emissive_color[1], emissive_color[2]);
+    mat.kr = reflectivity;
+    mat.kt = refractivity;
+    mat.tr = opacity;
     mat.ns = shininess;
     scene.AddMaterial(name, mat);
 }

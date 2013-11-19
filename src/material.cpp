@@ -11,11 +11,12 @@
 namespace ray {
 Material::Material() :
         kd(0.0f, 0.0f, 0.0f), ks(0.0f, 0.0f, 0.0f), ka(0.0, 0.0, 0.0),
-                ke(0.0, 0.0, 0.0), tr(0.0f), ns(0.0f), id(-1) {
+                ke(0.0, 0.0, 0.0), kr(0.0f), kt(0.0f), tr(0.0f), ns(0.0f), id(-1) {
 }
 
 Material::Material(const Material& m) :
-        kd(m.kd), ks(m.ks), ka(m.ka), ke(m.ke), tr(m.tr), ns(m.ns), id(m.id) {
+        kd(m.kd), ks(m.ks), ka(m.ka), ke(m.ke), kr(m.kr), ks(m.ks),
+        tr(m.tr), ns(m.ns), id(m.id) {
 }
 
 MaterialList::MaterialList() :

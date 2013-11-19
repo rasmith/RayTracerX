@@ -18,6 +18,8 @@ struct Material {
     glm::vec3 ks; // specular components
     glm::vec3 ka; // ambient components
     glm::vec3 ke; // emissive components
+    float kr; // reflectivity
+    float kt; // refractivity
     float tr;    // opacity
     float ns;    // shineness
     int id;      // unique id
