@@ -16,10 +16,14 @@ struct Triangle {
     glm::vec3 vertices[3];
 };
 struct Isect {
-	Triangle tri;
+	Triangle obj;
 	Material mat;
 	Ray ray;
+	glm::vec3 normal;
+	glm::vec3 bary;
+	glm::vec2 uv;
 	float t_hit;
 };
+
 } // namespace ray
 #endif /* GEOMETRY_HPP_ */

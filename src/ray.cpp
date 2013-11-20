@@ -29,6 +29,17 @@ const glm::vec3& Ray::direction() const {
 const glm::vec3& Ray::origin() const {
     return origin_;
 }
+
+Ray Ray::Reflect(const glm::vec3& normal) const {
+    return
+}
+
+Ray Ray::Refract(const glm::vec3& normal, float ratio) const {
+}
+
+Ray Ray::operator -() const {
+    return Ray(origin_, -direction_);
+}
 } // namespace ray
 
 

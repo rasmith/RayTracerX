@@ -23,7 +23,7 @@ public:
     const std::vector<Light>& lights() const;
     const MaterialList& material_list() const;
     const std::vector<Trimesh*>& meshes() const;
-    void Intersect(const Ray& ray, Isect& isect) const;
+    bool Intersect(const Ray& ray, Isect& isect) const;
 private:
     std::vector<Camera> cameras_;
     std::vector<Light> lights_;
