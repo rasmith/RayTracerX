@@ -7,14 +7,15 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "camera.hpp"
-#include "transform.hpp"
 #include "ray.hpp"
+#include "transform.hpp"
 namespace ray {
 Camera::Camera() :
         screen_width_(640.0f), screen_height_(480.0f),
                 viewport_(glm::vec4(0.0f, 0.0f, screen_width_, screen_height_)),
                 view_(
-                        LookAt(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, -1.0f),
+                        LookAt(glm::vec3(0.0f, 0.0f, 0.0f),
+                                glm::vec3(0.0f, 0.0f, -1.0f),
                                 glm::vec3(0.0f, 1.0f, 0.0f))),
                 transform_(Inverse(view_)),
                 projection_(Orthographic(0.0f, 1.0f)),

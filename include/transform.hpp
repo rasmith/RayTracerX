@@ -4,11 +4,10 @@
  *  Created on: Oct 8, 2013
  *      Author: agrippa
  */
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #ifndef TRANSFORM_HPP_
 #define TRANSFORM_HPP_
-
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 namespace ray {
 glm::mat4x4 Inverse(const glm::mat4x4& transform);
 glm::mat4x4 Identity();

@@ -58,6 +58,7 @@ bool Scene::Intersect(const Ray& ray, Isect& isect) const {
             hit = true;
         }
     }
+    isect = best;
     return hit;
 }
 } // namespace ray

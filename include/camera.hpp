@@ -7,8 +7,8 @@
 
 #ifndef CAMERA_HPP_
 #define CAMERA_HPP_
-#include "types.hpp"
 #include "ray.hpp"
+#include "types.hpp"
 namespace ray {
 class Camera {
 public:

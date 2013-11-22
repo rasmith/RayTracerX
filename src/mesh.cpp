@@ -84,11 +84,12 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
     Isect best;
     for (uint32_t i = 0; i < faces_.size(); ++i) {
         Triangle patch = GetPatch(i);
-        if (patch[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
+        if (patch.Intersect(ray, current) && current.t_hit < best.t_hit) {
             best = current;
             hit = true;
         }
     }
+    isect = best;
     return hit;
 }
 

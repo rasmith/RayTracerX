@@ -10,6 +10,8 @@
 #include "ray.hpp"
 #include "types.hpp"
 namespace ray {
+class Isect;
+
 class Triangle {
 public:
     Triangle();
@@ -19,6 +21,7 @@ public:
     const glm::vec3& operator[](int i) const;
     bool Intersect(const Ray& ray, Isect& isect) const;
 private:
+    static const float kEpsilon;
     glm::vec3 vertices_[3];
 };
 struct Isect {
