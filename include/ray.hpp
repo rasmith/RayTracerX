@@ -18,8 +18,6 @@ public:
     glm::vec3 operator()(float t) const;
     const glm::vec3& direction() const;
     const glm::vec3& origin() const;
-    Ray Reflect(const glm::vec3& normal) const;
-    Ray Refract(const glm::vec3& normal, float ratio) const;
     Ray operator-() const;
 private:
     glm::vec3 origin_;

@@ -7,15 +7,19 @@
 #ifndef MESH_HPP_
 #define MESH_HPP_
 #include <vector>
-#include "types.hpp"
 #include "geometry.hpp"
 #include "texture.hpp"
+#include "types.hpp"
 namespace ray {
-struct TrimeshFace {
+class TrimeshFace {
+public:
     TrimeshFace();
     TrimeshFace(const TrimeshFace& face);
-    TrimeshFace(int i, int j,  int k);
-    int vertices[3];
+    TrimeshFace(int i, int j, int k);
+    int& operator[](int i);
+    const int& operator[](int i) const;
+private:
+    int vertices_[3];
 };
 
 class Trimesh {
@@ -29,10 +33,10 @@ public:
     void AddNormal(const glm::vec3& vertex);
     void AddFace(const TrimeshFace& face);
     void AddTexCoord(const TexCoord& tex_coord);
-    Triangle GetPatch(int face_index);
+    Triangle GetPatch(int face_index) const;
     int material_index() const;
     void set_material_index(int material_index);
-
+    bool Intersect(const Ray& ray, Isect& isect) const;
 private:
     std::vector<glm::vec3> vertices_;
     std::vector<glm::vec3> normals_;

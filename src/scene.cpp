@@ -49,7 +49,16 @@ const std::vector<Trimesh*>& Scene::meshes() const {
 }
 
 bool Scene::Intersect(const Ray& ray, Isect& isect) const {
-	return false;
+    bool hit = false;
+    Isect current;
+    Isect best;
+    for (uint32_t i = 0; i < meshes_.size(); ++i) {
+        if (meshes_[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
+            best = current;
+            hit = true;
+        }
+    }
+    return hit;
 }
 } // namespace ray
 
