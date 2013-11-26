@@ -79,5 +79,44 @@ BoundingBox Triangle::GetBounds() {
             vertices_[2]);
     return BoundingBox(min, max);
 }
+
+Sphere::Sphere() :
+        center_(glm::vec3(0.0f)), radius_(0.0f) {
+}
+
+Sphere::Sphere(const Sphere& sphere) :
+        center_(sphere.center_), radius_(sphere.radius_) {
+}
+
+Sphere::Sphere(glm::vec3& center, float radius) :
+        center_(center), radius_(radius) {
+}
+
+bool Sphere::Intersect(const Ray& ray, Isect& isect) const {
+    bool hit = false;
+    glm::vec3 o = ray.origin() - center_;
+    glm::vec3 v = glm::normalize(ray.direction());
+    float d = glm::dot(v, o) + 1.0f;
+    float r = radius_;
+    float discrim = d * d - r * r;
+    if (discrim < 0.0f) {
+        return false;
+    }
+    float num0 = -d + sqrt(discrim);
+    float num1 = -d - sqrt(discrim);
+    if (num0 > 0.0f) {
+        isect.t_hit = 0.5f * num0;
+        hit = true;
+    }
+    if (num1 > 0.0f) {
+        isect.t_hit = 0.5f * num1;
+        hit = true;
+    }
+    return hit;
+}
+
+BoundingBox Sphere::GetBounds() {
+    return BoundingBox(center_ + radius_, center_ - radius_);
+}
 } // namespace ray
 

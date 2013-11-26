@@ -19,11 +19,13 @@ public:
     void set_max(const glm::vec3& max_extents);
     const glm::vec3& max() const;
     const glm::vec3& min() const;
-
+    BoundingBox Join(const BoundingBox& bbox);
 private:
     glm::vec3 min_;
     glm::vec3 max_;
 };
+
+class Isect;
 
 class Shape {
 public:

@@ -27,15 +27,15 @@ TEST(SceneLoaderTest, SimpleReadTest) {
     EXPECT_EQ(scene.cameras().size(), 0u);
     EXPECT_EQ(scene.lights().size(), 0u);
     EXPECT_EQ(scene.material_list().materials.size(), 0u);
-    const std::vector<Trimesh*>& meshes = scene.meshes();
-    EXPECT_EQ(meshes.size(), 1u);
-    Trimesh* mesh = meshes[0];
+    const std::vector<Shape*>& shapes = scene.scene_objects();
+    EXPECT_EQ(1u, shapes.size());
+    Trimesh* mesh = static_cast<Trimesh*>(shapes[0]);
     // Assimp can duplicate vertices, so either 8 or 24 is fine
     EXPECT_THAT(mesh->num_vertices(), AnyOf(8, 24));
     // Make sure we have all the vertices
     bool check[8];
     memset(check, 0, sizeof(bool) * 8);
-    for(int i = 0; i < mesh->num_vertices(); ++i) {
+    for (int i = 0; i < mesh->num_vertices(); ++i) {
         const glm::vec3& v = mesh->vertices()[i];
         uint32_t I = static_cast<uint32_t>(v[0]);
         uint32_t J = static_cast<uint32_t>(v[1]);
@@ -44,7 +44,7 @@ TEST(SceneLoaderTest, SimpleReadTest) {
         check[idx] = true;
     }
     bool have_all_vertices = true;
-    for(int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 8; ++i) {
         have_all_vertices &= check[i];
     }
     EXPECT_TRUE(have_all_vertices);

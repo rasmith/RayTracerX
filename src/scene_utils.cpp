@@ -158,12 +158,11 @@ void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
     for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
         aiFace f = mesh->mFaces[i];
         if (3 == f.mNumIndices) {
-            trimesh->AddFace(
-                    TrimeshFace(f.mIndices[0], f.mIndices[1], f.mIndices[2]));
+            trimesh->AddFace(f.mIndices[0], f.mIndices[1], f.mIndices[2]);
         }
     }
     trimesh->set_material_index(mesh->mMaterialIndex);
-    scene.AddMesh(trimesh);
+    scene.AddSceneObject(static_cast<Shape*>(trimesh));
 }
 
 } // namespace ray

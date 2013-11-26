@@ -13,7 +13,7 @@
 #include "scene.hpp"
 namespace ray {
 Scene::Scene() :
-        cameras_(), lights_(), meshes_(), material_list_() {
+        cameras_(), lights_(), scene_objects_(), material_list_() {
 }
 
 void Scene::AddCamera(const Camera& camera) {
@@ -28,8 +28,8 @@ void Scene::AddMaterial(const std::string& name, const Material& material) {
     material_list_.AddMaterial(name, material);
 }
 
-void Scene::AddMesh(Trimesh* mesh) {
-    meshes_.push_back(mesh);
+void Scene::AddSceneObject(Shape* shape) {
+    scene_objects_.push_back(shape);
 }
 
 const std::vector<Camera>& Scene::cameras() const {
@@ -44,21 +44,24 @@ const MaterialList& Scene::material_list() const {
     return material_list_;
 }
 
-const std::vector<Trimesh*>& Scene::meshes() const {
-    return meshes_;
+const std::vector<Shape*>& Scene::scene_objects() const {
+    return scene_objects_;
 }
 
 bool Scene::Intersect(const Ray& ray, Isect& isect) const {
     bool hit = false;
     Isect current;
     Isect best;
-    for (uint32_t i = 0; i < meshes_.size(); ++i) {
-        if (meshes_[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
+    for (uint32_t i = 0; i < scene_objects_.size(); ++i) {
+        if (scene_objects_[i]->Intersect(ray, current)
+                && current.t_hit < best.t_hit) {
             best = current;
             hit = true;
         }
     }
+    if (hit) {
+        isect = best;
+    }
     return hit;
 }
 } // namespace ray
-

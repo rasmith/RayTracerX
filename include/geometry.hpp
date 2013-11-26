@@ -8,6 +8,7 @@
 #define GEOMETRY_HPP_
 #include "material.hpp"
 #include "ray.hpp"
+#include "shape.hpp"
 #include "types.hpp"
 namespace ray {
 class Triangle: public Shape {

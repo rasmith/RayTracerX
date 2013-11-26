@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "geometry.hpp"
 #include "mesh.hpp"
+#include "shape.hpp"
 #include "types.hpp"
 namespace ray {
 TrimeshFace::TrimeshFace() :
@@ -16,7 +17,9 @@ TrimeshFace::TrimeshFace() :
 
 TrimeshFace::TrimeshFace(const TrimeshFace& face) :
         mesh_(face.mesh_) {
-    std::copy(vertices_, vertices_ + 3, face.vertices_);
+    for (int i = 0; i < 3; ++i) {
+        vertices_[i] = face.vertices_[i];
+    }
 }
 
 TrimeshFace::TrimeshFace(Trimesh* mesh, int i, int j, int k) :
@@ -34,11 +37,11 @@ const int& TrimeshFace::operator[](int i) const {
     return vertices_[i];
 }
 
-const Trimesh*& TrimeshFace::mesh() const {
+const Trimesh* TrimeshFace::mesh() const {
     return mesh_;
 }
 
-void TrimeshFace::set_mesh(const Trimesh*& mesh) {
+void TrimeshFace::set_mesh(Trimesh* mesh) {
     mesh_ = mesh;
 }
 
@@ -55,7 +58,8 @@ const int* TrimeshFace::vertices() const {
 }
 
 Trimesh::Trimesh() :
-        vertices_(), normals_(), tex_coords_(), faces_(), material_index_(-1) {
+        vertices_(), normals_(), tex_coords_(), faces_(), material_index_(-1),
+                bounds_() {
 }
 
 const std::vector<TrimeshFace>& Trimesh::faces() const {
@@ -82,8 +86,10 @@ void Trimesh::AddNormal(const glm::vec3& normal) {
     normals_.push_back(normal);
 }
 
-void Trimesh::AddFace(const TrimeshFace& face) {
+void Trimesh::AddFace(int i, int j, int k) {
+    TrimeshFace face(this, i, j, k);
     faces_.push_back(face);
+    bounds_ = bounds_.Join(face.GetBounds());
 }
 
 void Trimesh::AddTexCoord(const TexCoord& tex_coord) {
@@ -105,6 +111,7 @@ int Trimesh::material_index() const {
 void Trimesh::set_material_index(int material_index) {
     material_index_ = material_index;
 }
+
 bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
     bool hit = false;
     Isect current;
@@ -121,6 +128,7 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
 }
 
 BoundingBox Trimesh::GetBounds() {
+    return bounds_;
 }
 
 } // namespace ray

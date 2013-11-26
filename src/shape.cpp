@@ -8,8 +8,8 @@
 #include "shape.hpp"
 namespace ray {
 BoundingBox::BoundingBox() :
-        min_(glm::vec3(-std::numeric_limits<float>::max())),
-                max_(glm::vec3(std::numeric_limits<float>::max())) {
+        min_(glm::vec3(std::numeric_limits<float>::max())),
+                max_(glm::vec3(-std::numeric_limits<float>::max())) {
 }
 
 BoundingBox::BoundingBox(
@@ -35,10 +35,18 @@ void BoundingBox::set_min(const glm::vec3& min_extents) {
 }
 
 void BoundingBox::set_max(const glm::vec3& max_extents) {
-    max = max_extents;
+    max_ = max_extents;
+}
+
+BoundingBox BoundingBox::Join(const BoundingBox& bbox) {
+    BoundingBox result;
+    result.min_ = glm::min(min_, bbox.min_);
+    result.min_ = glm::max(max_, bbox.max_);
+    return result;
 }
 
 Shape::~Shape() {
 }
 } // namespace ray
+
 
