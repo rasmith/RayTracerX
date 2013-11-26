@@ -39,14 +39,6 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray, int depth) const {
     bool hit = scene_->Intersect(ray, isect);
     if (hit) {
     	color = Shade(isect);
-    	bool reflective = false;
-    	bool refractive = false;
-    	if (reflective) {
-    		color += isect.mat.kr * TraceRay(Reflect(isect), depth + 1);
-    	}
-    	if (refractive)  {
-    		color += isect.mat.kt * TraceRay(Refract(isect), depth + 1);
-    	}
     }
     return color;
 }

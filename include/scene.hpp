@@ -7,10 +7,12 @@
 #ifndef SCENE_HPP_
 #define SCENE_HPP_
 #include <vector>
+#include "camera.hpp"
 #include "light.hpp"
 #include "mesh.hpp"
 #include "material.hpp"
-#include "camera.hpp"
+#include "ray.hpp"
+#include "shape.hpp"
 namespace ray {
 class Scene {
 public:

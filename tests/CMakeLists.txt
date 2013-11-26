@@ -24,6 +24,7 @@ add_executable(scene_loader_test scene_loader_test.cpp
                                   ${Ray_SOURCE_DIR}/src/ray.cpp
                                   ${Ray_SOURCE_DIR}/src/scene.cpp
                                   ${Ray_SOURCE_DIR}/src/scene_utils.cpp
+                                  ${Ray_SOURCE_DIR}/src/shape.cpp
                                   ${Ray_SOURCE_DIR}/src/texture.cpp
                                   ${Ray_SOURCE_DIR}/src/transform.cpp)
 target_link_libraries(parse_utils_test  gtest gtest_main)

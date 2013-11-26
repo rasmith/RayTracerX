@@ -5,11 +5,13 @@
  *      Author: agrippa
  */
 
+#include <numeric>
 #include <cstring>
 #include "geometry.hpp"
 #include "ray.hpp"
 namespace ray {
 const float Triangle::kEpsilon = 0.000001;
+
 Triangle::Triangle() {
 }
 
@@ -69,4 +71,13 @@ bool Triangle::Intersect(const Ray& ray, Isect& isect) const {
     isect.ray = ray;
     return true;
 }
+
+BoundingBox Triangle::GetBounds() {
+    glm::vec3 min = glm::min(glm::min(vertices_[0], vertices_[1]),
+            vertices_[2]);
+    glm::vec3 max = glm::max(glm::max(vertices_[0], vertices_[1]),
+            vertices_[2]);
+    return BoundingBox(min, max);
+}
 } // namespace ray
+

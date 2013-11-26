@@ -5,18 +5,22 @@
  *      Author: agrippa
  */
 #include <cstring>
+#include <algorithm>
 #include "geometry.hpp"
 #include "mesh.hpp"
 #include "types.hpp"
 namespace ray {
-TrimeshFace::TrimeshFace() {
+TrimeshFace::TrimeshFace() :
+        mesh_(NULL) {
 }
 
-TrimeshFace::TrimeshFace(const TrimeshFace& face) {
-    memcpy(vertices_, face.vertices_, sizeof(int) * 3);
+TrimeshFace::TrimeshFace(const TrimeshFace& face) :
+        mesh_(face.mesh_) {
+    std::copy(vertices_, vertices_ + 3, face.vertices_);
 }
 
-TrimeshFace::TrimeshFace(int i, int j, int k) {
+TrimeshFace::TrimeshFace(Trimesh* mesh, int i, int j, int k) :
+        mesh_(mesh) {
     vertices_[0] = i;
     vertices_[1] = j;
     vertices_[2] = k;
@@ -28,6 +32,26 @@ int& TrimeshFace::operator[](int i) {
 
 const int& TrimeshFace::operator[](int i) const {
     return vertices_[i];
+}
+
+const Trimesh*& TrimeshFace::mesh() const {
+    return mesh_;
+}
+
+void TrimeshFace::set_mesh(const Trimesh*& mesh) {
+    mesh_ = mesh;
+}
+
+bool TrimeshFace::Intersect(const Ray& ray, Isect& isect) const {
+    return mesh_ != NULL && mesh_->GetPatch(*this).Intersect(ray, isect);
+}
+
+BoundingBox TrimeshFace::GetBounds() {
+    return (mesh_ != NULL ? mesh_->GetPatch(*this).GetBounds() : BoundingBox());
+}
+
+const int* TrimeshFace::vertices() const {
+    return vertices_;
 }
 
 Trimesh::Trimesh() :
@@ -66,9 +90,12 @@ void Trimesh::AddTexCoord(const TexCoord& tex_coord) {
     tex_coords_.push_back(tex_coord);
 }
 
+Triangle Trimesh::GetPatch(const TrimeshFace& face) const {
+    return Triangle(vertices_[face[0]], vertices_[face[1]], vertices_[face[2]]);
+}
+
 Triangle Trimesh::GetPatch(int face_index) const {
-    TrimeshFace face = faces_[face_index];
-    return Triangle(vertices_[face[0]], vertices_[face[1]], vertices_[face[0]]);
+    return GetPatch(faces_[face_index]);
 }
 
 int Trimesh::material_index() const {
@@ -91,6 +118,9 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
     }
     isect = best;
     return hit;
+}
+
+BoundingBox Trimesh::GetBounds() {
 }
 
 } // namespace ray

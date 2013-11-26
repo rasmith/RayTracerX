@@ -10,9 +10,7 @@
 #include "ray.hpp"
 #include "types.hpp"
 namespace ray {
-class Isect;
-
-class Triangle {
+class Triangle: public Shape {
 public:
     Triangle();
     Triangle(const Triangle& triangle);
@@ -20,18 +18,22 @@ public:
     glm::vec3& operator[](int i);
     const glm::vec3& operator[](int i) const;
     bool Intersect(const Ray& ray, Isect& isect) const;
+    BoundingBox GetBounds();
 private:
     static const float kEpsilon;
     glm::vec3 vertices_[3];
 };
-struct Isect {
-    Triangle obj;
-    Material mat;
-    Ray ray;
-    glm::vec3 normal;
-    glm::vec3 bary;
-    glm::vec2 uv;
-    float t_hit;
+
+class Sphere: public Shape {
+public:
+    Sphere();
+    Sphere(const Sphere& sphere);
+    Sphere(glm::vec3& center, float radius);
+    bool Intersect(const Ray& ray, Isect& isect) const;
+    BoundingBox GetBounds();
+private:
+    glm::vec3 center_;
+    float radius_;
 };
 
 } // namespace ray

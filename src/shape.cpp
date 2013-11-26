@@ -1,0 +1,44 @@
+/*
+ * shape.cpp
+ *
+ *  Created on: Nov 25, 2013
+ *      Author: agrippa
+ */
+
+#include "shape.hpp"
+namespace ray {
+BoundingBox::BoundingBox() :
+        min_(glm::vec3(-std::numeric_limits<float>::max())),
+                max_(glm::vec3(std::numeric_limits<float>::max())) {
+}
+
+BoundingBox::BoundingBox(
+        const glm::vec3& min_extents,
+        const glm::vec3& max_extents) :
+        min_(min_extents), max_(max_extents) {
+}
+
+BoundingBox::BoundingBox(const BoundingBox& bbox) :
+        min_(bbox.min_), max_(bbox.max_) {
+}
+
+const glm::vec3& BoundingBox::max() const {
+    return max_;
+}
+
+const glm::vec3& BoundingBox::min() const {
+    return min_;
+}
+
+void BoundingBox::set_min(const glm::vec3& min_extents) {
+    min_ = min_extents;
+}
+
+void BoundingBox::set_max(const glm::vec3& max_extents) {
+    max = max_extents;
+}
+
+Shape::~Shape() {
+}
+} // namespace ray
+
