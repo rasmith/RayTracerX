@@ -35,6 +35,7 @@ public:
     const glm::mat4x4& unprojection() const;
     const glm::mat4x4& view() const;
     Camera& operator=(const Camera& cam);
+    const glm::vec4& direction() const;
 private:
     int screen_width_;
     int screen_height_;

@@ -1,11 +1,10 @@
 /*
  * camera.cpp
+
  *
  *  Created on: Oct 3, 2013
  *      Author: agrippa
  */
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include "camera.hpp"
 #include "ray.hpp"
 #include "transform.hpp"
@@ -141,5 +140,8 @@ Camera& Camera::operator=(const Camera& cam) {
     screen_center_ = cam.screen_center_;
     return *this;
 }
-} // namespace ray
 
+const glm::vec4& Camera::direction() const {
+    return direction_;
+}
+} // namespace ray

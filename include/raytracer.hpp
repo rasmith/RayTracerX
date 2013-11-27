@@ -19,6 +19,8 @@ public:
     RayTracer(const Scene* scene, const Camera* camera);
     void Render(Image& image);
 private:
+    glm::vec3 Diffuse(const Isect& isect, const Light& light) const;
+    glm::vec3 Specular(const Isect& isect, const Light& light) const;
     glm::vec3 Shade(const Isect& isect) const;
     glm::vec3 TraceRay(int pixel_x, int pixel_y) const;
     glm::vec3 TraceRay(const Ray& ray, int depth) const;
