@@ -36,7 +36,7 @@ glm::vec3 RayTracer::Specular(const Isect& isect, const Light& light) const {
     glm::vec4 D = camera_->direction();
     glm::vec3 V = glm::normalize(glm::vec3(D[0], D[1], D[2]));
     float dotRV = glm::dot(glm::normalize(R), V);
-    color = pow(dotRV, isect.mat->ns)  * color;
+    color = pow(dotRV, isect.mat->ns) * color;
     return color;
 }
 

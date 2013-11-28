@@ -24,5 +24,4 @@ glm::mat4x4 LookAt(
         const glm::vec3& at,
         const glm::vec3& up);
 }
-
 #endif /* TRANSFORM_HPP_ */
