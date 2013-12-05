@@ -7,13 +7,16 @@
 
 #ifndef LIGHT_HPP_
 #define LIGHT_HPP_
+#include <string>
+
 #include <glm/glm.hpp>
+
 #include "ray.hpp"
 #include "types.hpp"
 namespace ray {
 struct Light {
     enum LightType {
-        kUndefined, kDirectional, kPoint, kSpot
+        kUndefined = 0, kDirectional = 1, kPoint = 2, kSpot = 3
     };
     // 0 -> inner angle, 1 -> outer angle
     glm::vec3 spot_coefficients;
@@ -25,6 +28,7 @@ struct Light {
     Ray ray;
     std::string name;
     LightType type;
+    static glm::vec3 Direction(const Light& light, const glm::vec3& hit_point);
 };
 } // namespace ray
 #endif /* LIGHT_HPP_ */

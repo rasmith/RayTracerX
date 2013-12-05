@@ -116,7 +116,10 @@ const glm::mat4x4& Camera::view() const {
 }
 
 Ray Camera::GenerateRay(float screen_x, float screen_y) const {
-    glm::vec4 origin = screen_center_ + screen_x * up_ + screen_y * tangent_;
+    float u = screen_x / static_cast<float>(screen_width_ - 1) - 0.5f;
+    float v = (screen_height_ - screen_y) / static_cast<float>(screen_height_ - 1)
+            - 0.5f;
+    glm::vec4 origin = screen_center_ + u * tangent_ + v * up_;
     glm::vec4 direction = direction_;
     return Ray(glm::vec3(origin[0], origin[1], origin[2]),
             glm::vec3(direction[0], direction[1], direction[2]));

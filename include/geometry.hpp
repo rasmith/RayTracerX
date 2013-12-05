@@ -29,7 +29,7 @@ class Sphere: public Shape {
 public:
     Sphere();
     Sphere(const Sphere& sphere);
-    Sphere(glm::vec3& center, float radius);
+    Sphere(const glm::vec3& center, float radius);
     bool Intersect(const Ray& ray, Isect& isect) const;
     BoundingBox GetBounds();
 private:

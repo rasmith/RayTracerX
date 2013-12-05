@@ -41,5 +41,6 @@ void MaterialList::AddMaterial(const std::string& name, const Material& m) {
     mat.id = ++last_id;
     id_to_name_lookup[mat.id] = name;
     name_to_id_lookup[name] = mat.id;
+    materials.push_back(mat);
 }
 } // namespace ray

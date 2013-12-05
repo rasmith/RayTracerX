@@ -5,9 +5,14 @@
  *      Author: agrippa
  */
 
-#include <numeric>
+#include <algorithm>
+#include <cmath>
 #include <cstring>
+#include <iostream>
+#include <numeric>
+
 #include "geometry.hpp"
+#include "io_utils.hpp"
 #include "ray.hpp"
 namespace ray {
 const float Triangle::kEpsilon = 0.000001;
@@ -69,6 +74,7 @@ bool Triangle::Intersect(const Ray& ray, Isect& isect) const {
     isect.t_hit = t;
     isect.bary = glm::vec3(u, v, 1.0f - u - v);
     isect.ray = ray;
+    isect.normal = glm::normalize(glm::cross(e1, e2));
     return true;
 }
 
@@ -88,29 +94,32 @@ Sphere::Sphere(const Sphere& sphere) :
         center_(sphere.center_), radius_(sphere.radius_) {
 }
 
-Sphere::Sphere(glm::vec3& center, float radius) :
+Sphere::Sphere(const glm::vec3& center, float radius) :
         center_(center), radius_(radius) {
 }
 
 bool Sphere::Intersect(const Ray& ray, Isect& isect) const {
     bool hit = false;
-    glm::vec3 o = ray.origin() - center_;
-    glm::vec3 v = glm::normalize(ray.direction());
-    float d = glm::dot(v, o) + 1.0f;
+    glm::vec3 O = ray.origin() - center_;
+    glm::vec3 V = ray.direction();
+    float dotOV = glm::dot(O, V);
+    float dotOO = glm::dot(O, O);
+    float dotVV = glm::dot(V, V);
     float r = radius_;
-    float discrim = d * d - r * r;
+    float discrim = dotOV * dotOV - dotVV * (dotOO - r * r);
     if (discrim < 0.0f) {
         return false;
     }
-    float num0 = -d + sqrt(discrim);
-    float num1 = -d - sqrt(discrim);
-    if (num0 > 0.0f) {
-        isect.t_hit = 0.5f * num0;
-        hit = true;
-    }
-    if (num1 > 0.0f) {
-        isect.t_hit = 0.5f * num1;
-        hit = true;
+    float s = sqrt(discrim);
+    float num0 = (-dotOV + s) / dotVV;
+    float num1 = (-dotOV - s) / dotVV;
+    hit = (num0 > 0.0f || num1 > 0.0f);
+    if (hit) {
+        isect.t_hit = (
+                num0 > 0.0f && num1 > 0.0f ? std::min(num0, num1) :
+                                             (num0 > 0.0f ? num0 : num1));
+        isect.normal = glm::normalize(ray(isect.t_hit) - center_);
+        isect.ray = ray;
     }
     return hit;
 }

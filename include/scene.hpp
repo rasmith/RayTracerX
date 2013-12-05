@@ -25,7 +25,7 @@ public:
     const std::vector<Light>& lights() const;
     const MaterialList& material_list() const;
     const std::vector<Shape*>& scene_objects() const;
-    bool Intersect(const Ray& ray, Isect& isect) const;
+    bool Intersect(const Ray& ray, Isect& isect);
 private:
     std::vector<Camera> cameras_;
     std::vector<Light> lights_;
