@@ -52,9 +52,9 @@ Camera::Camera(
         const glm::mat4x4& look_at) :
         screen_width_(screen_width), screen_height_(screen_height),
                 viewport_(glm::vec4(0.0f, 0.0f, screen_width_, screen_height_)),
-                view_(look_at), transform_(Inverse(view_)),
+                view_(look_at), transform_(Inverse(look_at)),
                 projection_(projection), unprojection_(Inverse(projection_)),
-                focal_length_(0.0f),
+                focal_length_(1.0f),
                 up_(
                         glm::normalize(
                                 transform_
@@ -120,7 +120,7 @@ Ray Camera::GenerateRay(float screen_x, float screen_y) const {
     float v = (screen_height_ - screen_y) / static_cast<float>(screen_height_ - 1)
             - 0.5f;
     glm::vec4 origin = screen_center_ + u * tangent_ + v * up_;
-    glm::vec4 direction = direction_;
+    glm::vec4 direction = screen_center_  + u * tangent_ + v * up_ - center_;
     return Ray(glm::vec3(origin[0], origin[1], origin[2]),
             glm::vec3(direction[0], direction[1], direction[2]));
 }

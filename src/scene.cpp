@@ -23,7 +23,6 @@ void Scene::AddCamera(const Camera& camera) {
 void Scene::AddLight(const Light& light) {
     lights_.push_back(light);
 }
-
 void Scene::AddMaterial(const std::string& name, const Material& material) {
     material_list_.AddMaterial(name, material);
 }
