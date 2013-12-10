@@ -7,6 +7,8 @@
 
 #ifndef SHAPE_HPP_
 #define SHAPE_HPP_
+#include <ostream>
+#include "io_utils.hpp"
 #include "material.hpp"
 #include "ray.hpp"
 namespace ray {
@@ -32,8 +34,9 @@ public:
     virtual ~Shape();
     virtual bool Intersect(const Ray& ray, Isect& isect) const = 0;
     virtual BoundingBox GetBounds() = 0;
+    virtual void Print(std::ostream& out) const;
 };
-
+std::ostream& operator<<(std::ostream& out, const Shape& scene);
 struct Isect {
     Shape* obj;
     Material* mat;

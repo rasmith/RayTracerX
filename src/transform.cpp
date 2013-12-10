@@ -52,27 +52,14 @@ glm::mat4x4 LookAt(
         const glm::vec3& position,
         const glm::vec3& at,
         const glm::vec3& up) {
-    glm::vec3 dir = glm::normalize(at - position);
-    glm::vec3 left = glm::normalize(glm::cross(glm::normalize(up), dir));
-    glm::vec3 newUp = glm::cross(dir, left);
-    glm::mat4x4 m;
-    m[0][0] = left.x;
-    m[1][0] = left.y;
-    m[2][0] = left.z;
-    m[3][0] = 0.0f;
-    m[0][1] = newUp.x;
-    m[1][1] = newUp.y;
-    m[2][1] = newUp.z;
-    m[3][1] = 0.0f;
-    m[0][2] = dir.x;
-    m[1][2] = dir.y;
-    m[2][2] = dir.z;
-    m[3][2] = 0.0f;
-    m[0][3] = position.x;
-    m[1][3] = position.y;
-    m[2][3] = position.z;
-    m[3][3] = 1.0f;
-    return glm::inverse(glm::transpose(m));
+    glm::vec3 Z = glm::normalize(glm::vec3(at - position));
+    glm::vec3 X = glm::normalize(glm::cross(Z, up));
+    glm::vec3 Y = glm::normalize(glm::cross(X, Z));
+    glm::mat3x3 R_T = glm::mat3x3(X, Y, Z);
+    glm::vec3 t_view = -R_T * position;
+    glm::mat4x4 V = glm::mat4x4(R_T);
+    V[3] = glm::vec4(glm::vec3(t_view), 1.0f);
+    return V;
 }
 }
 

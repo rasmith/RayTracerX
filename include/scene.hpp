@@ -32,5 +32,6 @@ private:
     std::vector<Shape*> scene_objects_;
     MaterialList material_list_;
 };
+std::ostream& operator<<(std::ostream& out, const Scene& scene);
 } // namespace ray
 #endif /* SCENE_HPP_ */

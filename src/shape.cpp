@@ -4,7 +4,8 @@
  *  Created on: Nov 25, 2013
  *      Author: agrippa
  */
-
+#include <ostream>
+#include "io_utils.hpp"
 #include "shape.hpp"
 namespace ray {
 BoundingBox::BoundingBox() :
@@ -47,6 +48,13 @@ BoundingBox BoundingBox::Join(const BoundingBox& bbox) {
 
 Shape::~Shape() {
 }
-} // namespace ray
 
+void Shape::Print(std::ostream& out) const {
+    out << "[Shape]";
+}
+std::ostream& operator<<(std::ostream& out, const Shape& s) {
+    s.Print(out);
+    return out;
+}
+} // namespace ray
 

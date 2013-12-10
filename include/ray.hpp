@@ -7,6 +7,7 @@
 
 #ifndef RAY_HPP_
 #define RAY_HPP_
+#include <ostream>
 #include <glm/glm.hpp>
 #include "types.hpp"
 namespace ray {
@@ -23,5 +24,6 @@ private:
     glm::vec3 origin_;
     glm::vec3 direction_;
 };
+std::ostream& operator<<(std::ostream& out, const Ray& r);
 } // namespace ray
 #endif /* RAY_HPP_ */

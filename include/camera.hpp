@@ -7,6 +7,7 @@
 
 #ifndef CAMERA_HPP_
 #define CAMERA_HPP_
+#include <ostream>
 #include "ray.hpp"
 #include "types.hpp"
 namespace ray {
@@ -52,5 +53,6 @@ private:
     glm::vec4 screen_center_;
 
 };
+std::ostream& operator <<(std::ostream& out, const Camera& r);
 } // namespace ray
 #endif /* CAMERA_HPP_ */

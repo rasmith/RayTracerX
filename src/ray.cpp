@@ -4,6 +4,8 @@
  *  Created on: Oct 3, 2013
  *      Author: agrippa
  */
+#include <ostream>
+#include "io_utils.hpp"
 #include "types.hpp"
 #include "ray.hpp"
 namespace ray {
@@ -30,8 +32,13 @@ const glm::vec3& Ray::origin() const {
     return origin_;
 }
 
-Ray Ray::operator -() const {
+Ray Ray::operator-() const {
     return Ray(origin_, -direction_);
+}
+
+std::ostream& operator<<(std::ostream& out, const Ray& r) {
+    out << "[o = " << r.origin() << ", d = " << r.direction() << "]";
+    return out;
 }
 } // namespace ray
 

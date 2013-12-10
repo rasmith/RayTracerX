@@ -116,6 +116,7 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
     bool hit = false;
     Isect current;
     Isect best;
+    best.t_hit = std::numeric_limits<float>::max();
     for (uint32_t i = 0; i < faces_.size(); ++i) {
         Triangle patch = GetPatch(i);
         if (patch.Intersect(ray, current) && current.t_hit < best.t_hit) {
@@ -123,7 +124,9 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
             hit = true;
         }
     }
-    isect = best;
+    if (hit) {
+        isect = best;
+    }
     return hit;
 }
 

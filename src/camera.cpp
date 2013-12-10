@@ -1,11 +1,12 @@
 /*
  * camera.cpp
-
  *
  *  Created on: Oct 3, 2013
  *      Author: agrippa
  */
+#include <ostream>
 #include "camera.hpp"
+#include "io_utils.hpp"
 #include "ray.hpp"
 #include "transform.hpp"
 namespace ray {
@@ -117,10 +118,10 @@ const glm::mat4x4& Camera::view() const {
 
 Ray Camera::GenerateRay(float screen_x, float screen_y) const {
     float u = screen_x / static_cast<float>(screen_width_ - 1) - 0.5f;
-    float v = (screen_height_ - screen_y) / static_cast<float>(screen_height_ - 1)
-            - 0.5f;
+    float v = (screen_height_ - screen_y)
+            / static_cast<float>(screen_height_ - 1) - 0.5f;
     glm::vec4 origin = screen_center_ + u * tangent_ + v * up_;
-    glm::vec4 direction = screen_center_  + u * tangent_ + v * up_ - center_;
+    glm::vec4 direction = screen_center_ + u * tangent_ + v * up_ - center_;
     return Ray(glm::vec3(origin[0], origin[1], origin[2]),
             glm::vec3(direction[0], direction[1], direction[2]));
 }
@@ -146,5 +147,13 @@ Camera& Camera::operator=(const Camera& cam) {
 
 const glm::vec4& Camera::direction() const {
     return direction_;
+}
+std::ostream& operator<<(std::ostream& out, const Camera& c) {
+    out << "[";
+    out << "M: " << c.transform() << ",";
+    out << "V: " << c.view() << ",";
+    out << "d: " << c.direction() << ",";
+    out << "]";
+    return out;
 }
 } // namespace ray

@@ -36,5 +36,7 @@ public:
     boost::unordered_map<std::string, int> name_to_id_lookup;
     boost::unordered_map<int, std::string> id_to_name_lookup;
 };
+std::ostream& operator<<(std::ostream& out, const Material& material);
+std::ostream& operator<<(std::ostream& out, const MaterialList& list);
 } // namespace ray
 #endif /* MATERIAL_HPP_ */

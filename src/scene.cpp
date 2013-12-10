@@ -65,4 +65,35 @@ bool Scene::Intersect(const Ray& ray, Isect& isect) {
     }
     return hit;
 }
+
+std::ostream& operator<<(std::ostream& out, const Scene& scene) {
+    out << "[mats:" << scene.material_list() << "\n";
+    std::vector<Camera>::const_iterator cam_iter = scene.cameras().begin();
+    out << "cams:[";
+    for (; cam_iter != scene.cameras().end(); ++cam_iter) {
+        if (cam_iter != scene.cameras().begin())
+            out << ",\n";
+        out << *cam_iter;
+    }
+    out << "]\n";
+    out << "lights:[";
+    std::vector<Light>::const_iterator light_iter = scene.lights().begin();
+    for (; light_iter != scene.lights().end(); ++light_iter) {
+        if (light_iter != scene.lights().begin())
+            out << ",\n";
+        out << *light_iter;
+    }
+    out << "]\n";
+    out << "scene_objs:[";
+    std::vector<Shape*>::const_iterator shape_iter =
+            scene.scene_objects().begin();
+    for (; shape_iter != scene.scene_objects().end(); ++shape_iter) {
+        if (shape_iter != scene.scene_objects().begin())
+            out << ",\n";
+        out << **shape_iter;
+    }
+    out << "]\n";
+    out << "]";
+    return out;
+}
 } // namespace ray

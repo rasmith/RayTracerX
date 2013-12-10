@@ -75,8 +75,9 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
     Isect isect;
     bool hit = scene_->Intersect(ray, isect);
     if (hit) {
-        //std::cout << " N = " << isect.normal << std::endl;
         color = Shade(isect);
+       // std::cout << " N = " << isect.normal << " color = " << color
+       //         << std::endl;
     }
     return 255.0f * color;
 }

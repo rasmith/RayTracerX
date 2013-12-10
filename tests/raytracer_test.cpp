@@ -149,6 +149,7 @@ TEST(RayTracerTest, SphereMeshTest) {
     Scene scene;
     bool success = loader.LoadScene(path, scene, status);
     EXPECT_TRUE(success);
+    EXPECT_EQ("OK", status);
 
     glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, -4.0f);
     glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -174,21 +175,21 @@ TEST(RayTracerTest, SphereMeshTest) {
     directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     directional_light.type = Light::kDirectional;
 
-    Material sphere_material;
-    sphere_material.kd = glm::vec3(0.4f, 0.8f, 0.2f);
-    sphere_material.ks = glm::vec3(1.0f, 1.0f, 0.0f);
-    sphere_material.ns = 64;
     scene.AddLight(point_light);
     scene.AddLight(directional_light);
-    scene.AddMaterial("sphere_material", sphere_material);
+
+    std::cout << "scene:" << scene << std::endl;
 
     Image image;
     image.resize(512, 512);
     RayTracer ray_tracer(&scene, &camera);
     ray_tracer.Render(image);
-
+    std::cout << "output image" << std::endl;
     ImageStorage& storage = ImageStorage::GetInstance();
-    storage.WriteImage("sphere_mesh.jpg", image, status);
+    success = storage.WriteImage("sphere_mesh.jpg", image, status);
+    EXPECT_TRUE(success);
+    EXPECT_EQ("OK", status);
+    std::cout << "done" << std::endl;
 }
 } // namespace ray
 
