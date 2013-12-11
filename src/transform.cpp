@@ -6,6 +6,8 @@
  */
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <iostream>
+#include "io_utils.hpp"
 #include "transform.hpp"
 namespace ray {
 glm::mat4x4 Inverse(const glm::mat4x4& transform) {
@@ -55,11 +57,11 @@ glm::mat4x4 LookAt(
     glm::vec3 Z = glm::normalize(glm::vec3(position - at));
     glm::vec3 X = glm::normalize(glm::cross(up, Z));
     glm::vec3 Y = glm::normalize(glm::cross(Z, X));
-    glm::mat3x3 R_T = glm::mat3x3(X, Y, Z);
+    glm::mat3x3 R_T = glm::transpose(glm::mat3x3(X, Y, Z));
     glm::vec3 t_view = -R_T * position;
     glm::mat4x4 V = glm::mat4x4(R_T);
     V[3] = glm::vec4(glm::vec3(t_view), 1.0f);
     return V;
 }
-}
+} // namespace ray
 
