@@ -61,7 +61,9 @@ ImageStorage::ImageStorage(const ImageStorage&) {
 ImageStorage::~ImageStorage() {
 }
 
-bool ImageStorage::ReadImage(const std::string& file_name, Image& image,
+bool ImageStorage::ReadImage(
+        const std::string& file_name,
+        Image& image,
         std::string& status) {
     bool success = true;
     ucvec3* pixels = NULL;
@@ -70,7 +72,7 @@ bool ImageStorage::ReadImage(const std::string& file_name, Image& image,
     try {
         image_gm.read(file_name);
         image.resize(image_gm.columns(), image_gm.rows());
-        pixels = &image(0,0);
+        pixels = &image(0, 0);
         image_gm.write(0, 0, image.width(), image.height(), "RGB",
                 Magick::CharPixel, pixels);
     } catch (Magick::WarningCoder &warning) {
@@ -87,7 +89,9 @@ bool ImageStorage::ReadImage(const std::string& file_name, Image& image,
     return success;
 }
 
-bool ImageStorage::WriteImage(const std::string& file_name, const Image& image,
+bool ImageStorage::WriteImage(
+        const std::string& file_name,
+        const Image& image,
         std::string& status) {
     bool success = true;
     const std::vector<ucvec3>& pixels = image.pixels();
@@ -116,9 +120,10 @@ ImageStorage& ImageStorage::GetInstance() {
     static bool is_initialized = false;
     if (!is_initialized) {
         char pwd[1024];
-        getcwd(pwd, 1024);
-        Magick::InitializeMagick(pwd);
-        is_initialized = true;
+        if (NULL != getcwd(pwd, 1024)) {
+            Magick::InitializeMagick(pwd);
+            is_initialized = true;
+        }
     }
     return instance;
 }

@@ -7,6 +7,7 @@
 #include <cstring>
 #include <algorithm>
 #include "geometry.hpp"
+#include "io_utils.hpp"
 #include "mesh.hpp"
 #include "shape.hpp"
 #include "types.hpp"
@@ -104,6 +105,19 @@ Triangle Trimesh::GetPatch(int face_index) const {
     return GetPatch(faces_[face_index]);
 }
 
+glm::vec3 Trimesh::InterpolateNormal(int i, const glm::vec3& bary) const {
+    glm::vec3 N = glm::vec3(0.0f);
+    const TrimeshFace& f = faces_[i];
+    //std::cout << "n0 = " << normals_[f[0]];
+    //std::cout << " n1 = " << normals_[f[1]];
+    //std::cout << " n2 = " << normals_[f[2]] << std::endl;
+    for (int j = 0; j < 3; ++j) {
+        N += normals_[f[j]] * bary[j];
+    }
+    //std::cout << "bary = " << bary << " N = " << N << std::endl;
+    return glm::normalize(N);
+}
+
 int Trimesh::material_index() const {
     return material_index_;
 }
@@ -116,22 +130,52 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
     bool hit = false;
     Isect current;
     Isect best;
+    int best_index = -1;
     best.t_hit = std::numeric_limits<float>::max();
     for (uint32_t i = 0; i < faces_.size(); ++i) {
         Triangle patch = GetPatch(i);
         if (patch.Intersect(ray, current) && current.t_hit < best.t_hit) {
             best = current;
             hit = true;
+            best_index = i;
         }
     }
     if (hit) {
         isect = best;
+        isect.normal = InterpolateNormal(best_index, isect.bary);
     }
     return hit;
+}
+
+void Trimesh::GenNormals() {
+    normals_.clear();
+    normals_.resize(vertices_.size(), glm::vec3(0.0f));
+    for (uint32_t i = 0; i < faces_.size(); ++i) {
+        glm::vec3 N = GetPatch(i).GetNormal();
+        TrimeshFace f = faces_[i];
+        for (uint32_t j = 0; j < 3; ++j) {
+            normals_[f[j]] += N;
+        }
+    }
+    for (uint32_t i = 0; i < normals_.size(); ++i) {
+        normals_[i] = glm::normalize(normals_[i]);
+    }
 }
 
 BoundingBox Trimesh::GetBounds() {
     return bounds_;
 }
 
+void Trimesh::Print(std::ostream& out) const {
+    out << "[Trimesh, ";
+    out << " v:[";
+    PrintVector(out, vertices_, ",");
+    out << "]\n";
+    out << " n:[";
+    PrintVector(out, normals_, ",");
+    out << "]\n";
+    out << " f:[";
+    PrintVector(out, faces_, ",");
+    out << "]";
+}
 } // namespace ray

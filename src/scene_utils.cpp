@@ -42,8 +42,8 @@ bool SceneLoader::LoadScene(
     importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE,
             aiPrimitiveType_POINT | aiPrimitiveType_LINE);
     const aiScene* assimp_scene = importer.ReadFile(file_name,
-            aiProcess_Triangulate | aiProcess_GenNormals
-                    | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType
+            aiProcess_Triangulate | aiProcess_JoinIdenticalVertices
+                    | aiProcess_FixInfacingNormals
                     | aiProcess_ValidateDataStructure);
     // | aiProcess_ImproveCacheLocality
     //  | aiProcess_RemoveRedundantMaterials
@@ -80,7 +80,7 @@ void SceneLoader::ImportCamera(Scene& scene, const aiCamera* const camera) {
     aiVector3D ai_pos = camera->mPosition;
     aiVector3D ai_up = camera->mUp;
     glm::vec3 at = glm::vec3(ai_at[0], ai_at[1], ai_at[2]);
-    glm::vec3 pos = glm::vec3(ai_pos[0], ai_pos[1], ai_pos[3]);
+    glm::vec3 pos = glm::vec3(ai_pos[0], ai_pos[1], ai_pos[2]);
     glm::vec3 up = glm::vec3(ai_up[0], ai_up[1], ai_up[2]);
     glm::mat4x4 look_at = glm::lookAt(pos, at, up);
     scene.AddCamera(Camera(width, height, persp, look_at));
@@ -150,9 +150,11 @@ void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
         trimesh->AddVertex(glm::vec3(v[0], v[1], v[2]));
     }
     std::cout << "mNumVertices = " << mesh->mNumVertices << std::endl;
-    for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
-        aiVector3D n = mesh->mNormals[i];
-        trimesh->AddNormal(glm::vec3(n[0], n[1], n[2]));
+    if (NULL != mesh->mNormals) {
+        for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
+            aiVector3D n = mesh->mNormals[i];
+            trimesh->AddNormal(glm::vec3(n[0], n[1], n[2]));
+        }
     }
     std::cout << "mNumFaces = " << mesh->mNumFaces << std::endl;
     for (uint32_t i = 0; i < mesh->mNumFaces; ++i) {
@@ -162,6 +164,9 @@ void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
         }
     }
     trimesh->set_material_index(mesh->mMaterialIndex);
+    if (NULL == mesh->mNormals) {
+        trimesh->GenNormals();
+    }
     scene.AddSceneObject(static_cast<Shape*>(trimesh));
 }
 

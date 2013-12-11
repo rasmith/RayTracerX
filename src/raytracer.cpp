@@ -18,11 +18,25 @@ RayTracer::RayTracer(Scene* scene, Camera* camera) :
 void RayTracer::Render(Image& image) {
     int width = camera_->screen_width();
     int height = camera_->screen_height();
+    int img_size = width * height;
+    int count = 0;
+    int progress_increment = 1;
+    int current_progress = 0;
     for (int i = 0; i < height; ++i) {
         for (int j = 0; j < width; ++j) {
             image(i, j) = TraceRay(j, i);
+            ++count;
+            int progress = round(
+                    static_cast<float>(count) / static_cast<float>(img_size)
+                            * 100.0f);
+            if (progress
+                    >= current_progress + progress_increment) {
+                std::cout << " " << progress << std::flush;
+                current_progress = progress;
+            }
         }
     }
+    std::cout << "\n";
 }
 
 float RayTracer::Diffuse(const Isect& isect, const Light& light) const {
@@ -76,8 +90,8 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
     bool hit = scene_->Intersect(ray, isect);
     if (hit) {
         color = Shade(isect);
-       // std::cout << " N = " << isect.normal << " color = " << color
-       //         << std::endl;
+        // std::cout << " N = " << isect.normal << " color = " << color
+        //         << std::endl;
     }
     return 255.0f * color;
 }

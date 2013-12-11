@@ -44,10 +44,13 @@ public:
     void AddTexCoord(const TexCoord& tex_coord);
     Triangle GetPatch(const TrimeshFace& face) const;
     Triangle GetPatch(int face_index) const;
+    glm::vec3 InterpolateNormal(int i, const glm::vec3& bary) const;
     int material_index() const;
     void set_material_index(int material_index);
     bool Intersect(const Ray& ray, Isect& isect) const;
     BoundingBox GetBounds();
+    void GenNormals();
+    void Print(std::ostream& out) const;
 private:
     std::vector<glm::vec3> vertices_;
     std::vector<glm::vec3> normals_;

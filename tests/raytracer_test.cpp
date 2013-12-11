@@ -144,25 +144,27 @@ TEST(RayTracerTest, TriangleTest) {
 }
 TEST(RayTracerTest, SphereMeshTest) {
     SceneLoader& loader = SceneLoader::GetInstance();
-    std::string path = "../assets/sphere.obj";
+    std::string path = "../assets/bunny.obj";
     std::string status = "";
     Scene scene;
+    std::cout << "loading" << std::endl;
     bool success = loader.LoadScene(path, scene, status);
     EXPECT_TRUE(success);
     EXPECT_EQ("OK", status);
-
-    glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, -4.0f);
+    int image_width = 512;
+    int image_height = 512;
+    glm::vec3 eye_pos = glm::vec3(0.0f, 0.1f, 0.5f);
     glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
     glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
-    Camera camera(512, 512, Orthographic(0.0f, 1.0f), look_at);
+    Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
 
     Light point_light;
     glm::vec3 point_light_color = glm::vec3(1.0f, 0.3f, 0.3f);
     point_light.ka = point_light_color;
     point_light.kd = point_light_color;
     point_light.ks = point_light_color;
-    point_light.ray = Ray(glm::vec3(0.25f, -0.25f, -2.0f), glm::vec3(0.0f));
+    point_light.ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
     point_light.type = Light::kPoint;
     point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
             0.000045492f);
@@ -178,11 +180,12 @@ TEST(RayTracerTest, SphereMeshTest) {
     scene.AddLight(point_light);
     scene.AddLight(directional_light);
 
-    std::cout << "scene:" << scene << std::endl;
+    //std::cout << "scene:" << scene << std::endl;
 
     Image image;
-    image.resize(512, 512);
+    image.resize(image_width, image_height);
     RayTracer ray_tracer(&scene, &camera);
+    std::cout << "rendering" << std::endl;
     ray_tracer.Render(image);
     std::cout << "output image" << std::endl;
     ImageStorage& storage = ImageStorage::GetInstance();

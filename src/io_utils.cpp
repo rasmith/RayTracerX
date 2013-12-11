@@ -5,6 +5,8 @@
  *      Author: agrippa
  */
 #include <iostream>
+#include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include "io_utils.hpp"
 #include "ray.hpp"

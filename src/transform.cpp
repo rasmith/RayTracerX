@@ -52,9 +52,9 @@ glm::mat4x4 LookAt(
         const glm::vec3& position,
         const glm::vec3& at,
         const glm::vec3& up) {
-    glm::vec3 Z = glm::normalize(glm::vec3(at - position));
-    glm::vec3 X = glm::normalize(glm::cross(Z, up));
-    glm::vec3 Y = glm::normalize(glm::cross(X, Z));
+    glm::vec3 Z = glm::normalize(glm::vec3(position - at));
+    glm::vec3 X = glm::normalize(glm::cross(up, Z));
+    glm::vec3 Y = glm::normalize(glm::cross(Z, X));
     glm::mat3x3 R_T = glm::mat3x3(X, Y, Z);
     glm::vec3 t_view = -R_T * position;
     glm::mat4x4 V = glm::mat4x4(R_T);

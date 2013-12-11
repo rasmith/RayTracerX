@@ -72,10 +72,19 @@ bool Triangle::Intersect(const Ray& ray, Isect& isect) const {
         return false;
     }
     isect.t_hit = t;
-    isect.bary = glm::vec3(u, v, 1.0f - u - v);
+    isect.bary = glm::vec3(1.0f - u - v, u, v);
     isect.ray = ray;
     isect.normal = glm::normalize(glm::cross(e1, e2));
     return true;
+}
+
+glm::vec3 Triangle::GetNormal() {
+    glm::vec3 a = vertices_[0];
+    glm::vec3 b = vertices_[1];
+    glm::vec3 c = vertices_[2];
+    glm::vec3 e1 = glm::normalize(b - a);
+    glm::vec3 e2 = glm::normalize(c - a);
+    return glm::normalize(glm::cross(e1, e2));
 }
 
 BoundingBox Triangle::GetBounds() {
