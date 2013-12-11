@@ -27,7 +27,7 @@ private:
     glm::vec3 max_;
 };
 
-class Isect;
+struct Isect;
 
 class Shape {
 public:

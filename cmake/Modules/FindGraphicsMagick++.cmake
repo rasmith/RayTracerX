@@ -1,7 +1,8 @@
 # find headers
 set(_GraphicsMagick++_HEADER_SEARCH_DIRS,
     "/usr/include"
-    "/usr/local/include")
+    "/usr/local/include"
+    "/opt/local/include")
     
 set(_GraphicsMagick++_ENV_ROOT_DIR "$ENV{_GraphicsMagick_ROOT_DIR}")    
 
@@ -16,12 +17,14 @@ if(GraphicsMagick++_ROOT_DIR)
 endif(GraphicsMagick++_ROOT_DIR)                                
 
 find_path(GraphicsMagick++_INCLUDE_DIR "Magick++.h"
-    PATHS ${_GraphicsMagick++_HEADER_SEARCH_DIRS})
+    PATHS ${_GraphicsMagick++_HEADER_SEARCH_DIRS}
+    PATH_SUFFIXES GraphicsMagick)
      
 # find libraries
 set(_GraphicsMagick++_LIBRARY_SEARCH_DIRS,
     "/usr/lib"
-    "/usr/local/lib")
+    "/usr/local/lib"
+    "/opt/local/lib")
     
 if(GraphicsMagick++_ROOT_DIR)
     set(_GraphicsMagick++_LIBRARY_SEARCH_DIRS  "${GraphicsMagick++_ROOT_DIR}"                             
