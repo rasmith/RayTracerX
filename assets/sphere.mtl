@@ -1,0 +1,5 @@
+newmtl sphere_mat
+  Ns 64.0
+  illum 2
+  Kd 0.4 0.8 0.2
+  Ks 1.0 1.0 0.0
