@@ -16,8 +16,16 @@ namespace ray {
 class OctTreeBase : public Shape {
 public:
 	static const int kMaxDepth;
+	enum NodeType {kInternal = 0, kLeaf = 1, kNumNodeTypes};
 private:
 	OctTreeBase();
+};
+template<class ChildType>
+struct OctNode {
+	OctTreeBase::NodeType type;
+	ChildType* children;
+	int size;
+	short octant;
 };
 template<class SceneObject>
 class OctTree: public OctTreeBase {
@@ -31,6 +39,7 @@ private:
 	typedef unsigned int ObjectIndex;
 	typedef std::vector<SceneObject*> ObjectVector;
 	typedef std::list<SceneObject*> ObjectList;
+
 	struct OctNode {
 		OctIndex index;
 		OctNode() : index(0) {
