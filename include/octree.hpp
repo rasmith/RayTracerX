@@ -16,6 +16,8 @@ namespace ray {
 class OctTreeBase : public Shape {
 public:
 	static const int kMaxDepth;
+	static const int kNodeSizeBytes;
+
 	enum NodeType {kInternal = 0, kLeaf = 1, kNumNodeTypes};
 private:
 	OctTreeBase();
@@ -30,18 +32,10 @@ struct OctNode {
 template<class SceneObject>
 class OctTree: public OctTreeBase {
 private:
-	// OctIndex -
-	// 31      : leaf or internal node
-	// 30 - 27 : 4 bits, number of children or scene objects, 16 max.
-	// 26 - 0  : 27 bits, index into corresponding array
-	//		   : (node, leaf, index). Approx. 134M possible indices.
-	typedef unsigned int OctIndex;
-	typedef unsigned int ObjectIndex;
-	typedef std::vector<SceneObject*> ObjectVector;
-	typedef std::list<SceneObject*> ObjectList;
+
 
 	struct OctNode {
-		OctIndex index;
+		unsigned char data[kNodeSizeBytes];
 		OctNode() : index(0) {
 		}
 		bool Intersect(const Ray& ray, Isect& isect) const {
