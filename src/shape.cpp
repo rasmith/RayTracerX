@@ -38,11 +38,15 @@ void BoundingBox::set_max(const glm::vec3& max_extents) {
 	max_ = max_extents;
 }
 
-BoundingBox BoundingBox::Join(const BoundingBox& bbox) {
+BoundingBox BoundingBox::Join(const BoundingBox& bbox) const {
 	BoundingBox result;
 	result.min_ = glm::min(min_, bbox.min_);
 	result.min_ = glm::max(max_, bbox.max_);
 	return result;
+}
+
+glm::vec3 BoundingBox::GetCenter() const {
+	return 0.5f * (min_ + max);
 }
 
 // Kay/Kajiya slabs algorithm based off PBRTv2 pp 194-195
@@ -78,5 +82,17 @@ std::ostream& operator<<(std::ostream& out, const Shape& s) {
 	s.Print(out);
 	return out;
 }
+
+bool BoundingBox::Overlap(const BoundingBox& bbox) const {
+	bool overlap = true;
+	for (uint32_t i = 0; i < 3; ++i) {
+		float distance = fabs(bbox.max()[i] - max_[i]);
+		float length1 = max_[i] - min_[i];
+		float length2 = bbox.max()[i] - bbox.min()[i];
+		overlap = overlap && (distance <= (length1 + length2));
+	}
+	return overlap;
+}
+
 } // namespace ray
 

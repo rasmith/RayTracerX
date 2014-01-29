@@ -21,8 +21,10 @@ public:
 	void set_max(const glm::vec3& max_extents);
 	const glm::vec3& max() const;
 	const glm::vec3& min() const;
-	BoundingBox Join(const BoundingBox& bbox);
+	glm::vec3 GetCenter() const;
+	BoundingBox Join(const BoundingBox& bbox) const;
 	bool Intersect(const Ray& ray, float& t_near, float& t_far) const;
+	bool Overlap(const BoundingBox& bbox) const;
 private:
 	glm::vec3 min_;
 	glm::vec3 max_;
