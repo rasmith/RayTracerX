@@ -17,6 +17,7 @@ namespace ray {
 class OctTreeBase: public Shape {
 public:
     static const int kMaxDepth;
+    static const int kMaxLeafSize;
     enum NodeType {
         kInternal = 0, kLeaf = 1
     };
@@ -78,6 +79,14 @@ private:
         }
     };
     struct OctNode {
+        OctNode(
+                const NodeType& node_type,
+                uint32_t node_octant,
+                uint32_t node_size,
+                uint32_t node_offset) :
+                type(node_type), octant(node_octant), size(node_size),
+                        offset(node_offset) {
+        }
         NodeType type;
         uint32_t octant;
         uint32_t size;
@@ -197,30 +206,54 @@ private:
         return hit;
     }
     struct WorkNode {
-        OctNode node;
-        int depth;
+        int node_index;
         BoundingBox bounds;
-        uint32_t object_count;
-        ObjectVector object_list;
+        ObjectVector objects;
     };
     void BuildInternal() {
         std::vector<WorkNode> work_list;
+        std::vector<WorkNode> next_list;
+        OctNode child;
         int depth = 0;
-        while (!work_list.empty()) {
-        	WorkNode node = work_list.back();
+        while (!work_list.empty() || !next_list.empty()) {
+            WorkNode work_node = work_list.back();
             work_list.pop_back();
             WorkNode children[8];
-            for(uint32_t i = 0; i < 8; ++i) {
-            	while(!node.object_list.empty()) {
-            		SceneObject* obj = node.object_list.back();
-            		node.object_list.pop_back();
-            		for(int  j= 0; j < 8; ++j) {
-            			if(obj->GetBounds().Overlap(children[j].bounds))
-            				children[j].object_list.push_back(obj);
-            		}
-            		for(int  j= 0; j < 8; ++j) {
-            		}
-            	}
+            OctNode node = DecodeNode(nodes_[work_node.node_index]);
+            node.offset = nodes_.back();
+            for (uint32_t j = 0; j < 8; ++j) {
+                children[j].object_list.clear();
+            }
+            while (!work_node.objects.empty()) {
+                SceneObject* obj = work_node.objects.back();
+                work_node.objects.pop_back();
+                for (uint32_t j = 0; j < 8; ++j)
+                    if (work_node.bounds.Overlap(children[j].bounds))
+                        children[j].objects.push_back(obj);
+                for (uint32_t j = 0; j < 8; ++j) {
+                    if (children[j].object_list.size() > 0) {
+                        ++node.size;
+                        child.octant = j;
+                        child.type = (
+                                depth > kMaxDepth
+                                        || children[j].objects.size()
+                                                <= kMaxLeafSize ? kLeaf :
+                                                                  kInternal);
+                        child.size = (
+                                child.type == kLeaf ?
+                                        children[j].objects.size() : 0);
+                        if (kLeaf == child.type) {
+                            child.offset = scene_objects_.insert(
+                                    scene_objects_.end(),
+                                    children[j].objects.begin(),
+                                    children[j].objects.end());
+                        }
+                    }
+                }
+            }
+            if (work_list.empty()) {
+                work_list.swap(next_list);
+                ++depth;
             }
         }
 
