@@ -197,31 +197,30 @@ private:
         return hit;
     }
     struct WorkNode {
-        EncodedNode node;
-        BoundingBox box;
-        int object_count;
+        OctNode node;
+        int depth;
+        BoundingBox bounds;
+        uint32_t object_count;
+        ObjectVector object_list;
     };
     void BuildInternal() {
-        std::vector<ObjectVector> node_objects;
-        ObjectVector work_list;
+        std::vector<WorkNode> work_list;
         int depth = 0;
         while (!work_list.empty()) {
-            EncodedNode node = work_list.back();
+        	WorkNode node = work_list.back();
             work_list.pop_back();
-            uint32_t child_counts[8];
-            BoundingBox child_bounds[8];
-            for (uint32_t j = 0; j < 8; ++j) {
-                child_counts[j] = 0;
-                child_bounds[j] = GetChildBounds(node, j);
-            }
-            for (uint32_t i = 0; i < node_objects.back().size(); ++i) {
-                for (uint32_t j = 0; j < 8; ++j) {
-                    if (node_objects[i].GetBounds().Overlap(child_bounds[j]))
-                        ++child_counts[j];
-                }
-            }
-            for (uint32_t j = 0; j < 8; ++j) {
-
+            WorkNode children[8];
+            for(uint32_t i = 0; i < 8; ++i) {
+            	while(!node.object_list.empty()) {
+            		SceneObject* obj = node.object_list.back();
+            		node.object_list.pop_back();
+            		for(int  j= 0; j < 8; ++j) {
+            			if(obj->GetBounds().Overlap(children[j].bounds))
+            				children[j].object_list.push_back(obj);
+            		}
+            		for(int  j= 0; j < 8; ++j) {
+            		}
+            	}
             }
         }
 
