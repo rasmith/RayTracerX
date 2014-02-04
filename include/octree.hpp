@@ -127,7 +127,7 @@ public:
 	virtual BoundingBox GetBounds() = 0;
 	virtual void Print(std::ostream& out) const;
 	void Build(const ObjectVector& objects) {
-		BuildInternal(objects);
+		BuildTree(objects);
 	}
 private:
 	std::vector<EncodedNode> nodes_;
@@ -204,66 +204,79 @@ private:
 		ObjectVector objects;
 	};
 	typedef std::vector<WorkNode> WorkList;
-	void BuildLeaf() {
-
-
+	void BuildLeaf(OctNode& node, WorkNode& work_node, WorkList& next_list,
+			int depth) {
+		node.offset = scene_objects_.size();
+		node.size = work_node.objects.size();
+		while (!work_node.objects.empty()) {
+			scene_objects_.push_back(work_node.objects.back());
+			work_node.objects.pop_back();
+		}
 	}
-	void BuildInternal() {
-
+	void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
+			int depth) {
+		WorkNode child_work_nodes[8]; // process children tentatively
+		node.offset = nodes_.size(); // children will have nodes pushed
+		for (uint32_t j = 0; j < 8; ++j) {
+			child_work_nodes[j] = WorkNode( // initialize child lists
+					GetChildBounds(work_node.bounds, j));
+		}
+		while (!work_node.objects.empty()) {
+			SceneObject* obj = work_node.objects.back();
+			work_node.objects.pop_back();
+			for (uint32_t j = 0; j < 8; ++j) { // distribute to children
+				if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
+					child_work_nodes[j].objects.push_back(obj);
+			}
+		}
+		for (uint32_t j = 0; j < 8; ++j) {
+			// If a child has a non-empty object list, process it.
+			if (child_work_nodes[j].object_list.size() > 0) {
+				++node.size; // update parent size
+				uint32_t count = child_work_nodes[j].objects.size();
+				OctNode child;
+				if (depth > kMaxDepth || count <= kMaxLeafSize)
+					child = OctNode(kLeaf, j, 0, 0);
+				else
+					child = OctNode(kInternal, j, 0, 0);
+				child_work_nodes[j].node_index = nodes_.size();
+				next_list.push_back(child_work_nodes[j]);
+				nodes_.push_back(EncodeNode(child));
+			}
+		}
 	}
 	void BuildLevel(WorkList& work_list, WorkList& next_list, int depth) {
 		while (!work_list.empty()) {
 			WorkNode work_node = work_list.back();
 			work_list.pop_back();
-			WorkNode child_work_nodes[8]; // process children tentatively
 			OctNode node = DecodeNode(nodes_[work_node.node_index]);
-			node.offset = nodes_.size(); // children will have nodes pushed
-			for (uint32_t j = 0; j < 8; ++j) {
-				child_work_nodes[j] = WorkNode( // initialize child lists
-						GetChildBounds(work_node.bounds, j));
-			}
-			while (!work_node.objects.empty()) {
-				SceneObject* obj = work_node.objects.back();
-				work_node.objects.pop_back();
-				for (uint32_t j = 0; j < 8; ++j) { // distribute to children
-					if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
-						child_work_nodes[j].objects.push_back(obj);
-				}
-			}
-			for (uint32_t j = 0; j < 8; ++j) {
-				// If a child has a non-empty object list, process it.
-				if (child_work_nodes[j].object_list.size() > 0) {
-					++node.size; // update parent size
-					uint32_t count = child_work_nodes[j].objects.size();
-					OctNode child;
-					if (depth > kMaxDepth || count <= kMaxLeafSize) {
-						child = OctNode(kLeaf, j, count, scene_objects_.size());
-						while (!child_work_nodes[j].empty()) {
-							scene_objects_.push_back(
-									child_work_nodes[j].back());
-							child_work_nodes[j].pop_back();
-						}
-					} else {
-						child = OctNode(kInternal, j, 0, 0);
-						child_work_nodes[j].node_index = nodes_.size();
-						work_list.push_back(child_work_nodes[j]);
-					}
-					nodes_.push_back(EncodeNode(child));
-				}
+			if (kLeaf == node.type) {
+				BuildLeaf(node, work_node, next_list, depth);
+			} else {
+				BuildInternal(node, work_node, next_list, depth);
 			}
 			nodes_[work_node.node_index] = EncodeNode(node);
 		}
-		work_list.swap(next_list);
 	}
-	void Build() {
+	void BuildTree(const ObjectVector& objects) {
 		std::vector<WorkNode> work_list;
 		std::vector<WorkNode> next_list;
 		int depth = 0;
+		// Create and insert root
+		OctNode root = OctNode(kInternal, 0, 0, 0);
+		nodes_.push_back(EncodeNode(root));
+		WorkNode work_root = WorkNode(bounds_);
+		for (int i = 0; i < objects.size(); ++i)
+			work_root.objects.push_back(objects[i]);
+		work_root.node_index = 0;
+		work_list.push_back(work_root);
+		next_list.clear();
 		// This is a breadth first build. There are two work lists: work_list
 		// and next_list.  The work_list gets swapped when empty whilecnext_list
 		// fills up. Each time this happens, one level has been completed.
 		while (!work_list.empty()) {
 			BuildLevel(work_list, next_list, depth);
+			work_list.swap(next_list);
 			++depth;
 		}
 	}
