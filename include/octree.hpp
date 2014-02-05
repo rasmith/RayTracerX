@@ -24,14 +24,29 @@ public:
 private:
   OctTreeBase();
 };
-
 template<class SceneObject>
 class OctTree: public OctTreeBase {
-private:
+public:
+  virtual ~OctTree();
+  virtual bool Intersect(const Ray& ray, Isect& isect) const {
+    return Traverse(nodes_[0], bounds_, ray, isect, 0);
+  }
+  virtual BoundingBox GetBounds() {
+    return bounds_;
+  }
+  virtual void Print(std::ostream& out) const;
   typedef std::vector<SceneObject*> ObjectVector;
+  void Build(const ObjectVector& objects) {
+    bounds_ = BoundingBox();
+    scene_objects_.clear();
+    nodes_.clear();
+    for (uint32_t i = 0; i < objects.size(); ++i)
+      bounds_ = bounds_.Join(objects[i]->GetBounds());
+    BuildTree(objects);
+  }
   // data[0]: top bit is type
-  //		  : next three bits indicate octant
-  //		  : bottom four bits unused
+  //      : next three bits indicate octant
+  //      : bottom four bits unused
   // data[1]: size of node, 8 bits, max size of 256, empty nodes not stored
   // data[2..5]: offset into corresponding array, 32 bits
   struct EncodedNode {
@@ -109,6 +124,10 @@ private:
     encoded.SetSize(node.size);
     return encoded;
   }
+private:
+  std::vector<EncodedNode> nodes_;
+  ObjectVector scene_objects_;
+  BoundingBox bounds_;
   uint32_t PointToOctant(const BoundingBox& bounds, const glm::vec3& point) {
     glm::vec3 center = bounds.GetCenter();
     uint32_t x_bit = (point[0] > center[0]);
@@ -121,20 +140,6 @@ private:
     BoundingBox child_bounds;
     return child_bounds;
   }
-public:
-  virtual ~OctTree();
-  virtual bool Intersect(const Ray& ray, Isect& isect) const {
-    return Traverse(nodes_[0], bounds_, ray, isect, 0);
-  }
-  virtual BoundingBox GetBounds() = 0;
-  virtual void Print(std::ostream& out) const;
-  void Build(const ObjectVector& objects) {
-    BuildTree(objects);
-  }
-private:
-  std::vector<EncodedNode> nodes_;
-  ObjectVector scene_objects_;
-  BoundingBox bounds_;
   bool IntersectLeaf(
       const OctNode& leaf,
       const BoundingBox& bounds,

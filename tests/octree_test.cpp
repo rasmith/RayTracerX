@@ -17,7 +17,7 @@
 #include "octree.hpp"
 namespace ray {
 TEST(OctreeTest, NodeEncodeTest) {
-
+  OctantNode node;
 }
 } // namespace ray
 
