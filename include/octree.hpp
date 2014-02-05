@@ -79,10 +79,13 @@ private:
     }
   };
   struct OctNode {
-    OctNode(const NodeType& node_type, uint32_t node_octant, uint32_t node_size,
+    OctNode(
+        const NodeType& node_type,
+        uint32_t node_octant,
+        uint32_t node_size,
         uint32_t node_offset) :
-        type(node_type), octant(node_octant), size(node_size), offset(
-            node_offset) {
+        type(node_type), octant(node_octant), size(node_size),
+            offset(node_offset) {
     }
     NodeType type;
     uint32_t octant;
@@ -132,26 +135,32 @@ private:
   std::vector<EncodedNode> nodes_;
   ObjectVector scene_objects_;
   BoundingBox bounds_;
-  bool IntersectLeaf(const OctNode& leaf, const BoundingBox& bounds,
-      const Ray& ray, Isect& isect) {
+  bool IntersectLeaf(
+      const OctNode& leaf,
+      const BoundingBox& bounds,
+      const Ray& ray,
+      Isect& isect) {
     bool hit = false;
     Isect current;
     Isect best;
     best.t_hit = std::numeric_limits<float>::max();
     SceneObject* const objects = scene_objects_[leaf.size];
-    for (uint32_t i = 0; i < leaf.size(); ++i) {
+    for (uint32_t i = 0; i < leaf.size(); ++i)
       if (objects[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
         best = current;
         hit = true;
       }
-    }
     if (hit) {
       isect = best;
     }
     return hit;
   }
-  bool Traverse(const OctNode& node, const BoundingBox& bounds, const Ray& ray,
-      Isect& isect, int depth) const {
+  bool Traverse(
+      const OctNode& node,
+      const BoundingBox& bounds,
+      const Ray& ray,
+      Isect& isect,
+      int depth) const {
     if (depth > kMaxDepth) // check depth first
       return false;
     float t_near, t_far;
@@ -186,9 +195,8 @@ private:
       std::swap(t_far_vals[i], t_far_vals[k]);
     }
     bool hit = false;
-    for (int i = 0; i < count && !hit; ++i) {
+    for (int i = 0; i < count && !hit; ++i)
       hit = Traverse(candidates[i], child_bounds[i], ray, isect, depth + 1);
-    }
     return hit;
   }
   struct WorkNode {
@@ -201,7 +209,10 @@ private:
     ObjectVector objects;
   };
   typedef std::vector<WorkNode> WorkList;
-  void BuildLeaf(OctNode& node, WorkNode& work_node, WorkList& next_list,
+  void BuildLeaf(
+      OctNode& node,
+      WorkNode& work_node,
+      WorkList& next_list,
       int depth) {
     node.offset = scene_objects_.size();
     node.size = work_node.objects.size();
@@ -210,21 +221,22 @@ private:
       work_node.objects.pop_back();
     }
   }
-  void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
+  void BuildInternal(
+      OctNode& node,
+      WorkNode& work_node,
+      WorkList& next_list,
       int depth) {
     WorkNode child_work_nodes[8]; // process children tentatively
     node.offset = nodes_.size(); // children will have nodes pushed
-    for (uint32_t j = 0; j < 8; ++j) {
+    for (uint32_t j = 0; j < 8; ++j)
       child_work_nodes[j] = WorkNode( // initialize child lists
           GetChildBounds(work_node.bounds, j));
-    }
     while (!work_node.objects.empty()) {
       SceneObject* obj = work_node.objects.back();
       work_node.objects.pop_back();
-      for (uint32_t j = 0; j < 8; ++j) { // distribute to children
+      for (uint32_t j = 0; j < 8; ++j)  // distribute to children
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
-      }
     }
     for (uint32_t j = 0; j < 8; ++j) {
       // If a child has a non-empty object list, process it.
@@ -247,11 +259,10 @@ private:
       WorkNode work_node = work_list.back();
       work_list.pop_back();
       OctNode node = DecodeNode(nodes_[work_node.node_index]);
-      if (kLeaf == node.type) {
+      if (kLeaf == node.type)
         BuildLeaf(node, work_node, next_list, depth);
-      } else {
+      else
         BuildInternal(node, work_node, next_list, depth);
-      }
       nodes_[work_node.node_index] = EncodeNode(node);
     }
   }
@@ -277,9 +288,6 @@ private:
       ++depth;
     }
   }
+};
 }
-;
-
-}
-
 #endif /* OCTREE_HPP_ */
