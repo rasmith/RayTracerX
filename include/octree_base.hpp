@@ -50,7 +50,6 @@ public:
   OctNode CreateOctNode(const EncodedNode& encoded) const;
   OctNode CreateLeaf(uint32_t octant) const;
   OctNode CreateInternal(uint32_t octant) const;
-  OctNode CreateRoot() const;
   EncodedNode CreateEncodedNode(const OctNode& node) const;
 private:
   OctNodeFactory();
@@ -64,6 +63,21 @@ private:
   uint32_t PointToOctant(const BoundingBox& bounds,
       const glm::vec3& point) const;
   BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const;
+  virtual bool Intersect(const Ray& ray, Isect& isect) const;
+  virtual bool Traverse(const OctNode& node, const BoundingBox& bounds,
+      const Ray& ray, Isect& isect, int depth) const;
+  bool OctTreeBase::TraverseStackless(const OctNode& node,
+      const BoundingBox& bounds, const Ray& ray, Isect& isect, int depth) const;
+  virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
   virtual OctNodeFactory& GetNodeFactory() const;
+  virtual bool IntersectLeaf(const OctNode& leaf, const BoundingBox& bounds,
+      const Ray& ray, Isect& isect) const = 0;
+  virtual void IntersectChildren(const OctNode& node, const BoundingBox& bounds,
+      const Ray& ray, OctNode* children, BoundingBox* child_bounds,
+      uint32_t& count) const;
+  virtual OctNode GetRoot() const = 0;
+  virtual BoundingBox GetBounds() const = 0;
+  virtual void PrintNode(std::ostream& out, const OctNode& node,
+      int depth) const;
 };
 } // namespace ray

@@ -19,13 +19,9 @@ template<class SceneObject>
 class OctTree: public OctTreeBase {
 public:
   virtual ~OctTree();
-  virtual bool Intersect(const Ray& ray, Isect& isect) const {
-    return Traverse(DecodeNode(nodes_[0]), bounds_, ray, isect, 0);
-  }
   virtual BoundingBox GetBounds() {
     return bounds_;
   }
-  virtual void Print(std::ostream& out) const;
   typedef std::vector<SceneObject*> ObjectVector;
   void Build(const ObjectVector& objects) {
     bounds_ = BoundingBox();
@@ -45,7 +41,13 @@ private:
   EncodedNode EncodeNode(const OctNode& node) const {
     return GetNodeFactory().CreateEncodedNode(node);
   }
-  bool IntersectLeaf(const OctNode& leaf, const BoundingBox& bounds,
+  virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const {
+    return DecodeNode(nodes_[node.offset() + index]);
+  }
+  virtual OctNode GetRoot() const {
+    return DecodeNode(nodes_[0]);
+  }
+  virtual bool IntersectLeaf(const OctNode& leaf, const BoundingBox& bounds,
       const Ray& ray, Isect& isect) const {
     bool hit = false;
     Isect current;
@@ -60,45 +62,6 @@ private:
     if (hit) {
       isect = best;
     }
-    return hit;
-  }
-  bool Traverse(const OctNode& node, const BoundingBox& bounds, const Ray& ray,
-      Isect& isect, int depth) const {
-    if (depth > kMaxDepth) // check depth first
-      return false;
-    float t_near, t_far;
-    if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
-      return false;
-    if (node.IsLeaf()) // is this a leaf?
-      return IntersectLeaf(node, bounds, ray, isect);
-    // This is an internal node:  Decode each child and
-    // do AABB intersection and sort the hit children by
-    // t_near times.  Return first child that records an
-    // object intersection.
-    OctNode candidates[4]; // can hit at most four children
-    BoundingBox child_bounds[4];
-    float t_near_vals[4];
-    float t_far_vals[4];
-    int count = 0;
-    EncodedNode* const children = &nodes_[node.offset_];
-    for (int i = 0; count < 4 && i < node.size_; ++i) {
-      candidates[count] = DecodeNode(children[i]);
-      child_bounds[count] = GetChildBounds(bounds, candidates[count].octant_);
-      if (child_bounds[count].Intersect(ray, t_near_vals[count],
-          t_far_vals[count])) ++count;
-    }
-    // sort by t_near - selection sort
-    for (int i = 0; i < count; ++i) {
-      int *pos = std::min_element(t_near_vals + i, t_near_vals + count);
-      int k = pos - &count[0];
-      std::swap(candidates[i], candidates[k]);
-      std::swap(child_bounds[i], child_bounds[k]);
-      std::swap(t_near_vals[i], t_far_vals[k]);
-      std::swap(t_far_vals[i], t_far_vals[k]);
-    }
-    bool hit = false;
-    for (int i = 0; i < count && !hit; ++i)
-      hit = Traverse(candidates[i], child_bounds[i], ray, isect, depth + 1);
     return hit;
   }
   struct WorkNode {
@@ -166,8 +129,11 @@ private:
     std::vector<WorkNode> work_list;
     std::vector<WorkNode> next_list;
     int depth = 0;
-    // Create and insert root
-    OctNode root = GetNodeFactory().CreateRoot();
+    OctNode root; // Create and insert root
+    if ((0 == OctTreeBase::kMaxDepth) || (objects.size() <= kMaxLeafSize))
+      root = GetNodeFactory().CreateLeaf(0);
+    else
+      root = GetNodeFactory().CreateInternal(0);
     nodes_.push_back(EncodeNode(root));
     WorkNode work_root = WorkNode(bounds_);
     for (int i = 0; i < objects.size(); ++i)
@@ -176,7 +142,7 @@ private:
     work_list.push_back(work_root);
     next_list.clear();
     // This is a breadth first build. There are two work lists: work_list
-    // and next_list.  The work_list gets swapped when empty whilecnext_list
+    // and next_list.  The work_list gets swapped when empty while next_list
     // fills up. Each time this happens, one level has been completed.
     while (!work_list.empty()) {
       BuildLevel(work_list, next_list, depth);
