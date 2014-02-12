@@ -34,6 +34,7 @@ private:
   uint32_t size_;
   uint32_t offset_;
 };
+std::ostream& operator<<(std::ostream& out, const OctNode& scene);
 // data[0]: top bit is type
 //      : next three bits indicate octant
 //      : bottom four bits unused
@@ -50,6 +51,7 @@ struct EncodedNode {
   void SetSize(uint32_t size);
   void SetOffset(uint32_t offset);
 };
+std::ostream& operator<<(std::ostream& out, const EncodedNode& scene);
 class OctNodeFactory {
 public:
   static OctNodeFactory& GetInstance();

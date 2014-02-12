@@ -34,12 +34,7 @@ void OctreeBase::PrintNode(std::ostream& out, const OctNode& node,
     int depth) const {
   for (int i = 0; i < depth; ++i)
     out << " ";
-  if (node.IsLeaf())
-    out << "L:";
-  else
-    out << "N:";
-  out << "[" << node.octant() << "] #" << node.size() << " @" << node.offset()
-      << "\n";
+  out << node << "\n";
 }
 void OctreeBase::Print(std::ostream& out) const {
   std::vector<OctNode> nodes;
@@ -172,10 +167,20 @@ void EncodedNode::SetType(OctNode::NodeType type) {
   mask = (mask << 7) & 0x80;
   data[0] = data[0] | mask;
 }
+void PrintBinary(u_char c) {
+  for(uint32_t i = 0; i < 8; ++i)
+    std::cout << (c & (7 - i)? '1' : '0');
+}
 void EncodedNode::SetOctant(uint32_t octant) {
+  std::cout << "octant = " << octant;
   u_char mask = static_cast<u_char>(octant);
+  std::cout << " mask = ";
+  PrintBinary(mask);
   mask = (mask << 4) & 0x70;
-  data[0] = data[0] | mask;
+  std::cout << " --> ";
+  PrintBinary(mask);
+  std::cout << "\n";
+  //data[0] = data[0] | mask;
 }
 void EncodedNode::SetSize(uint32_t size) {
   u_char mask = static_cast<u_char>(size);
@@ -189,6 +194,14 @@ void EncodedNode::SetOffset(uint32_t offset) {
     byte = (offset >> shift) & 0x0000000F;
     data[i] = static_cast<u_char>(byte);
   }
+}
+std::ostream& operator<<(std::ostream& out, const EncodedNode& node) {
+  for (uint32_t i = 0; i < 8; ++i) {
+    for (uint32_t j = 0; j < 8; ++j)
+      out << ((0x1 << (7 - j)) & node.data[i] ? '1' : '0');
+    out << ' ';
+  }
+  return out;
 }
 OctNode::OctNode() :
     type_(kInternal), octant_(0), size_(0), offset_(0) {
@@ -259,5 +272,13 @@ bool OctNode::IsLeaf() const {
 }
 bool OctNode::IsInternal() const {
   return type_ == kInternal;
+}
+std::ostream& operator<<(std::ostream& out, const OctNode& node) {
+  if (node.IsLeaf())
+    out << "L:";
+  else
+    out << "N:";
+  out << "[" << node.octant() << "] #" << node.size() << " @" << node.offset();
+  return out;
 }
 }  // namespace ray
