@@ -13,7 +13,22 @@ add_executable(parse_utils_test parse_utils_test.cpp
 add_executable(image_storage_test image_storage_test.cpp 
                                   ${Ray_SOURCE_DIR}/src/image.cpp)
 add_executable(image_test image_test.cpp ${Ray_SOURCE_DIR}/src/image.cpp)
-add_executable(octree_test octree_test.cpp ${Ray_SOURCE_DIR}/src/octree_base.cpp)
+add_executable(octree_test octree_test.cpp
+                                  ${Ray_SOURCE_DIR}/src/camera.cpp
+                                  ${Ray_SOURCE_DIR}/src/geometry.cpp
+                                  ${Ray_SOURCE_DIR}/src/io_utils.cpp
+                                  ${Ray_SOURCE_DIR}/src/image.cpp
+                                  ${Ray_SOURCE_DIR}/src/light.cpp
+                                  ${Ray_SOURCE_DIR}/src/material.cpp
+                                  ${Ray_SOURCE_DIR}/src/mesh.cpp
+                                  ${Ray_SOURCE_DIR}/src/octree_base.cpp
+                                  ${Ray_SOURCE_DIR}/src/ray.cpp
+                                  ${Ray_SOURCE_DIR}/src/raytracer.cpp
+                                  ${Ray_SOURCE_DIR}/src/scene.cpp
+                                  ${Ray_SOURCE_DIR}/src/scene_utils.cpp
+                                  ${Ray_SOURCE_DIR}/src/shape.cpp
+                                  ${Ray_SOURCE_DIR}/src/texture.cpp
+                                  ${Ray_SOURCE_DIR}/src/transform.cpp)
 add_executable(raytracer_test raytracer_test.cpp 
                                   ${Ray_SOURCE_DIR}/src/camera.cpp
                                   ${Ray_SOURCE_DIR}/src/geometry.cpp

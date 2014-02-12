@@ -30,6 +30,14 @@ const glm::vec3& BoundingBox::min() const {
 	return min_;
 }
 
+glm::vec3& BoundingBox::max() {
+  return max_;
+}
+
+glm::vec3& BoundingBox::min() {
+  return min_;
+}
+
 void BoundingBox::set_min(const glm::vec3& min_extents) {
 	min_ = min_extents;
 }
@@ -46,7 +54,7 @@ BoundingBox BoundingBox::Join(const BoundingBox& bbox) const {
 }
 
 glm::vec3 BoundingBox::GetCenter() const {
-	return 0.5f * (min_ + max);
+	return 0.5f * (min_ + max_);
 }
 
 // Kay/Kajiya slabs algorithm based off PBRTv2 pp 194-195
@@ -57,7 +65,7 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
 	for (int i = 0; i < 3; ++i) {
 		float inv = 1.0f / ray.direction()[i];
 		float t_first = (min_[i] - ray.origin()[i]) * inv;
-		float t_second = (max_[i] - ray.origin()) * inv;
+		float t_second = (max_[i] - ray.origin()[i]) * inv;
 		if (t_first > t_second)
 			std::swap(t_first, t_second);
 		t_min = std::max(t_min, t_first);
