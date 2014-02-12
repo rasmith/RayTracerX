@@ -54,19 +54,19 @@ public:
 private:
   OctNodeFactory();
 };
-class OctTreeBase: public Shape {
+class OctreeBase: public Shape {
 public:
   static const int kMaxDepth;
   static const int kMaxLeafSize;
 private:
-  OctTreeBase();
+  OctreeBase();
   uint32_t PointToOctant(const BoundingBox& bounds,
       const glm::vec3& point) const;
   BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const;
   virtual bool Intersect(const Ray& ray, Isect& isect) const;
   virtual bool Traverse(const OctNode& node, const BoundingBox& bounds,
       const Ray& ray, Isect& isect, int depth) const;
-  bool OctTreeBase::TraverseStackless(const OctNode& node,
+  bool OctreeBase::TraverseStackless(const OctNode& node,
       const BoundingBox& bounds, const Ray& ray, Isect& isect, int depth) const;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
   virtual OctNodeFactory& GetNodeFactory() const;

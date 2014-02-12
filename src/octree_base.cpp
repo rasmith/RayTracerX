@@ -6,9 +6,9 @@
  */
 #include "octree_base.hpp"
 namespace ray {
-const int OctTreeBase::kMaxDepth = 20;
-const int OctTreeBase::kMaxLeafSize = 16;
-uint32_t OctTreeBase::PointToOctant(const BoundingBox& bounds,
+const int OctreeBase::kMaxDepth = 20;
+const int OctreeBase::kMaxLeafSize = 16;
+uint32_t OctreeBase::PointToOctant(const BoundingBox& bounds,
     const glm::vec3& point) const {
   glm::vec3 center = bounds.GetCenter();
   uint32_t x_bit = (point[0] > center[0]);
@@ -17,7 +17,7 @@ uint32_t OctTreeBase::PointToOctant(const BoundingBox& bounds,
   uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
   return octant;
 }
-BoundingBox OctTreeBase::GetChildBounds(const BoundingBox& bounds,
+BoundingBox OctreeBase::GetChildBounds(const BoundingBox& bounds,
     uint32_t octant) const {
   glm::vec3 center = bounds.GetCenter();
   BoundingBox child_bounds = bounds;
@@ -40,7 +40,7 @@ void PrintNode(std::ostream& out, const OctNode& node, int depth) const {
   out << "[" << node.octant() << "] #" << node.size() << " @" << node.offset()
       << "\n";
 }
-void OctTreeBase::Print(std::ostream& out) const {
+void OctreeBase::Print(std::ostream& out) const {
   std::vector<OctNode> nodes;
   std::vector<int> depths;
   nodes.clear();
@@ -58,10 +58,10 @@ void OctTreeBase::Print(std::ostream& out) const {
     }
   }
 }
-OctNodeFactory& OctTreeBase::GetNodeFactory() const {
+OctNodeFactory& OctreeBase::GetNodeFactory() const {
   return OctNodeFactory::GetInstance();
 }
-bool OctTreeBase::Intersect(const Ray& ray, Isect& isect) const {
+bool OctreeBase::Intersect(const Ray& ray, Isect& isect) const {
   return TraverseStackless(GetRoot(), GetBounds(), ray, isect, 0);
 }
 ///////
@@ -74,7 +74,7 @@ bool OctTreeBase::Intersect(const Ray& ray, Isect& isect) const {
 //  assumed to be of length four (4).
 //
 //////
-void OctTreeBase::IntersectChildren(const OctNode& node,
+void OctreeBase::IntersectChildren(const OctNode& node,
     const BoundingBox& bounds, const Ray& ray, OctNode* children,
     BoundingBox* child_bounds, uint32_t& count) const {
   float t_near_vals[4];
@@ -97,7 +97,7 @@ void OctTreeBase::IntersectChildren(const OctNode& node,
     std::swap(t_far_vals[i], t_far_vals[k]);
   }
 }
-bool OctTreeBase::TraverseStackless(const OctNode& root,
+bool OctreeBase::TraverseStackless(const OctNode& root,
     const BoundingBox& bounds, const Ray& ray, Isect& isect, int depth) const {
   float t_near, t_far;
   if (!bounds.Intersect(ray, t_near, t_far))
@@ -132,7 +132,7 @@ bool OctTreeBase::TraverseStackless(const OctNode& root,
   }
   return hit;
 }
-bool OctTreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
+bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
     const Ray& ray, Isect& isect, int depth) const {
   if (depth > kMaxDepth) // check depth first
     return false;

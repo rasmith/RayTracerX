@@ -16,7 +16,7 @@
 #include "shape.hpp"
 namespace ray {
 template<class SceneObject>
-class OctTree: public OctTreeBase {
+class OctTree: public OctreeBase {
 public:
   virtual ~OctTree();
   virtual BoundingBox GetBounds() {
@@ -130,7 +130,7 @@ private:
     std::vector<WorkNode> next_list;
     int depth = 0;
     OctNode root; // Create and insert root
-    if ((0 == OctTreeBase::kMaxDepth) || (objects.size() <= kMaxLeafSize))
+    if ((0 == OctreeBase::kMaxDepth) || (objects.size() <= kMaxLeafSize))
       root = GetNodeFactory().CreateLeaf(0);
     else
       root = GetNodeFactory().CreateInternal(0);
