@@ -13,7 +13,7 @@ add_executable(parse_utils_test parse_utils_test.cpp
 add_executable(image_storage_test image_storage_test.cpp 
                                   ${Ray_SOURCE_DIR}/src/image.cpp)
 add_executable(image_test image_test.cpp ${Ray_SOURCE_DIR}/src/image.cpp)
-add_executable(octre_test octree_test.cpp ${Ray_SOURCE_DIR}/src/octree_base.cpp)
+add_executable(octree_test octree_test.cpp ${Ray_SOURCE_DIR}/src/octree_base.cpp)
 add_executable(raytracer_test raytracer_test.cpp 
                                   ${Ray_SOURCE_DIR}/src/camera.cpp
                                   ${Ray_SOURCE_DIR}/src/geometry.cpp

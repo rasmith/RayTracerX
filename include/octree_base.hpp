@@ -4,6 +4,7 @@
  *  Created on: Feb 5, 2014
  *      Author: agrippa
  */
+#include <stdint.h>
 namespace ray {
 class OctNode {
 public:
