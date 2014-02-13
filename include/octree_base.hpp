@@ -8,6 +8,7 @@
 #ifndef OCTREE_BASE_HPP_
 #define OCTREE_BASE_HPP_
 #include <stdint.h>
+#include <sys/types.h>
 #include "shape.hpp"
 namespace ray {
 class OctNode {
@@ -64,22 +65,22 @@ private:
 };
 class OctreeBase: public Shape {
 public:
-  static const int kMaxDepth;
-  static const int kMaxLeafSize;
-private:
+  static const uint32_t kMaxDepth;
+  static const uint32_t kMaxLeafSize;
+protected:
   OctreeBase();
   uint32_t PointToOctant(const BoundingBox& bounds,
       const glm::vec3& point) const;
   BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const;
   virtual bool Intersect(const Ray& ray, Isect& isect) const;
   virtual bool Traverse(const OctNode& node, const BoundingBox& bounds,
-      const Ray& ray, Isect& isect, int depth) const;
+      const Ray& ray, Isect& isect, uint32_t depth) const;
   bool TraverseStackless(const OctNode& node, const BoundingBox& bounds,
       const Ray& ray, Isect& isect) const;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
   virtual OctNodeFactory& GetNodeFactory() const;
-  virtual bool IntersectLeaf(const OctNode& leaf, const BoundingBox& bounds,
-      const Ray& ray, Isect& isect) const = 0;
+  virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
+      Isect& isect) const = 0;
   virtual void IntersectChildren(const OctNode& node, const BoundingBox& bounds,
       const Ray& ray, OctNode* children, BoundingBox* child_bounds,
       uint32_t& count) const;

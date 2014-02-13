@@ -7,6 +7,7 @@
 
 #ifndef OCTREE_HPP_
 #define OCTREE_HPP_
+#include <sys/types.h>
 #include <stdint.h>
 #include <algorithm>
 #include <cstring>
@@ -47,14 +48,14 @@ private:
   virtual OctNode GetRoot() const {
     return DecodeNode(nodes_[0]);
   }
-  virtual bool IntersectLeaf(const OctNode& leaf, const BoundingBox& bounds,
-      const Ray& ray, Isect& isect) const {
+  virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
+      Isect& isect) const {
     bool hit = false;
     Isect current;
     Isect best;
     best.t_hit = std::numeric_limits<float>::max();
-    SceneObject* const objects = scene_objects_[leaf.size_];
-    for (uint32_t i = 0; i < leaf.size_(); ++i)
+    SceneObject* const objects = scene_objects_[leaf.size()];
+    for (uint32_t i = 0; i < leaf.size(); ++i)
       if (objects[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
         best = current;
         hit = true;
@@ -74,19 +75,18 @@ private:
     ObjectVector objects;
   };
   typedef std::vector<WorkNode> WorkList;
-  void BuildLeaf(OctNode& node, WorkNode& work_node, WorkList& next_list,
-      int depth) {
-    node.offset_ = scene_objects_.size();
-    node.size_ = work_node.objects.size();
+  void BuildLeaf(OctNode& node, WorkNode& work_node) {
+    node.set_offset(scene_objects_.size());
+    node.set_size(work_node.objects.size());
     while (!work_node.objects.empty()) {
       scene_objects_.push_back(work_node.objects.back());
       work_node.objects.pop_back();
     }
   }
   void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
-      int depth) {
+      uint32_t depth) {
     WorkNode child_work_nodes[8]; // process children tentatively
-    node.offset_ = nodes_.size(); // children will have nodes pushed
+    node.set_offset(nodes_.size()); // children will have nodes pushed
     for (uint32_t j = 0; j < 8; ++j)
       child_work_nodes[j] = WorkNode( // initialize child lists
           GetChildBounds(work_node.bounds, j));
@@ -100,7 +100,7 @@ private:
     for (uint32_t j = 0; j < 8; ++j) {
       // If a child has a non-empty object list, process it.
       if (child_work_nodes[j].object_list.size() > 0) {
-        ++node.size_; // update parent size
+        node.set_size(node.size() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         OctNode child;
         if (depth > kMaxDepth || count <= kMaxLeafSize)
@@ -113,13 +113,13 @@ private:
       }
     }
   }
-  void BuildLevel(WorkList& work_list, WorkList& next_list, int depth) {
+  void BuildLevel(WorkList& work_list, WorkList& next_list, uint32_t depth) {
     while (!work_list.empty()) {
       WorkNode work_node = work_list.back();
       work_list.pop_back();
       OctNode node = DecodeNode(nodes_[work_node.node_index]);
       if (node.IsLeaf())
-        BuildLeaf(node, work_node, next_list, depth);
+        BuildLeaf(node, work_node);
       else
         BuildInternal(node, work_node, next_list, depth);
       nodes_[work_node.node_index] = EncodeNode(node);

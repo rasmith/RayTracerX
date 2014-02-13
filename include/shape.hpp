@@ -38,7 +38,6 @@ class Shape {
 public:
   virtual ~Shape();
   virtual bool Intersect(const Ray& ray, Isect& isect) const = 0;
-  virtual BoundingBox GetBounds() = 0;
   virtual void Print(std::ostream& out) const;
 };
 std::ostream& operator<<(std::ostream& out, const Shape& scene);

@@ -4,10 +4,11 @@
  *  Created on: Feb 5, 2014
  *      Author: agrippa
  */
+#include <sys/types.h>
 #include "octree_base.hpp"
 namespace ray {
-const int OctreeBase::kMaxDepth = 20;
-const int OctreeBase::kMaxLeafSize = 16;
+const uint32_t OctreeBase::kMaxDepth = 20;
+const uint32_t OctreeBase::kMaxLeafSize = 16;
 uint32_t OctreeBase::PointToOctant(const BoundingBox& bounds,
     const glm::vec3& point) const {
   glm::vec3 center = bounds.GetCenter();
@@ -80,7 +81,8 @@ void OctreeBase::IntersectChildren(const OctNode& node,
     children[count] = GetIthChildOf(node, i);
     child_bounds[count] = GetChildBounds(bounds, children[count].octant());
     if (child_bounds[count].Intersect(ray, t_near_vals[count],
-        t_far_vals[count])) ++count;
+        t_far_vals[count]))
+      ++count;
   }
   // sort by t_near - selection sort
   for (uint32_t i = 0; i < count; ++i) {
@@ -95,7 +97,8 @@ void OctreeBase::IntersectChildren(const OctNode& node,
 bool OctreeBase::TraverseStackless(const OctNode& root,
     const BoundingBox& bounds, const Ray& ray, Isect& isect) const {
   float t_near, t_far;
-  if (!bounds.Intersect(ray, t_near, t_far)) return false;
+  if (!bounds.Intersect(ray, t_near, t_far))
+    return false;
   std::vector<OctNode> node_stack;
   std::vector<BoundingBox> bounds_stack;
   bool hit = false;
@@ -114,7 +117,7 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
     current_bounds = bounds_stack.back();
     bounds_stack.pop_back();
     if (current.IsLeaf()) {
-      hit = IntersectLeaf(current, current_bounds, ray, isect);
+      hit = IntersectLeaf(current, ray, isect);
     } else {
       IntersectChildren(current, bounds, ray, &children[0], &child_bounds[0],
           count);
@@ -127,14 +130,14 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
   return hit;
 }
 bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
-    const Ray& ray, Isect& isect, int depth) const {
+    const Ray& ray, Isect& isect, uint32_t depth) const {
   if (depth > kMaxDepth) // check depth first
     return false;
   float t_near, t_far;
   if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
     return false;
   if (node.IsLeaf()) // is this a leaf?
-    return IntersectLeaf(node, bounds, ray, isect);
+    return IntersectLeaf(node, ray, isect);
   OctNode children[4];    // can hit at most four children
   BoundingBox child_bounds[4];
   uint32_t count = 0;
@@ -153,6 +156,15 @@ uint32_t EncodedNode::GetOctant() const {
 uint32_t EncodedNode::GetSize() const {
   return static_cast<uint32_t>(data[1]);
 }
+template<typename T>
+void PrintBinary(T c) {
+  uint32_t num_bits = sizeof(T) * 8;
+  for (uint32_t i = 0; i < num_bits; ++i) {
+    if (0 == i % 8 && i > 0) std::cout << ' ';
+    std::cout << (c & (0x1 << (num_bits - i - 1)) ? '1' : '0');
+
+  }
+}
 uint32_t EncodedNode::GetOffset() const {
   uint32_t offset = 0x0;
   uint32_t byte = 0x0;
@@ -165,23 +177,14 @@ uint32_t EncodedNode::GetOffset() const {
 void EncodedNode::SetType(OctNode::NodeType type) {
   u_char mask = static_cast<u_char>(type);
   mask = (mask << 7) & 0x80;
-  data[0] = data[0] | mask;
-}
-void PrintBinary(u_char c) {
-  for(uint32_t i = 0; i < 8; ++i)
-    std::cout << (c & (7 - i)? '1' : '0');
+  data[0] = (0x7F & data[0]) | mask;
 }
 void EncodedNode::SetOctant(uint32_t octant) {
-  std::cout << "octant = " << octant;
   u_char mask = static_cast<u_char>(octant);
-  std::cout << " mask = ";
-  PrintBinary(mask);
-  mask = (mask << 4) & 0x70;
-  std::cout << " --> ";
-  PrintBinary(mask);
-  std::cout << "\n";
-  //data[0] = data[0] | mask;
+  mask = (mask << 4);
+  data[0] = (0x8F & data[0]) | mask;
 }
+
 void EncodedNode::SetSize(uint32_t size) {
   u_char mask = static_cast<u_char>(size);
   data[1] = mask;
@@ -191,7 +194,7 @@ void EncodedNode::SetOffset(uint32_t offset) {
   uint32_t shift = 0;
   for (uint32_t i = 2; i < 6; ++i) {
     shift = (i - 2) * 8;
-    byte = (offset >> shift) & 0x0000000F;
+    byte = (offset >> shift) & 0x000000FF;
     data[i] = static_cast<u_char>(byte);
   }
 }

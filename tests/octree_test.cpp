@@ -24,13 +24,10 @@ TEST(OctreeTest, NodeEncodeTest) {
   OctNodeFactory& fact = OctNodeFactory::GetInstance();
   for (uint32_t i = 0; i < 8; ++i) {
     internal_node = fact.CreateInternal(i);
-    internal_node.set_offset(42 * i);
+    internal_node.set_offset(42 * (0x1 << (4 * i)));
     internal_node.set_size(i);
-    std::cout << internal_node << "\n";
     encoded = fact.CreateEncodedNode(internal_node);
-    std::cout << encoded << "\n";
     test_node = fact.CreateOctNode(encoded);
-    std::cout << test_node << "\n";
     EXPECT_TRUE(internal_node.IsInternal());
     EXPECT_EQ(internal_node.type(), test_node.type());
     EXPECT_EQ(internal_node.octant(), test_node.octant());
@@ -39,13 +36,10 @@ TEST(OctreeTest, NodeEncodeTest) {
   }
   for (uint32_t i = 0; i < 8; ++i) {
     internal_node = fact.CreateLeaf(i);
-    internal_node.set_offset(1337 * i);
+    internal_node.set_offset(1337 * (0x1 << (4 * i)));
     internal_node.set_size(i);
-    std::cout << internal_node << "\n";
     encoded = fact.CreateEncodedNode(internal_node);
-    std::cout << encoded << "\n";
     test_node = fact.CreateOctNode(encoded);
-    std::cout << test_node << "\n";
     EXPECT_TRUE(internal_node.IsLeaf());
     EXPECT_EQ(internal_node.type(), test_node.type());
     EXPECT_EQ(internal_node.octant(), test_node.octant());
