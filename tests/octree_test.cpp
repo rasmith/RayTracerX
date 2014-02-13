@@ -14,8 +14,17 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 
-#include "octree_base.hpp"
+#include "camera.hpp"
+#include "geometry.hpp"
+#include "io_utils.hpp"
+#include "light.hpp"
+#include "material.hpp"
 #include "octree.hpp"
+#include "octree_base.hpp"
+#include "raytracer.hpp"
+#include "scene_utils.hpp"
+#include "transform.hpp"
+
 namespace ray {
 TEST(OctreeTest, NodeEncodeTest) {
   OctNode internal_node;
@@ -95,7 +104,6 @@ TEST(RayTracerTest, BunnyMeshTest) {
   success = storage.WriteImage("bunny_octree.jpg", image, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-}
 }
 } // namespace ray
 
