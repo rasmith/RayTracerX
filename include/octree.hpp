@@ -17,10 +17,16 @@
 #include "shape.hpp"
 namespace ray {
 template<class SceneObject>
-class OctTree: public OctreeBase {
+class Octree: public OctreeBase {
 public:
-  virtual ~OctTree();
-  virtual BoundingBox GetBounds() {
+  Octree() :
+      nodes_(), scene_objects_(), bounds_() {
+  }
+  virtual ~Octree() {
+    nodes_.clear();
+    scene_objects_.clear();
+  }
+  virtual BoundingBox GetBounds() const {
     return bounds_;
   }
   typedef std::vector<SceneObject*> ObjectVector;
@@ -30,6 +36,14 @@ public:
     nodes_.clear();
     for (uint32_t i = 0; i < objects.size(); ++i)
       bounds_ = bounds_.Join(objects[i]->GetBounds());
+    BuildTree(objects);
+  }
+  void Build(const std::vector<SceneObject>& objects) {
+    bounds_ = BoundingBox();
+    scene_objects_.clear();
+    nodes_.clear();
+    for (uint32_t i = 0; i < objects.size(); ++i)
+      bounds_ = bounds_.Join(objects[i].GetBounds());
     BuildTree(objects);
   }
 private:
@@ -125,19 +139,17 @@ private:
       nodes_[work_node.node_index] = EncodeNode(node);
     }
   }
-  void BuildTree(const ObjectVector& objects) {
+  void BuildTree(WorkNode& work_root) {
     std::vector<WorkNode> work_list;
     std::vector<WorkNode> next_list;
     int depth = 0;
     OctNode root; // Create and insert root
-    if ((0 == OctreeBase::kMaxDepth) || (objects.size() <= kMaxLeafSize))
+    if ((0 == OctreeBase::kMaxDepth)
+        || (work_root.objects.size() <= kMaxLeafSize))
       root = GetNodeFactory().CreateLeaf(0);
     else
       root = GetNodeFactory().CreateInternal(0);
     nodes_.push_back(EncodeNode(root));
-    WorkNode work_root = WorkNode(bounds_);
-    for (int i = 0; i < objects.size(); ++i)
-      work_root.objects.push_back(objects[i]);
     work_root.node_index = 0;
     work_list.push_back(work_root);
     next_list.clear();
@@ -149,6 +161,18 @@ private:
       work_list.swap(next_list);
       ++depth;
     }
+  }
+  void BuildTree(const std::vector<SceneObject>& objects) {
+    WorkNode work_root = WorkNode(bounds_);
+    for (int i = 0; i < objects.size(); ++i)
+      work_root.objects.push_back(&objects[i]);
+    BuildTree(work_root);
+  }
+  void BuildTree(const std::vector<SceneObject*>& objects) {
+    WorkNode work_root = WorkNode(bounds_);
+    for (int i = 0; i < objects.size(); ++i)
+      work_root.objects.push_back(objects[i]);
+    BuildTree(work_root);
   }
 };
 }

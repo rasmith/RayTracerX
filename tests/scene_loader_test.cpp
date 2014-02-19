@@ -13,6 +13,8 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "io_utils.hpp"
+#include "mesh.hpp"
+#include "scene.hpp"
 #include "scene_utils.hpp"
 using ::testing::AnyOf;
 namespace ray {
@@ -26,8 +28,8 @@ TEST(SceneLoaderTest, SimpleReadTest) {
     EXPECT_EQ("OK", status);
     EXPECT_EQ(scene.cameras().size(), 0u);
     EXPECT_EQ(scene.lights().size(), 0u);
-    EXPECT_EQ(scene.material_list().materials.size(), 0u);
-    const std::vector<Shape*>& shapes = scene.scene_objects();
+    EXPECT_EQ(scene.material_list().materials.size(), 1u);
+    const std::vector<SceneShape*>& shapes = scene.scene_objects();
     EXPECT_EQ(1u, shapes.size());
     Trimesh* mesh = static_cast<Trimesh*>(shapes[0]);
     // Assimp can duplicate vertices, so either 8 or 24 is fine
@@ -52,7 +54,7 @@ TEST(SceneLoaderTest, SimpleReadTest) {
 }
 TEST(SceneLoaderTest, BlenderReadTest) {
     SceneLoader& loader = SceneLoader::GetInstance();
-    std::string path = "../assets/bunny_blender.obj";
+    std::string path = "../assets/bunny.obj";
     std::string status = "";
     Scene scene;
     bool success = loader.LoadScene(path, scene, status);

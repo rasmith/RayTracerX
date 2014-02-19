@@ -22,6 +22,7 @@
 #include "octree.hpp"
 #include "octree_base.hpp"
 #include "raytracer.hpp"
+#include "scene.hpp"
 #include "scene_utils.hpp"
 #include "transform.hpp"
 

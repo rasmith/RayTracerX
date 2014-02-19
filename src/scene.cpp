@@ -12,6 +12,15 @@
 #include "mesh.hpp"
 #include "scene.hpp"
 namespace ray {
+
+SceneShape::SceneShape() :
+    material_(NULL) {
+}
+
+SceneShape::SceneShape(Material* const & material) :
+    material_(material) {
+}
+
 Material* const & SceneShape::material() const {
   return material_;
 }
@@ -20,8 +29,32 @@ void SceneShape::set_material(Material* const & material) {
   material_ = material;
 }
 
+Shape* const & MaterialShape::shape() const {
+  return shape_;
+}
+
+MaterialShape::MaterialShape() :
+    shape_(NULL) {
+}
+
+MaterialShape::MaterialShape(Shape* const & shape, Material* const & material) :
+    SceneShape(material), shape_(shape) {
+}
+
+void MaterialShape::set_shape(Shape* const & shape) {
+  shape_ = shape;
+}
+
+bool MaterialShape::Intersect(const Ray& ray, Isect& isect) const {
+  return shape_->Intersect(ray, isect);
+}
+
+void MaterialShape::Print(std::ostream& out) const {
+  out << "MatShape: M:" << *material() << " S:" << *shape();
+}
+
 Scene::Scene() :
-    cameras_(), lights_(), scene_objects_(), material_list_() {
+    cameras_(), lights_(), scene_shapes_(), material_list_() {
 }
 
 void Scene::AddCamera(const Camera& camera) {
@@ -35,8 +68,8 @@ void Scene::AddMaterial(const std::string& name, const Material& material) {
   material_list_.AddMaterial(name, material);
 }
 
-void Scene::AddSceneObject(Shape* shape) {
-  scene_objects_.push_back(shape);
+void Scene::AddSceneShape(SceneShape* const & shape) {
+  scene_shapes_.push_back(shape);
 }
 
 const std::vector<Camera>& Scene::cameras() const {
@@ -51,8 +84,12 @@ const MaterialList& Scene::material_list() const {
   return material_list_;
 }
 
-const std::vector<Shape*>& Scene::scene_objects() const {
-  return scene_objects_;
+MaterialList& Scene::material_list() {
+  return material_list_;
+}
+
+const std::vector<SceneShape*>& Scene::scene_objects() const {
+  return scene_shapes_;
 }
 
 bool Scene::Intersect(const Ray& ray, Isect& isect) {
@@ -60,12 +97,13 @@ bool Scene::Intersect(const Ray& ray, Isect& isect) {
   Isect current;
   Isect best;
   best.t_hit = std::numeric_limits<float>::max();
-  for (uint32_t i = 0; i < scene_objects_.size(); ++i) {
-    if (scene_objects_[i]->Intersect(ray, current)
+  for (uint32_t i = 0; i < scene_shapes_.size(); ++i) {
+    if (scene_shapes_[i]->Intersect(ray, current)
         && current.t_hit < best.t_hit) {
       best = current;
       hit = true;
-      best.mat = &material_list_.materials[i];
+      if (!best.mat)
+        best.mat = scene_shapes_[i]->material();
     }
   }
   if (hit) {
@@ -93,8 +131,8 @@ std::ostream& operator<<(std::ostream& out, const Scene& scene) {
   }
   out << "]\n";
   out << "scene_objs:[";
-  std::vector<Shape*>::const_iterator shape_iter =
-      scene.scene_objects().begin();
+  std::vector<SceneShape*>::const_iterator shape_iter = scene.scene_objects()
+      .begin();
   for (; shape_iter != scene.scene_objects().end(); ++shape_iter) {
     if (shape_iter != scene.scene_objects().begin())
       out << ",\n";

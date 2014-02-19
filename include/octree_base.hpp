@@ -63,7 +63,11 @@ public:
 private:
   OctNodeFactory();
 };
-class OctreeBase: public Shape {
+class Accelerator: public Shape {
+public:
+  virtual ~Accelerator();
+};
+class OctreeBase: public Accelerator {
 public:
   static const uint32_t kMaxDepth;
   static const uint32_t kMaxLeafSize;

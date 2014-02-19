@@ -37,6 +37,5 @@ private:
     glm::vec3 center_;
     float radius_;
 };
-
 } // namespace ray
 #endif /* GEOMETRY_HPP_ */
