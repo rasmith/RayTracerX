@@ -29,21 +29,17 @@ public:
   virtual BoundingBox GetBounds() const {
     return bounds_;
   }
-  typedef std::vector<SceneObject*> ObjectVector;
+  typedef std::vector<const SceneObject*> ObjectVector;
   void Build(const ObjectVector& objects) {
     bounds_ = BoundingBox();
     scene_objects_.clear();
     nodes_.clear();
-    for (uint32_t i = 0; i < objects.size(); ++i)
-      bounds_ = bounds_.Join(objects[i]->GetBounds());
     BuildTree(objects);
   }
   void Build(const std::vector<SceneObject>& objects) {
     bounds_ = BoundingBox();
     scene_objects_.clear();
     nodes_.clear();
-    for (uint32_t i = 0; i < objects.size(); ++i)
-      bounds_ = bounds_.Join(objects[i].GetBounds());
     BuildTree(objects);
   }
 private:
@@ -68,7 +64,7 @@ private:
     Isect current;
     Isect best;
     best.t_hit = std::numeric_limits<float>::max();
-    SceneObject* const objects = scene_objects_[leaf.size()];
+    const SceneObject* const * objects = &scene_objects_[leaf.offset()];
     for (uint32_t i = 0; i < leaf.size(); ++i)
       if (objects[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
         best = current;
@@ -80,6 +76,9 @@ private:
     return hit;
   }
   struct WorkNode {
+    WorkNode() :
+        node_index(0), bounds(), objects() {
+    }
     WorkNode(const BoundingBox& bbox) :
         node_index(0), bounds(bbox), objects() {
       objects.clear();
@@ -105,7 +104,7 @@ private:
       child_work_nodes[j] = WorkNode( // initialize child lists
           GetChildBounds(work_node.bounds, j));
     while (!work_node.objects.empty()) {
-      SceneObject* obj = work_node.objects.back();
+      const SceneObject* obj = work_node.objects.back();
       work_node.objects.pop_back();
       for (uint32_t j = 0; j < 8; ++j)  // distribute to children
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
@@ -113,7 +112,7 @@ private:
     }
     for (uint32_t j = 0; j < 8; ++j) {
       // If a child has a non-empty object list, process it.
-      if (child_work_nodes[j].object_list.size() > 0) {
+      if (child_work_nodes[j].objects.size() > 0) {
         node.set_size(node.size() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         OctNode child;
@@ -140,6 +139,9 @@ private:
     }
   }
   void BuildTree(WorkNode& work_root) {
+    // compute bounds
+    for (uint32_t i = 0; i < work_root.objects.size(); ++i)
+      bounds_ = bounds_.Join(work_root.objects[i]->GetBounds());
     std::vector<WorkNode> work_list;
     std::vector<WorkNode> next_list;
     int depth = 0;
@@ -164,13 +166,13 @@ private:
   }
   void BuildTree(const std::vector<SceneObject>& objects) {
     WorkNode work_root = WorkNode(bounds_);
-    for (int i = 0; i < objects.size(); ++i)
+    for (uint32_t i = 0; i < objects.size(); ++i)
       work_root.objects.push_back(&objects[i]);
     BuildTree(work_root);
   }
-  void BuildTree(const std::vector<SceneObject*>& objects) {
+  void BuildTree(const ObjectVector& objects) {
     WorkNode work_root = WorkNode(bounds_);
-    for (int i = 0; i < objects.size(); ++i)
+    for (uint32_t i = 0; i < objects.size(); ++i)
       work_root.objects.push_back(objects[i]);
     BuildTree(work_root);
   }

@@ -24,7 +24,7 @@ public:
   int& operator[](int i);
   const int& operator[](int i) const;
   bool Intersect(const Ray& ray, Isect& isect) const;
-  BoundingBox GetBounds();
+  BoundingBox GetBounds() const;
   const Trimesh* mesh() const;
   void set_mesh(Trimesh* mesh);
   const int* vertices() const;

@@ -19,6 +19,7 @@
 #include "io_utils.hpp"
 #include "light.hpp"
 #include "material.hpp"
+#include "mesh.hpp"
 #include "octree.hpp"
 #include "octree_base.hpp"
 #include "raytracer.hpp"

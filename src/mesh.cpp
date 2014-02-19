@@ -18,7 +18,7 @@ TrimeshFace::TrimeshFace() :
 }
 
 TrimeshFace::TrimeshFace(const TrimeshFace& face) :
-    mesh_(face.mesh_) {
+    SceneShape(), mesh_(face.mesh_) {
   for (int i = 0; i < 3; ++i) {
     vertices_[i] = face.vertices_[i];
   }
@@ -56,7 +56,7 @@ bool TrimeshFace::Intersect(const Ray& ray, Isect& isect) const {
   return hit;
 }
 
-BoundingBox TrimeshFace::GetBounds() {
+BoundingBox TrimeshFace::GetBounds() const {
   return (mesh_ != NULL ? mesh_->GetPatch(*this).GetBounds() : BoundingBox());
 }
 
