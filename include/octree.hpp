@@ -20,7 +20,7 @@ template<class SceneObject>
 class Octree: public OctreeBase {
 public:
   Octree() :
-      nodes_(), scene_objects_(), bounds_() {
+      OctreeBase(), nodes_(), scene_objects_(), bounds_() {
   }
   virtual ~Octree() {
     nodes_.clear();

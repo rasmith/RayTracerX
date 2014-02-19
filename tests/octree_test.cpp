@@ -96,6 +96,13 @@ TEST(RayTracerTest, BunnyMeshTest) {
   scene.AddLight(point_light);
   scene.AddLight(directional_light);
 
+  Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
+  Octree<TrimeshFace> octree;
+  std::cout << "Building octree" << std::endl;
+  octree.Build(trimesh->faces());
+  std::cout << "Octree built.";
+  trimesh->set_accelerator(&octree);
+
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);

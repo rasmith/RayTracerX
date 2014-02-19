@@ -6,9 +6,22 @@
  */
 #include <sys/types.h>
 #include "octree_base.hpp"
+#include "scene.hpp"
+#include "shape.hpp"
 namespace ray {
 const uint32_t OctreeBase::kMaxDepth = 20;
 const uint32_t OctreeBase::kMaxLeafSize = 16;
+Accelerator::~Accelerator() {
+}
+
+Accelerator::Accelerator() :
+    SceneShape() {
+}
+
+OctreeBase::OctreeBase() :
+    Accelerator() {
+}
+
 uint32_t OctreeBase::PointToOctant(const BoundingBox& bounds,
     const glm::vec3& point) const {
   glm::vec3 center = bounds.GetCenter();
@@ -160,7 +173,8 @@ template<typename T>
 void PrintBinary(T c) {
   uint32_t num_bits = sizeof(T) * 8;
   for (uint32_t i = 0; i < num_bits; ++i) {
-    if (0 == i % 8 && i > 0) std::cout << ' ';
+    if (0 == i % 8 && i > 0)
+      std::cout << ' ';
     std::cout << (c & (0x1 << (num_bits - i - 1)) ? '1' : '0');
 
   }

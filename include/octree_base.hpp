@@ -9,6 +9,7 @@
 #define OCTREE_BASE_HPP_
 #include <stdint.h>
 #include <sys/types.h>
+#include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
 class OctNode {
@@ -63,9 +64,11 @@ public:
 private:
   OctNodeFactory();
 };
-class Accelerator: public Shape {
+class Accelerator: public SceneShape {
 public:
   virtual ~Accelerator();
+protected:
+  Accelerator();
 };
 class OctreeBase: public Accelerator {
 public:

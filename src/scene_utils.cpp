@@ -160,7 +160,7 @@ void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
       trimesh->AddFace(f.mIndices[0], f.mIndices[1], f.mIndices[2]);
     }
   }
-  std::cout << "materials.size() = " << scene.material_list().materials.size << std::endl;
+  std::cout << "materials.size() = " << scene.material_list().materials.size() << std::endl;
   Material* mat = &scene.material_list().materials[mesh->mMaterialIndex];
   trimesh->set_material(mat);
   if (NULL == mesh->mNormals) {

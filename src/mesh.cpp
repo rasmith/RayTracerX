@@ -14,7 +14,7 @@
 #include "types.hpp"
 namespace ray {
 TrimeshFace::TrimeshFace() :
-    mesh_(NULL) {
+    SceneShape(), mesh_(NULL) {
 }
 
 TrimeshFace::TrimeshFace(const TrimeshFace& face) :
@@ -25,7 +25,7 @@ TrimeshFace::TrimeshFace(const TrimeshFace& face) :
 }
 
 TrimeshFace::TrimeshFace(Trimesh* mesh, int i, int j, int k) :
-    mesh_(mesh) {
+    SceneShape(), mesh_(mesh) {
   vertices_[0] = i;
   vertices_[1] = j;
   vertices_[2] = k;
@@ -50,7 +50,7 @@ void TrimeshFace::set_mesh(Trimesh* mesh) {
 bool TrimeshFace::Intersect(const Ray& ray, Isect& isect) const {
   bool hit = mesh_ != NULL && mesh_->GetPatch(*this).Intersect(ray, isect);
   if (hit) {
-    mesh_->InterpolateNormal(*this, isect.bary);
+    isect.normal = mesh_->InterpolateNormal(*this, isect.bary);
     isect.mat = material_;
   }
   return hit;
@@ -65,7 +65,7 @@ const int* TrimeshFace::vertices() const {
 }
 
 Trimesh::Trimesh() :
-    vertices_(), normals_(), tex_coords_(), faces_(), bounds_(),
+    SceneShape(), vertices_(), normals_(), tex_coords_(), faces_(), bounds_(),
         accelerator_(NULL) {
 }
 
@@ -121,15 +121,11 @@ glm::vec3 Trimesh::InterpolateNormal(const TrimeshFace& face,
 }
 
 glm::vec3 Trimesh::InterpolateNormal(int i, const glm::vec3& bary) const {
-  glm::vec3 N = glm::vec3(0.0f);
-  const TrimeshFace& f = faces_[i];
-  return InterpolateNormal(f, bary);
+  return InterpolateNormal(faces_[i], bary);
 }
 
 bool Trimesh::IntersectAccelerated(const Ray& ray, Isect& isect) const {
-  bool hit = accelerator_->Intersect(ray, isect);
-  TrimeshFace* f = static_cast<TrimeshFace*>(isect.obj);
-  return hit;
+  return accelerator_->Intersect(ray, isect);
 }
 
 bool Trimesh::IntersectUnaccelerated(const Ray& ray, Isect& isect) const {

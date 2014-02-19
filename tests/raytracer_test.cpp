@@ -40,7 +40,7 @@ TEST(RayTracerTest, SphereTest) {
   bool hit2 = sphere.Intersect(test_ray2, isect);
   EXPECT_FALSE(hit2);
 
-  glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, -4.0f);
+  glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, -5.0f);
   glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -154,7 +154,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   EXPECT_EQ("OK", status);
   int image_width = 512;
   int image_height = 512;
-  glm::vec3 eye_pos = glm::vec3(0.0f, 0.1f, 0.5f);
+  glm::vec3 eye_pos = glm::vec3(0.0f, 0.1f, 2.0f);
   glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);

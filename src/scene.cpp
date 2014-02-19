@@ -106,9 +106,8 @@ bool Scene::Intersect(const Ray& ray, Isect& isect) {
         best.mat = scene_shapes_[i]->material();
     }
   }
-  if (hit) {
+  if (hit)
     isect = best;
-  }
   return hit;
 }
 
