@@ -92,6 +92,7 @@ std::ostream& operator<<(std::ostream& out, const Shape& s) {
 }
 
 bool BoundingBox::Overlap(const BoundingBox& bbox) const {
+  //std::cout << "this = " << *this << " bbox = " << bbox << "\n";
   bool overlap = true;
   for (uint32_t i = 0; i < 3; ++i) {
     float distance = fabs(bbox.max()[i] - max_[i]);
@@ -100,6 +101,10 @@ bool BoundingBox::Overlap(const BoundingBox& bbox) const {
     overlap = overlap && (distance <= (length1 + length2));
   }
   return overlap;
+}
+std::ostream& operator<<(std::ostream& out, const BoundingBox& b) {
+  std::cout << "bbox: min = " << b.min() << " " << " max = " << b.max();
+  return out;
 }
 Isect::Isect() :
     obj(NULL), mat(NULL), normal(glm::vec3(0.0f)), bary(glm::vec3(0.0f)),

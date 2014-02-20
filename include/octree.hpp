@@ -89,6 +89,7 @@ private:
   };
   typedef std::vector<WorkNode> WorkList;
   void BuildLeaf(OctNode& node, WorkNode& work_node) {
+    std::cout << "BuildLeaf" << std::endl;
     node.set_offset(scene_objects_.size());
     node.set_size(work_node.objects.size());
     while (!work_node.objects.empty()) {
@@ -98,6 +99,7 @@ private:
   }
   void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
       uint32_t depth) {
+    std::cout << "BuildInternal depth = " << depth << std::endl;
     WorkNode child_work_nodes[8]; // process children tentatively
     node.set_offset(nodes_.size()); // children will have nodes pushed
     for (uint32_t j = 0; j < 8; ++j)
@@ -111,6 +113,8 @@ private:
           child_work_nodes[j].objects.push_back(obj);
     }
     for (uint32_t j = 0; j < 8; ++j) {
+      std::cout << "child_work_nodes[" << j << "].objects.size() = "
+          << child_work_nodes[j].objects.size() << "\n";
       // If a child has a non-empty object list, process it.
       if (child_work_nodes[j].objects.size() > 0) {
         node.set_size(node.size() + 1); // update parent size
@@ -127,6 +131,7 @@ private:
     }
   }
   void BuildLevel(WorkList& work_list, WorkList& next_list, uint32_t depth) {
+    std::cout << "BuildLevel depth = " << depth << std::endl;
     while (!work_list.empty()) {
       WorkNode work_node = work_list.back();
       work_list.pop_back();
@@ -136,6 +141,7 @@ private:
       else
         BuildInternal(node, work_node, next_list, depth);
       nodes_[work_node.node_index] = EncodeNode(node);
+      std::cout << "next_list.size() =" << next_list.size() << "\n";
     }
   }
   void BuildTree(WorkNode& work_root) {

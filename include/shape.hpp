@@ -31,7 +31,7 @@ private:
   glm::vec3 min_;
   glm::vec3 max_;
 };
-
+std::ostream& operator<<(std::ostream& out, const BoundingBox& scene);
 struct Isect;
 
 class Shape {
