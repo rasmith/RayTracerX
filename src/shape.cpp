@@ -49,7 +49,7 @@ void BoundingBox::set_max(const glm::vec3& max_extents) {
 BoundingBox BoundingBox::Join(const BoundingBox& bbox) const {
   BoundingBox result;
   result.min_ = glm::min(min_, bbox.min_);
-  result.min_ = glm::max(max_, bbox.max_);
+  result.max_ = glm::max(max_, bbox.max_);
   return result;
 }
 

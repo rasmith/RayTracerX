@@ -40,8 +40,8 @@ std::ostream& operator<<(std::ostream& out, const OctNode& scene);
 // data[0]: top bit is type
 //      : next three bits indicate octant
 //      : bottom four bits unused
-// data[1]: size of node, 8 bits, max size of 256, empty nodes not stored
-// data[2..5]: offset into corresponding array, 32 bits
+// data[1..4]: offset into corresponding array, 32 bits, max size 4,294,967,296
+// data[5..7]: node size, 24 bits, max size 16,777,216, empty nodes not stored
 struct EncodedNode {
   u_char data[8];
   OctNode::NodeType GetType() const;

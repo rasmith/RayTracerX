@@ -60,6 +60,7 @@ private:
   }
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const {
+//    std::cout << "IntersectLeaf: leaf = " << leaf << "\n";
     bool hit = false;
     Isect current;
     Isect best;
@@ -70,9 +71,8 @@ private:
         best = current;
         hit = true;
       }
-    if (hit) {
+    if (hit)
       isect = best;
-    }
     return hit;
   }
   struct WorkNode {
@@ -89,9 +89,9 @@ private:
   };
   typedef std::vector<WorkNode> WorkList;
   void BuildLeaf(OctNode& node, WorkNode& work_node) {
-    std::cout << "BuildLeaf" << std::endl;
     node.set_offset(scene_objects_.size());
     node.set_size(work_node.objects.size());
+    std::cout << "BuildLeaf node = " << node << std::endl;
     while (!work_node.objects.empty()) {
       scene_objects_.push_back(work_node.objects.back());
       work_node.objects.pop_back();
@@ -99,9 +99,10 @@ private:
   }
   void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
       uint32_t depth) {
-    std::cout << "BuildInternal depth = " << depth << std::endl;
+    //std::cout << "BuildInternal node = " << node << " depth = " << depth << std::endl;
     WorkNode child_work_nodes[8]; // process children tentatively
     node.set_offset(nodes_.size()); // children will have nodes pushed
+    //std::cout << "bounds = " << work_node.bounds << "\n";
     for (uint32_t j = 0; j < 8; ++j)
       child_work_nodes[j] = WorkNode( // initialize child lists
           GetChildBounds(work_node.bounds, j));
@@ -113,14 +114,14 @@ private:
           child_work_nodes[j].objects.push_back(obj);
     }
     for (uint32_t j = 0; j < 8; ++j) {
-      std::cout << "child_work_nodes[" << j << "].objects.size() = "
-          << child_work_nodes[j].objects.size() << "\n";
+      //std::cout << "child_work_nodes[" << j << "].objects.size() = "
+      //    << child_work_nodes[j].objects.size() << "\n";
       // If a child has a non-empty object list, process it.
       if (child_work_nodes[j].objects.size() > 0) {
         node.set_size(node.size() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         OctNode child;
-        if (depth > kMaxDepth || count <= kMaxLeafSize)
+        if (depth + 1 >= kMaxDepth || count <= kMaxLeafSize)
           child = GetNodeFactory().CreateLeaf(j);
         else
           child = GetNodeFactory().CreateInternal(j);
@@ -140,14 +141,22 @@ private:
         BuildLeaf(node, work_node);
       else
         BuildInternal(node, work_node, next_list, depth);
+      std::cout << "BuildLevel node pre save = " << node << "\n";
       nodes_[work_node.node_index] = EncodeNode(node);
-      std::cout << "next_list.size() =" << next_list.size() << "\n";
+      std::cout << "BuildLeaf node post save = "
+          << DecodeNode(nodes_[work_node.node_index]) << "\n";
     }
+    std::cout << "next_list.size() =" << next_list.size() << "\n";
   }
   void BuildTree(WorkNode& work_root) {
     // compute bounds
-    for (uint32_t i = 0; i < work_root.objects.size(); ++i)
+    //std::cout << "::: bounds_ = " << bounds_ << "\n";
+    for (uint32_t i = 0; i < work_root.objects.size(); ++i) {
+      //BoundingBox bounds = work_root.objects[i]->GetBounds();
+      //std::cout << "bounds = " << bounds << "\n";
       bounds_ = bounds_.Join(work_root.objects[i]->GetBounds());
+      //std::cout << "--> bounds_ = " << bounds_ << "\n";
+    }
     std::vector<WorkNode> work_list;
     std::vector<WorkNode> next_list;
     int depth = 0;
@@ -158,6 +167,7 @@ private:
     else
       root = GetNodeFactory().CreateInternal(0);
     nodes_.push_back(EncodeNode(root));
+    work_root.bounds = bounds_;
     work_root.node_index = 0;
     work_list.push_back(work_root);
     next_list.clear();

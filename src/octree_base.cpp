@@ -9,7 +9,7 @@
 #include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
-const uint32_t OctreeBase::kMaxDepth = 20;
+const uint32_t OctreeBase::kMaxDepth = 1;
 const uint32_t OctreeBase::kMaxLeafSize = 16;
 Accelerator::~Accelerator() {
 }
@@ -167,7 +167,13 @@ uint32_t EncodedNode::GetOctant() const {
   return static_cast<uint32_t>((data[0] & 0x70) >> 4);
 }
 uint32_t EncodedNode::GetSize() const {
-  return static_cast<uint32_t>(data[1]);
+  uint32_t size = 0x0;
+  uint32_t byte = 0x0;
+  for (uint32_t i = 5; i < 8; ++i) {
+    byte = static_cast<uint32_t>(data[i]);
+    size = size | (byte << ((i - 5) * 8));
+  }
+  return size;
 }
 template<typename T>
 void PrintBinary(T c) {
@@ -182,9 +188,9 @@ void PrintBinary(T c) {
 uint32_t EncodedNode::GetOffset() const {
   uint32_t offset = 0x0;
   uint32_t byte = 0x0;
-  for (uint32_t i = 2; i < 6; ++i) {
+  for (uint32_t i = 1; i < 5; ++i) {
     byte = static_cast<uint32_t>(data[i]);
-    offset = offset | (byte << ((i - 2) * 8));
+    offset = offset | (byte << ((i - 1) * 8));
   }
   return offset;
 }
@@ -200,14 +206,20 @@ void EncodedNode::SetOctant(uint32_t octant) {
 }
 
 void EncodedNode::SetSize(uint32_t size) {
-  u_char mask = static_cast<u_char>(size);
-  data[1] = mask;
+  uint32_t byte = 0x0;
+  uint32_t shift = 0;
+  for (uint32_t i = 5; i < 8; ++i) {
+    shift = (i - 5) * 8;
+    byte = (size >> shift) & 0x000000FF;
+    data[i] = static_cast<u_char>(byte);
+  }
 }
+
 void EncodedNode::SetOffset(uint32_t offset) {
   uint32_t byte = 0x0;
   uint32_t shift = 0;
-  for (uint32_t i = 2; i < 6; ++i) {
-    shift = (i - 2) * 8;
+  for (uint32_t i = 1; i < 5; ++i) {
+    shift = (i - 1) * 8;
     byte = (offset >> shift) & 0x000000FF;
     data[i] = static_cast<u_char>(byte);
   }

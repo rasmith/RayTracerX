@@ -26,13 +26,32 @@
 #include "scene.hpp"
 #include "scene_utils.hpp"
 #include "transform.hpp"
+template<typename T>
+void PrintBinary(T c) {
+  uint32_t num_bits = sizeof(T) * 8;
+  for (uint32_t i = 0; i < num_bits; ++i) {
+    if (0 == i % 8 && i > 0)
+      std::cout << ' ';
+    std::cout << (c & (0x1 << (num_bits - i - 1)) ? '1' : '0');
 
+  }
+}
 namespace ray {
 TEST(OctreeTest, NodeEncodeTest) {
   OctNode internal_node;
   OctNode test_node;
   EncodedNode encoded;
   OctNodeFactory& fact = OctNodeFactory::GetInstance();
+  OctNode leaf_node = fact.CreateLeaf(0);
+  leaf_node.set_offset(0);
+  leaf_node.set_size(4968);
+  std::cout << "Before --> ";PrintBinary(4968u);std::cout << "\n";
+  leaf_node = fact.CreateOctNode(fact.CreateEncodedNode(leaf_node));
+  std::cout << "After --> ";PrintBinary(leaf_node.size());std::cout << "\n";
+  EXPECT_TRUE(leaf_node.IsLeaf());
+  EXPECT_EQ(0u, leaf_node.octant());
+  EXPECT_EQ(0u, leaf_node.offset());
+  EXPECT_EQ(4968u, leaf_node.size());
   for (uint32_t i = 0; i < 8; ++i) {
     internal_node = fact.CreateInternal(i);
     internal_node.set_offset(42 * (0x1 << (4 * i)));
