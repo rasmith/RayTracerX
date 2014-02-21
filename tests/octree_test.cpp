@@ -45,9 +45,13 @@ TEST(OctreeTest, NodeEncodeTest) {
   OctNode leaf_node = fact.CreateLeaf(0);
   leaf_node.set_offset(0);
   leaf_node.set_size(4968);
-  std::cout << "Before --> ";PrintBinary(4968u);std::cout << "\n";
+  std::cout << "Before --> ";
+  PrintBinary(4968u);
+  std::cout << "\n";
   leaf_node = fact.CreateOctNode(fact.CreateEncodedNode(leaf_node));
-  std::cout << "After --> ";PrintBinary(leaf_node.size());std::cout << "\n";
+  std::cout << "After --> ";
+  PrintBinary(leaf_node.size());
+  std::cout << "\n";
   EXPECT_TRUE(leaf_node.IsLeaf());
   EXPECT_EQ(0u, leaf_node.octant());
   EXPECT_EQ(0u, leaf_node.offset());
@@ -77,7 +81,34 @@ TEST(OctreeTest, NodeEncodeTest) {
     EXPECT_EQ(internal_node.size(), test_node.size());
   }
 }
-
+TEST(OctreeTest, ChildBoundsTest) {
+  BoundingBox bounds = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
+  Octree<TrimeshFace> octree;
+  BoundingBox bounds0 = octree.GetChildBounds(bounds, 0); // 000
+  EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.0f), bounds0.min());
+  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds0.max());
+  BoundingBox bounds1 = octree.GetChildBounds(bounds, 1); // 001
+  EXPECT_EQ(glm::vec3(0.5f, 0.0f, 0.0f), bounds1.min());
+  EXPECT_EQ(glm::vec3(1.0f, 0.5f, 0.5f), bounds1.max());
+  BoundingBox bounds2 = octree.GetChildBounds(bounds, 2); // 010
+  EXPECT_EQ(glm::vec3(0.0f, 0.5f, 0.0f), bounds2.min());
+  EXPECT_EQ(glm::vec3(0.5f, 1.0f, 0.5f), bounds2.max());
+  BoundingBox bounds3 = octree.GetChildBounds(bounds, 3); // 011
+  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.0f), bounds3.min());
+  EXPECT_EQ(glm::vec3(1.0f, 1.0f, 0.5f), bounds3.max());
+  BoundingBox bounds4 = octree.GetChildBounds(bounds, 4); // 100
+  EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.5f), bounds4.min());
+  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 1.0f), bounds4.max());
+  BoundingBox bounds5 = octree.GetChildBounds(bounds, 5); // 101
+  EXPECT_EQ(glm::vec3(0.5f, 0.0f, 0.5f), bounds5.min());
+  EXPECT_EQ(glm::vec3(1.0f, 0.5f, 1.0f), bounds5.max());
+  BoundingBox bounds6 = octree.GetChildBounds(bounds, 6); // 110
+  EXPECT_EQ(glm::vec3(0.0f, 0.5f, 0.5f), bounds6.min());
+  EXPECT_EQ(glm::vec3(0.5f, 1.0f, 1.0f), bounds6.max());
+  BoundingBox bounds7 = octree.GetChildBounds(bounds, 7); // 111
+  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds7.min());
+  EXPECT_EQ(glm::vec3(1.0f, 1.0f, 1.0f), bounds7.max());
+}
 TEST(RayTracerTest, BunnyMeshTest) {
   SceneLoader& loader = SceneLoader::GetInstance();
   std::string path = "../assets/bunny.obj";

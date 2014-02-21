@@ -60,7 +60,7 @@ private:
   }
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const {
-//    std::cout << "IntersectLeaf: leaf = " << leaf << "\n";
+    //std::cout << "IntersectLeaf: leaf = " << leaf << "\n";
     bool hit = false;
     Isect current;
     Isect best;
@@ -91,7 +91,7 @@ private:
   void BuildLeaf(OctNode& node, WorkNode& work_node) {
     node.set_offset(scene_objects_.size());
     node.set_size(work_node.objects.size());
-    std::cout << "BuildLeaf node = " << node << std::endl;
+    //std::cout << "BuildLeaf node = " << node << std::endl;
     while (!work_node.objects.empty()) {
       scene_objects_.push_back(work_node.objects.back());
       work_node.objects.pop_back();
@@ -132,7 +132,7 @@ private:
     }
   }
   void BuildLevel(WorkList& work_list, WorkList& next_list, uint32_t depth) {
-    std::cout << "BuildLevel depth = " << depth << std::endl;
+    //std::cout << "BuildLevel depth = " << depth << std::endl;
     while (!work_list.empty()) {
       WorkNode work_node = work_list.back();
       work_list.pop_back();
@@ -141,12 +141,12 @@ private:
         BuildLeaf(node, work_node);
       else
         BuildInternal(node, work_node, next_list, depth);
-      std::cout << "BuildLevel node pre save = " << node << "\n";
+      //std::cout << "BuildLevel node pre save = " << node << "\n";
       nodes_[work_node.node_index] = EncodeNode(node);
-      std::cout << "BuildLeaf node post save = "
-          << DecodeNode(nodes_[work_node.node_index]) << "\n";
+      //std::cout << "BuildLeaf node post save = "
+      //    << DecodeNode(nodes_[work_node.node_index]) << "\n";
     }
-    std::cout << "next_list.size() =" << next_list.size() << "\n";
+    //std::cout << "next_list.size() =" << next_list.size() << "\n";
   }
   void BuildTree(WorkNode& work_root) {
     // compute bounds
@@ -177,8 +177,12 @@ private:
     while (!work_list.empty()) {
       BuildLevel(work_list, next_list, depth);
       work_list.swap(next_list);
+      std::cout << "level = " << depth << "\n";
       ++depth;
     }
+    std::cout << "num internal nodes = " << GetNumInternal() << "\n";
+    std::cout << "num leaves = " << GetNumLeaves() << "\n";
+    std::cout << "num object refs = " << GetNumObjects() << "\n";
   }
   void BuildTree(const std::vector<SceneObject>& objects) {
     WorkNode work_root = WorkNode(bounds_);

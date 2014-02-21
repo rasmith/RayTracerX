@@ -74,12 +74,12 @@ class OctreeBase: public Accelerator {
 public:
   static const uint32_t kMaxDepth;
   static const uint32_t kMaxLeafSize;
-protected:
-  OctreeBase();
   uint32_t PointToOctant(const BoundingBox& bounds,
       const glm::vec3& point) const;
   BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const;
   virtual bool Intersect(const Ray& ray, Isect& isect) const;
+protected:
+  OctreeBase();
   virtual bool Traverse(const OctNode& node, const BoundingBox& bounds,
       const Ray& ray, Isect& isect, uint32_t depth) const;
   bool TraverseStackless(const OctNode& node, const BoundingBox& bounds,

@@ -9,8 +9,8 @@
 #include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
-const uint32_t OctreeBase::kMaxDepth = 1;
-const uint32_t OctreeBase::kMaxLeafSize = 16;
+const uint32_t OctreeBase::kMaxDepth = 10;
+const uint32_t OctreeBase::kMaxLeafSize = 32;
 Accelerator::~Accelerator() {
 }
 
@@ -36,11 +36,10 @@ BoundingBox OctreeBase::GetChildBounds(const BoundingBox& bounds,
   glm::vec3 center = bounds.GetCenter();
   BoundingBox child_bounds = bounds;
   for (uint32_t i = 0; i < 3; ++i) {
-    if ((octant >> (i - 1)) & 0x1) {
+    if ((octant >> i) & 0x1)
       child_bounds.min()[i] = center[i];
-    } else {
+    else
       child_bounds.max()[i] = center[i];
-    }
   }
   return child_bounds;
 }
@@ -72,7 +71,7 @@ OctNodeFactory& OctreeBase::GetNodeFactory() const {
   return OctNodeFactory::GetInstance();
 }
 bool OctreeBase::Intersect(const Ray& ray, Isect& isect) const {
-  return TraverseStackless(GetRoot(), GetBounds(), ray, isect);
+  return Traverse(GetRoot(), GetBounds(), ray, isect, 0);
 }
 ///////
 //
@@ -97,6 +96,11 @@ void OctreeBase::IntersectChildren(const OctNode& node,
         t_far_vals[count]))
       ++count;
   }
+  //for (uint32_t i = 0; i < count; ++i) {
+  //  std::cout << t_near_vals[i] << " " << children[i] << " " << child_bounds[i]
+  //      << "\n";
+  //}
+  //std::cout << "****\n";
   // sort by t_near - selection sort
   for (uint32_t i = 0; i < count; ++i) {
     float *pos = std::min_element(t_near_vals + i, t_near_vals + count);
@@ -106,6 +110,10 @@ void OctreeBase::IntersectChildren(const OctNode& node,
     std::swap(t_near_vals[i], t_far_vals[k]);
     std::swap(t_far_vals[i], t_far_vals[k]);
   }
+  //for (uint32_t i = 0; i < count; ++i) {
+  //  std::cout << t_near_vals[i] << " " << children[i] << "\n";
+  //}
+  //std::cout << "----\n";
 }
 bool OctreeBase::TraverseStackless(const OctNode& root,
     const BoundingBox& bounds, const Ray& ray, Isect& isect) const {
@@ -144,6 +152,9 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
 }
 bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
     const Ray& ray, Isect& isect, uint32_t depth) const {
+  //for (uint32_t i = 0; i < depth; ++i)
+  //  std::cout << " ";
+  //std::cout << node << "\n";
   if (depth > kMaxDepth) // check depth first
     return false;
   float t_near, t_far;
