@@ -10,7 +10,7 @@
 #include "shape.hpp"
 namespace ray {
 const uint32_t OctreeBase::kMaxDepth = 10;
-const uint32_t OctreeBase::kMaxLeafSize = 32;
+const uint32_t OctreeBase::kMaxLeafSize = 16;
 Accelerator::~Accelerator() {
 }
 
@@ -93,14 +93,15 @@ void OctreeBase::IntersectChildren(const OctNode& node,
     children[count] = GetIthChildOf(node, i);
     child_bounds[count] = GetChildBounds(bounds, children[count].octant());
     if (child_bounds[count].Intersect(ray, t_near_vals[count],
-        t_far_vals[count]))
+        t_far_vals[count])) {
+      std::cout << "^^^ i = " << i << " " << t_near_vals[count] << "\n";
       ++count;
+    }
   }
-  //for (uint32_t i = 0; i < count; ++i) {
-  //  std::cout << t_near_vals[i] << " " << children[i] << " " << child_bounds[i]
-  //      << "\n";
-  //}
-  //std::cout << "****\n";
+  for (uint32_t i = 0; i < count; ++i) {
+    std::cout << "-->" << t_near_vals[i] << " " << children[i] << "\n";
+  }
+  std::cout << "****\n";
   // sort by t_near - selection sort
   for (uint32_t i = 0; i < count; ++i) {
     float *pos = std::min_element(t_near_vals + i, t_near_vals + count);
@@ -110,10 +111,10 @@ void OctreeBase::IntersectChildren(const OctNode& node,
     std::swap(t_near_vals[i], t_far_vals[k]);
     std::swap(t_far_vals[i], t_far_vals[k]);
   }
-  //for (uint32_t i = 0; i < count; ++i) {
-  //  std::cout << t_near_vals[i] << " " << children[i] << "\n";
-  //}
-  //std::cout << "----\n";
+  for (uint32_t i = 0; i < count; ++i) {
+    std::cout << t_near_vals[i] << " " << children[i] << "\n";
+  }
+  std::cout << "----\n";
 }
 bool OctreeBase::TraverseStackless(const OctNode& root,
     const BoundingBox& bounds, const Ray& ray, Isect& isect) const {
@@ -137,9 +138,9 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
     node_stack.pop_back();
     current_bounds = bounds_stack.back();
     bounds_stack.pop_back();
-    if (current.IsLeaf()) {
+    if (current.IsLeaf())
       hit = IntersectLeaf(current, ray, isect);
-    } else {
+    else {
       IntersectChildren(current, bounds, ray, &children[0], &child_bounds[0],
           count);
       for (uint32_t i = 0; i < count; ++i) {

@@ -80,6 +80,24 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
   return true;
 }
 
+bool BoundingBox::Overlap(const BoundingBox& bbox) const {
+  //std::cout << "this = " << *this << " bbox = " << bbox << "\n";
+  bool overlap = true;
+  for (uint32_t i = 0; i < 3; ++i) {
+    overlap = overlap && (min_[i] <= bbox.max()[i] && bbox.min()[i] <= max_[i]);
+  }
+  return overlap;
+}
+
+bool BoundingBox::operator==(const BoundingBox& bbox) const {
+  return min_ == bbox.min() && max_ == bbox.max();
+}
+
+std::ostream& operator<<(std::ostream& out, const BoundingBox& b) {
+  std::cout << "bbox: min = " << b.min() << " " << " max = " << b.max();
+  return out;
+}
+
 Shape::~Shape() {
 }
 
@@ -91,21 +109,6 @@ std::ostream& operator<<(std::ostream& out, const Shape& s) {
   return out;
 }
 
-bool BoundingBox::Overlap(const BoundingBox& bbox) const {
-  //std::cout << "this = " << *this << " bbox = " << bbox << "\n";
-  bool overlap = true;
-  for (uint32_t i = 0; i < 3; ++i) {
-    float distance = fabs(bbox.max()[i] - max_[i]);
-    float length1 = max_[i] - min_[i];
-    float length2 = bbox.max()[i] - bbox.min()[i];
-    overlap = overlap && (distance <= (length1 + length2));
-  }
-  return overlap;
-}
-std::ostream& operator<<(std::ostream& out, const BoundingBox& b) {
-  std::cout << "bbox: min = " << b.min() << " " << " max = " << b.max();
-  return out;
-}
 Isect::Isect() :
     obj(NULL), mat(NULL), normal(glm::vec3(0.0f)), bary(glm::vec3(0.0f)),
         uv(glm::vec3(0.0f)), t_hit(-std::numeric_limits<float>::max()) {

@@ -37,6 +37,24 @@ void PrintBinary(T c) {
   }
 }
 namespace ray {
+TEST(OctreeTest, TriangleBoundsTest) {
+  Triangle triangle0(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(4.0f, 5.0f, 6.0f),
+      glm::vec3(7.0f, 8.0f, 9.0f));
+  BoundingBox box0 = triangle0.GetBounds();
+  EXPECT_EQ(box0,
+      BoundingBox(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(7.0f, 8.0f, 9.0f)));
+}
+TEST(OctreeTest, BoundingBoxOverlapTest) {
+  BoundingBox box0 = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
+  BoundingBox box1 = BoundingBox(glm::vec3(1.0f, 2.0f, 3.0f),
+      glm::vec3(7.0f, 8.0f, 9.0f));
+  BoundingBox box2 = BoundingBox(glm::vec3(0.0f, 0.0f, 2.0f),
+      glm::vec3(1.0f, 1.0f, 9.0f));
+  EXPECT_FALSE(box0.Overlap(box1));
+  EXPECT_FALSE(box1.Overlap(box0));
+  EXPECT_FALSE(box0.Overlap(box2));
+  EXPECT_FALSE(box2.Overlap(box0));
+}
 TEST(OctreeTest, NodeEncodeTest) {
   OctNode internal_node;
   OctNode test_node;
@@ -120,7 +138,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   EXPECT_EQ("OK", status);
   int image_width = 512;
   int image_height = 512;
-  glm::vec3 eye_pos = glm::vec3(0.0f, 0.1f, 0.5f);
+  glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, 1.0f);
   glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);

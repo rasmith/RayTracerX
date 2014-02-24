@@ -20,7 +20,8 @@ template<class SceneObject>
 class Octree: public OctreeBase {
 public:
   Octree() :
-      OctreeBase(), nodes_(), scene_objects_(), bounds_() {
+      OctreeBase(), nodes_(), scene_objects_(), bounds_(),
+          num_internal_nodes_(0), num_leaves_(0) {
   }
   virtual ~Octree() {
     nodes_.clear();
@@ -46,6 +47,9 @@ private:
   std::vector<EncodedNode> nodes_;
   ObjectVector scene_objects_;
   BoundingBox bounds_;
+  uint32_t num_internal_nodes_;
+  uint32_t num_leaves_;
+
   OctNode DecodeNode(const EncodedNode& encoded) const {
     return GetNodeFactory().CreateOctNode(encoded);
   }
@@ -57,6 +61,12 @@ private:
   }
   virtual OctNode GetRoot() const {
     return DecodeNode(nodes_[0]);
+  }
+  uint32_t num_internal_nodes() {
+    return num_internal_nodes_;
+  }
+  uint32_t num_leaves() {
+    return num_leaves_;
   }
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const {
@@ -89,6 +99,7 @@ private:
   };
   typedef std::vector<WorkNode> WorkList;
   void BuildLeaf(OctNode& node, WorkNode& work_node) {
+    ++num_leaves_;
     node.set_offset(scene_objects_.size());
     node.set_size(work_node.objects.size());
     //std::cout << "BuildLeaf node = " << node << std::endl;
@@ -99,6 +110,7 @@ private:
   }
   void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
       uint32_t depth) {
+    ++num_internal_nodes_;
     //std::cout << "BuildInternal node = " << node << " depth = " << depth << std::endl;
     WorkNode child_work_nodes[8]; // process children tentatively
     node.set_offset(nodes_.size()); // children will have nodes pushed
@@ -180,9 +192,9 @@ private:
       std::cout << "level = " << depth << "\n";
       ++depth;
     }
-    std::cout << "num internal nodes = " << GetNumInternal() << "\n";
-    std::cout << "num leaves = " << GetNumLeaves() << "\n";
-    std::cout << "num object refs = " << GetNumObjects() << "\n";
+    std::cout << "num internal nodes = " << num_internal_nodes() << "\n";
+    std::cout << "num leaves = " << num_leaves() << "\n";
+    std::cout << "num object refs = " << scene_objects_.size() << "\n";
   }
   void BuildTree(const std::vector<SceneObject>& objects) {
     WorkNode work_root = WorkNode(bounds_);
