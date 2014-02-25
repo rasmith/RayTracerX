@@ -8,12 +8,13 @@
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <string>
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-
+using ::testing::ElementsAre;
 #include "camera.hpp"
 #include "geometry.hpp"
 #include "io_utils.hpp"
@@ -25,18 +26,30 @@
 #include "raytracer.hpp"
 #include "scene.hpp"
 #include "scene_utils.hpp"
+#include "sorting_utils.hpp"
 #include "transform.hpp"
-template<typename T>
-void PrintBinary(T c) {
-  uint32_t num_bits = sizeof(T) * 8;
-  for (uint32_t i = 0; i < num_bits; ++i) {
-    if (0 == i % 8 && i > 0)
-      std::cout << ' ';
-    std::cout << (c & (0x1 << (num_bits - i - 1)) ? '1' : '0');
 
+namespace ray {
+TEST(OctreeTest, SortTest) {
+  int a[24][4] = { { 0, 1, 2, 3 }, { 0, 1, 3, 2 }, { 0, 2, 1, 3 },
+      { 0, 2, 3, 1 }, { 0, 3, 1, 2 }, { 0, 3, 2, 1 }, { 1, 0, 2, 3 }, { 1, 0, 3,
+          2 }, { 1, 2, 0, 3 }, { 1, 2, 3, 0 }, { 1, 3, 0, 2 }, { 1, 3, 2, 0 }, {
+          2, 0, 1, 3 }, { 2, 0, 3, 1 }, { 2, 1, 0, 3 }, { 2, 1, 3, 0 }, { 2, 3,
+          0, 1 }, { 2, 3, 1, 0 }, { 3, 0, 1, 2 }, { 3, 0, 2, 1 },
+      { 3, 1, 0, 2 }, { 3, 1, 2, 0 }, { 3, 2, 0, 1 }, { 3, 2, 1, 0 } };
+  int r[4];
+  int b[4];
+  for (int i = 0; i < 24; ++i) {
+    std::cout << "i = " << i << " a[i] = ";
+    PrintArray(std::cout, &a[i][0], 4, ",");
+    std::cout << "\n";
+    memcpy(&b[0], &a[i][0], sizeof(int) * 4);
+    RankFixed(&b[0], &r[0], 4);
+    Reorder(&b[0], &r[0], 4);
+    ASSERT_THAT(r, ElementsAre(a[i][0], a[i][1], a[i][2], a[i][3]));
+    ASSERT_THAT(b, ElementsAre(0, 1, 2, 3));
   }
 }
-namespace ray {
 TEST(OctreeTest, TriangleBoundsTest) {
   Triangle triangle0(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(4.0f, 5.0f, 6.0f),
       glm::vec3(7.0f, 8.0f, 9.0f));

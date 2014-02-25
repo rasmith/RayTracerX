@@ -28,6 +28,7 @@ public:
   bool Intersect(const Ray& ray, float& t_near, float& t_far) const;
   bool Overlap(const BoundingBox& bbox) const;
   bool operator==(const BoundingBox& bbox) const;
+  BoundingBox& operator=(const BoundingBox& bbox);
 private:
   glm::vec3 min_;
   glm::vec3 max_;

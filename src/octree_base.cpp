@@ -5,9 +5,11 @@
  *      Author: agrippa
  */
 #include <sys/types.h>
+#include "io_utils.hpp"
 #include "octree_base.hpp"
 #include "scene.hpp"
 #include "shape.hpp"
+#include "sorting_utils.hpp"
 namespace ray {
 const uint32_t OctreeBase::kMaxDepth = 10;
 const uint32_t OctreeBase::kMaxLeafSize = 16;
@@ -31,6 +33,7 @@ uint32_t OctreeBase::PointToOctant(const BoundingBox& bounds,
   uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
   return octant;
 }
+
 BoundingBox OctreeBase::GetChildBounds(const BoundingBox& bounds,
     uint32_t octant) const {
   glm::vec3 center = bounds.GetCenter();
@@ -43,12 +46,14 @@ BoundingBox OctreeBase::GetChildBounds(const BoundingBox& bounds,
   }
   return child_bounds;
 }
+
 void OctreeBase::PrintNode(std::ostream& out, const OctNode& node,
     int depth) const {
   for (int i = 0; i < depth; ++i)
     out << " ";
   out << node << "\n";
 }
+
 void OctreeBase::Print(std::ostream& out) const {
   std::vector<OctNode> nodes;
   std::vector<int> depths;
@@ -67,6 +72,7 @@ void OctreeBase::Print(std::ostream& out) const {
     }
   }
 }
+
 OctNodeFactory& OctreeBase::GetNodeFactory() const {
   return OctNodeFactory::GetInstance();
 }
@@ -83,38 +89,52 @@ bool OctreeBase::Intersect(const Ray& ray, Isect& isect) const {
 //  assumed to be of length four (4).
 //
 //////
+struct SortHolder {
+  float t_near;
+  float t_far;
+  OctNode child;
+  BoundingBox bounds;
+  SortHolder() :
+      t_near(0.0f), t_far(0.0f), child(OctNode()), bounds(BoundingBox()) {
+  }
+  SortHolder(const SortHolder& h) :
+      t_near(h.t_near), t_far(h.t_far), child(h.child), bounds(h.bounds) {
+  }
+  explicit SortHolder(float t0, float t1, const OctNode& n,
+      const BoundingBox& b) :
+      t_near(t0), t_far(t1), child(n), bounds(b) {
+  }
+  bool operator<(const SortHolder& s) const {
+    return t_near < s.t_near;
+  }
+};
 void OctreeBase::IntersectChildren(const OctNode& node,
     const BoundingBox& bounds, const Ray& ray, OctNode* children,
     BoundingBox* child_bounds, uint32_t& count) const {
-  float t_near_vals[4];
-  float t_far_vals[4];
+  float t_near;
+  float t_far;
+  SortHolder h[4];
   count = 0;
+  //std::cout << "Get intersected children:\n";
   for (uint32_t i = 0; count < 4 && i < node.size(); ++i) {
     children[count] = GetIthChildOf(node, i);
     child_bounds[count] = GetChildBounds(bounds, children[count].octant());
-    if (child_bounds[count].Intersect(ray, t_near_vals[count],
-        t_far_vals[count])) {
-      std::cout << "^^^ i = " << i << " " << t_near_vals[count] << "\n";
+    if (child_bounds[count].Intersect(ray, t_near, t_far)) {
+      h[count] = SortHolder(t_near, t_far, children[count],
+          child_bounds[count]);
+      //std::cout << "i = " << i << " t_near = " << t_near << " t_far = " << t_far
+      //    << " child = " << children[count] << "\n";
       ++count;
     }
   }
+  //std::cout << "Sort children:\n";
+  std::sort(&h[0], &h[0] + count);
   for (uint32_t i = 0; i < count; ++i) {
-    std::cout << "-->" << t_near_vals[i] << " " << children[i] << "\n";
+    children[i] = h[i].child;
+    child_bounds[i] = h[i].bounds;
+    //std::cout << "i = " << i << " t_near = " << h[i].t_near << " t_far = "
+    //    << h[i].t_far << " node = " << children[i] << "\n";
   }
-  std::cout << "****\n";
-  // sort by t_near - selection sort
-  for (uint32_t i = 0; i < count; ++i) {
-    float *pos = std::min_element(t_near_vals + i, t_near_vals + count);
-    int k = pos - &t_near_vals[0];
-    std::swap(children[i], children[k]);
-    std::swap(child_bounds[i], child_bounds[k]);
-    std::swap(t_near_vals[i], t_far_vals[k]);
-    std::swap(t_far_vals[i], t_far_vals[k]);
-  }
-  for (uint32_t i = 0; i < count; ++i) {
-    std::cout << t_near_vals[i] << " " << children[i] << "\n";
-  }
-  std::cout << "----\n";
 }
 bool OctreeBase::TraverseStackless(const OctNode& root,
     const BoundingBox& bounds, const Ray& ray, Isect& isect) const {
@@ -187,16 +207,6 @@ uint32_t EncodedNode::GetSize() const {
   }
   return size;
 }
-template<typename T>
-void PrintBinary(T c) {
-  uint32_t num_bits = sizeof(T) * 8;
-  for (uint32_t i = 0; i < num_bits; ++i) {
-    if (0 == i % 8 && i > 0)
-      std::cout << ' ';
-    std::cout << (c & (0x1 << (num_bits - i - 1)) ? '1' : '0');
-
-  }
-}
 uint32_t EncodedNode::GetOffset() const {
   uint32_t offset = 0x0;
   uint32_t byte = 0x0;
@@ -244,14 +254,37 @@ std::ostream& operator<<(std::ostream& out, const EncodedNode& node) {
   }
   return out;
 }
+
 OctNode::OctNode() :
     type_(kInternal), octant_(0), size_(0), offset_(0) {
 }
+
 OctNode::OctNode(const OctNode::NodeType& node_type, uint32_t node_octant,
     uint32_t node_size, uint32_t node_offset) :
     type_(node_type), octant_(node_octant), size_(node_size),
         offset_(node_offset) {
 }
+
+OctNode::OctNode(const OctNode& node) :
+    type_(node.type_), octant_(node.octant_), size_(node.size_),
+        offset_(node.offset_) {
+}
+
+bool OctNode::operator==(const OctNode& node) const {
+  return type() == node.type() && octant() == node.octant()
+      && size() == node.size() && offset() == node.offset();
+}
+
+OctNode& OctNode::operator=(const OctNode& node) {
+  if (this == &node)
+    return *this;
+  type_ = node.type_;
+  octant_ = node.octant_;
+  size_ = node.size_;
+  offset_ = node.offset_;
+  return *this;
+}
+
 OctNodeFactory::OctNodeFactory() {
 }
 OctNodeFactory & OctNodeFactory::GetInstance() {
@@ -305,6 +338,7 @@ void OctNode::set_size(uint32_t size) {
 OctNode::NodeType OctNode::type() const {
   return type_;
 }
+
 void OctNode::set_type(NodeType type) {
   type_ = type;
 }

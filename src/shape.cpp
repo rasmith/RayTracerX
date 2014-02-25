@@ -93,6 +93,14 @@ bool BoundingBox::operator==(const BoundingBox& bbox) const {
   return min_ == bbox.min() && max_ == bbox.max();
 }
 
+BoundingBox& BoundingBox::operator =(const BoundingBox& bbox) {
+  if (this == &bbox)
+    return *this;
+  min_ = bbox.min_;
+  max_ = bbox.max_;
+  return *this;
+}
+
 std::ostream& operator<<(std::ostream& out, const BoundingBox& b) {
   std::cout << "bbox: min = " << b.min() << " " << " max = " << b.max();
   return out;

@@ -18,6 +18,7 @@ public:
     kInternal = 0, kLeaf = 1
   };
   OctNode();
+  OctNode(const OctNode& node);
   OctNode(const OctNode::NodeType& node_type, uint32_t node_octant,
       uint32_t node_size, uint32_t node_offset);
   bool IsLeaf() const;
@@ -30,6 +31,8 @@ public:
   void set_size(uint32_t size);
   NodeType type() const;
   void set_type(NodeType type);
+  bool operator==(const OctNode& node) const;
+  OctNode& operator=(const OctNode& node);
 private:
   NodeType type_;
   uint32_t octant_;
