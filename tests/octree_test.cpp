@@ -40,9 +40,7 @@ TEST(OctreeTest, SortTest) {
   int r[4];
   int b[4];
   for (int i = 0; i < 24; ++i) {
-    std::cout << "i = " << i << " a[i] = ";
     PrintArray(std::cout, &a[i][0], 4, ",");
-    std::cout << "\n";
     memcpy(&b[0], &a[i][0], sizeof(int) * 4);
     RankFixed(&b[0], &r[0], 4);
     Reorder(&b[0], &r[0], 4);
@@ -76,13 +74,9 @@ TEST(OctreeTest, NodeEncodeTest) {
   OctNode leaf_node = fact.CreateLeaf(0);
   leaf_node.set_offset(0);
   leaf_node.set_size(4968);
-  std::cout << "Before --> ";
   PrintBinary(4968u);
-  std::cout << "\n";
   leaf_node = fact.CreateOctNode(fact.CreateEncodedNode(leaf_node));
-  std::cout << "After --> ";
   PrintBinary(leaf_node.size());
-  std::cout << "\n";
   EXPECT_TRUE(leaf_node.IsLeaf());
   EXPECT_EQ(0u, leaf_node.octant());
   EXPECT_EQ(0u, leaf_node.offset());
@@ -182,7 +176,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   Octree<TrimeshFace> octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
-  std::cout << "Octree built.";
+  std::cout << "Octree built.\n";
   trimesh->set_accelerator(&octree);
 
   Image image;
