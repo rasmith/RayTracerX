@@ -11,6 +11,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 namespace ray {
+std::ostream& operator <<(std::ostream& out, const glm::vec2& v);
 std::ostream& operator<<(std::ostream& out, const glm::vec3& v);
 std::ostream& operator<<(std::ostream& out, const glm::vec4& v);
 std::ostream& operator<<(std::ostream& out, const glm::mat4x4& m);

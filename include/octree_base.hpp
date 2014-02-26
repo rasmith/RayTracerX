@@ -70,8 +70,11 @@ private:
 class Accelerator: public SceneShape {
 public:
   virtual ~Accelerator();
+  bool trace() const;
+  void set_trace(bool trace);
 protected:
   Accelerator();
+  bool trace_;
 };
 class OctreeBase: public Accelerator {
 public:

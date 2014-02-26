@@ -4,6 +4,7 @@
  *  Created on: Oct 1, 2013
  *      Author: agrippa
  */
+#include <cassert>
 #include <cstring>
 #include <algorithm>
 #include "geometry.hpp"
@@ -50,6 +51,7 @@ void TrimeshFace::set_mesh(Trimesh* mesh) {
 bool TrimeshFace::Intersect(const Ray& ray, Isect& isect) const {
   bool hit = mesh_ != NULL && mesh_->GetPatch(*this).Intersect(ray, isect);
   if (hit) {
+    isect.obj = static_cast<const Shape*>(this);
     isect.normal = mesh_->InterpolateNormal(*this, isect.bary);
     isect.mat = material_;
   }
@@ -149,6 +151,19 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
     hit = IntersectAccelerated(ray, isect);
   else
     hit = IntersectUnaccelerated(ray, isect);
+  /**if (accelerator_) {
+    Isect isect2;
+    bool hit2 = IntersectUnaccelerated(ray, isect2);
+    if (hit != hit2 || !(isect == isect2)) {
+      std::cout << "\nIntersect Mismatch\n";
+      std::cout << "hit = " << hit << "\nhit2 = " << hit2;
+      std::cout << "\nisect = " << isect << "\nisect2 = " << isect2;
+      accelerator_->set_trace(true);
+      IntersectAccelerated(ray, isect);
+    }
+    assert(hit == hit2);
+    assert(isect2 == isect);
+  }**/
   if (hit && !isect.mat)
     isect.mat = material_;
   return hit;

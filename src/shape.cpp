@@ -77,7 +77,7 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
     t_near = t_min;
   if (t_far)
     t_far = t_max;
-  return true;
+  return t_near < t_far;
 }
 
 bool BoundingBox::Overlap(const BoundingBox& bbox) const {
@@ -118,7 +118,29 @@ std::ostream& operator<<(std::ostream& out, const Shape& s) {
 }
 
 Isect::Isect() :
-    obj(NULL), mat(NULL), normal(glm::vec3(0.0f)), bary(glm::vec3(0.0f)),
+    obj(NULL), mat(NULL), ray(), normal(glm::vec3(0.0f)), bary(glm::vec3(0.0f)),
         uv(glm::vec3(0.0f)), t_hit(-std::numeric_limits<float>::max()) {
+}
+
+bool Isect::operator ==(const Isect& isect) const {
+  return mat == isect.mat && normal == isect.normal && obj == isect.obj
+      && bary == isect.bary && ray == isect.ray && t_hit == isect.t_hit
+      && uv == isect.uv;
+}
+
+std::ostream& operator <<(std::ostream& out, const Isect& isect) {
+  out << "[Isect bary = " << isect.bary << " mat = ";
+  if (isect.mat)
+    out << *(isect.mat);
+  else
+    out << "NULL";
+  out << " n = " << isect.normal << " obj = ";
+  if (isect.obj)
+    out << *(isect.obj);
+  else
+    out << "NULL";
+  out << " r = " << isect.ray << " t = " << isect.t_hit << " uv = " << isect.uv
+      << "]";
+  return out;
 }
 } // namespace ray

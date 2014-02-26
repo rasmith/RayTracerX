@@ -45,13 +45,15 @@ public:
 std::ostream& operator<<(std::ostream& out, const Shape& scene);
 struct Isect {
   Isect();
-  Shape* obj;
-  Material* mat;
+  const Shape* obj;
+  const Material* mat;
   Ray ray;
   glm::vec3 normal;
   glm::vec3 bary;
   glm::vec2 uv;
   float t_hit;
+  bool operator==(const Isect& isect) const;
 };
+std::ostream& operator<<(std::ostream& out, const Isect& isect);
 } // namespace ray
 #endif /* SHAPE_HPP_ */

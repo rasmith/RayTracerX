@@ -13,16 +13,17 @@
 namespace ray {
 class Ray {
 public:
-    Ray();
-    Ray(const glm::vec3 &origin, const glm::vec3 &direction);
-    Ray(const Ray& ray);
-    glm::vec3 operator()(float t) const;
-    const glm::vec3& direction() const;
-    const glm::vec3& origin() const;
-    Ray operator-() const;
+  Ray();
+  Ray(const glm::vec3 &origin, const glm::vec3 &direction);
+  Ray(const Ray& ray);
+  glm::vec3 operator()(float t) const;
+  const glm::vec3& direction() const;
+  const glm::vec3& origin() const;
+  Ray operator-() const;
+  bool operator==(const Ray& r) const;
 private:
-    glm::vec3 origin_;
-    glm::vec3 direction_;
+  glm::vec3 origin_;
+  glm::vec3 direction_;
 };
 std::ostream& operator<<(std::ostream& out, const Ray& r);
 } // namespace ray

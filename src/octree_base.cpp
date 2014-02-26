@@ -17,7 +17,15 @@ Accelerator::~Accelerator() {
 }
 
 Accelerator::Accelerator() :
-    SceneShape() {
+    SceneShape(), trace_(false) {
+}
+
+bool Accelerator::trace() const {
+  return trace_;
+}
+
+void Accelerator::set_trace(bool trace) {
+  trace_ = trace;
 }
 
 OctreeBase::OctreeBase() :
@@ -115,25 +123,29 @@ void OctreeBase::IntersectChildren(const OctNode& node,
   float t_far;
   SortHolder h[4];
   count = 0;
-  //std::cout << "Get intersected children:\n";
+  if (trace_)
+    std::cout << "Get intersected children:\n";
   for (uint32_t i = 0; count < 4 && i < node.size(); ++i) {
     children[count] = GetIthChildOf(node, i);
     child_bounds[count] = GetChildBounds(bounds, children[count].octant());
     if (child_bounds[count].Intersect(ray, t_near, t_far)) {
       h[count] = SortHolder(t_near, t_far, children[count],
           child_bounds[count]);
-      //std::cout << "i = " << i << " t_near = " << t_near << " t_far = " << t_far
-      //    << " child = " << children[count] << "\n";
+      if (trace_)
+        std::cout << "i = " << i << " t_near = " << t_near << " t_far = "
+            << t_far << " child = " << children[count] << "\n";
       ++count;
     }
   }
-  //std::cout << "Sort children:\n";
+  if (trace_)
+    std::cout << "Sort children:\n";
   std::sort(&h[0], &h[0] + count);
   for (uint32_t i = 0; i < count; ++i) {
     children[i] = h[i].child;
     child_bounds[i] = h[i].bounds;
-    //std::cout << "i = " << i << " t_near = " << h[i].t_near << " t_far = "
-    //    << h[i].t_far << " node = " << children[i] << "\n";
+    if (trace_)
+      std::cout << "i = " << i << " t_near = " << h[i].t_near << " t_far = "
+          << h[i].t_far << " node = " << children[i] << "\n";
   }
 }
 bool OctreeBase::TraverseStackless(const OctNode& root,

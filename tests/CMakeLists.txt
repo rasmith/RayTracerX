@@ -37,6 +37,7 @@ add_executable(raytracer_test raytracer_test.cpp
                                   ${Ray_SOURCE_DIR}/src/light.cpp
                                   ${Ray_SOURCE_DIR}/src/material.cpp
                                   ${Ray_SOURCE_DIR}/src/mesh.cpp
+                                  ${Ray_SOURCE_DIR}/src/octree_base.cpp
                                   ${Ray_SOURCE_DIR}/src/ray.cpp
                                   ${Ray_SOURCE_DIR}/src/raytracer.cpp
                                   ${Ray_SOURCE_DIR}/src/scene.cpp
@@ -52,6 +53,7 @@ add_executable(scene_loader_test scene_loader_test.cpp
                                   ${Ray_SOURCE_DIR}/src/light.cpp
                                   ${Ray_SOURCE_DIR}/src/material.cpp
                                   ${Ray_SOURCE_DIR}/src/mesh.cpp
+                                  ${Ray_SOURCE_DIR}/src/octree_base.cpp
                                   ${Ray_SOURCE_DIR}/src/ray.cpp
                                   ${Ray_SOURCE_DIR}/src/scene.cpp
                                   ${Ray_SOURCE_DIR}/src/scene_utils.cpp
