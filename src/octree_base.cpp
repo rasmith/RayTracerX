@@ -9,7 +9,6 @@
 #include "octree_base.hpp"
 #include "scene.hpp"
 #include "shape.hpp"
-#include "sorting_utils.hpp"
 namespace ray {
 const uint32_t OctreeBase::kMaxDepth = 10;
 const uint32_t OctreeBase::kMaxLeafSize = 16;

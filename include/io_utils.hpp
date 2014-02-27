@@ -9,6 +9,7 @@
 #define IO_UTILS_HPP_
 #include <iostream>
 #include <vector>
+#include <stdint.h>
 #include <glm/glm.hpp>
 namespace ray {
 std::ostream& operator <<(std::ostream& out, const glm::vec2& v);

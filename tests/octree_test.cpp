@@ -26,28 +26,9 @@ using ::testing::ElementsAre;
 #include "raytracer.hpp"
 #include "scene.hpp"
 #include "scene_utils.hpp"
-#include "sorting_utils.hpp"
 #include "transform.hpp"
 
 namespace ray {
-TEST(OctreeTest, SortTest) {
-  int a[24][4] = { { 0, 1, 2, 3 }, { 0, 1, 3, 2 }, { 0, 2, 1, 3 },
-      { 0, 2, 3, 1 }, { 0, 3, 1, 2 }, { 0, 3, 2, 1 }, { 1, 0, 2, 3 }, { 1, 0, 3,
-          2 }, { 1, 2, 0, 3 }, { 1, 2, 3, 0 }, { 1, 3, 0, 2 }, { 1, 3, 2, 0 }, {
-          2, 0, 1, 3 }, { 2, 0, 3, 1 }, { 2, 1, 0, 3 }, { 2, 1, 3, 0 }, { 2, 3,
-          0, 1 }, { 2, 3, 1, 0 }, { 3, 0, 1, 2 }, { 3, 0, 2, 1 },
-      { 3, 1, 0, 2 }, { 3, 1, 2, 0 }, { 3, 2, 0, 1 }, { 3, 2, 1, 0 } };
-  int r[4];
-  int b[4];
-  for (int i = 0; i < 24; ++i) {
-    PrintArray(std::cout, &a[i][0], 4, ",");
-    memcpy(&b[0], &a[i][0], sizeof(int) * 4);
-    RankFixed(&b[0], &r[0], 4);
-    Reorder(&b[0], &r[0], 4);
-    ASSERT_THAT(r, ElementsAre(a[i][0], a[i][1], a[i][2], a[i][3]));
-    ASSERT_THAT(b, ElementsAre(0, 1, 2, 3));
-  }
-}
 TEST(OctreeTest, TriangleBoundsTest) {
   Triangle triangle0(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(4.0f, 5.0f, 6.0f),
       glm::vec3(7.0f, 8.0f, 9.0f));
