@@ -162,13 +162,14 @@ private:
   }
   void BuildTree(WorkNode& work_root) {
     // compute bounds
-    //std::cout << "::: bounds_ = " << bounds_ << "\n";
     for (uint32_t i = 0; i < work_root.objects.size(); ++i) {
       //BoundingBox bounds = work_root.objects[i]->GetBounds();
       //std::cout << "bounds = " << bounds << "\n";
       bounds_ = bounds_.Join(work_root.objects[i]->GetBounds());
       //std::cout << "--> bounds_ = " << bounds_ << "\n";
     }
+    std::cout << "BuildTree: bounds_ = " << bounds_ << " center = "
+        << bounds_.GetCenter() << std::endl;
     std::vector<WorkNode> work_list;
     std::vector<WorkNode> next_list;
     int depth = 0;

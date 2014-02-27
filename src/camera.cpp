@@ -70,6 +70,10 @@ Camera::Camera(
                                         * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f))),
                 center_(transform_ * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)),
                 screen_center_(center_ + direction_ * focal_length_) {
+  std::cout << "center_ = " << center_ << std::endl;
+  std::cout << "direction_ = " << direction_ << std::endl;
+  std::cout << "up_ = " << up_ << std::endl;
+  std::cout << "tangent_ = " << tangent_ << std::endl;
 }
 
 glm::vec3 Camera::Project(const glm::vec3& point) {
@@ -122,6 +126,9 @@ Ray Camera::GenerateRay(float screen_x, float screen_y) const {
             / static_cast<float>(screen_height_ - 1) - 0.5f;
     //glm::vec4 origin = screen_center_ + u * tangent_ + v * up_;
     //glm::vec4 direction = screen_center_ + u * tangent_ + v * up_ - center_;
+    //glm::vec4 origin = center_ + u * tangent_ + v * up_;
+    //glm::vec4 direction = glm::normalize(direction_);
+    //glm::vec4 direction = glm::normalize(direction_ + u * tangent_ + v * up_);
     glm::vec4 origin = center_;
     glm::vec4 direction = glm::normalize(direction_ + u * tangent_ + v * up_);
     return Ray(glm::vec3(origin[0], origin[1], origin[2]),

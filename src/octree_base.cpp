@@ -122,8 +122,7 @@ void OctreeBase::IntersectChildren(const OctNode& node,
   float t_far;
   SortHolder h[4];
   count = 0;
-  if (trace_)
-    std::cout << "Get intersected children:\n";
+
   for (uint32_t i = 0; count < 4 && i < node.size(); ++i) {
     children[count] = GetIthChildOf(node, i);
     child_bounds[count] = GetChildBounds(bounds, children[count].octant());

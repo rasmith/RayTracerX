@@ -31,4 +31,10 @@ std::ostream& operator <<(std::ostream& out, const glm::mat4x4& m) {
   out << "[" << T[0] << "," << T[1] << "," << T[2] << "," << T[3] << "]";
   return out;
 }
+
+std::ostream& operator <<(std::ostream& out, const glm::mat3x3& m) {
+  glm::mat3x3 T = glm::transpose(m);
+  out << "[" << T[0] << "," << T[1] << "," << T[2] << "," << "]";
+  return out;
+}
 } // namespace ray
