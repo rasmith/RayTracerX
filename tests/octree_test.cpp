@@ -143,8 +143,8 @@ TEST(RayTracerTest, SphereMeshTest) {
   bool success = loader.LoadScene(path, scene, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-  int image_width = 512;
-  int image_height = 512;
+  int image_width = 1024;
+  int image_height = 1024;
   glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, 1.0f);
   glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -177,7 +177,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   std::cout << "Octree built.\n";
-  trimesh->set_accelerator(&octree);
+  //trimesh->set_accelerator(&octree);
 
   Image image;
   image.resize(image_width, image_height);
@@ -198,8 +198,8 @@ TEST(RayTracerTest, BunnyMeshTest) {
   bool success = loader.LoadScene(path, scene, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-  int image_width = 512;
-  int image_height = 512;
+  int image_width = 1024;
+  int image_height = 1024;
   glm::vec3 eye_pos = glm::vec3(-0.025f, 0.15f, 0.25f);
   glm::vec3 at_pos = glm::vec3(-0.025f, 0.10f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);

@@ -15,7 +15,7 @@
 #include "io_utils.hpp"
 #include "ray.hpp"
 namespace ray {
-const float Triangle::kEpsilon = 0.000001;
+const float Triangle::kEpsilon = 0.0000001;
 
 Triangle::Triangle() :
     Shape() {
