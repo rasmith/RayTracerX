@@ -125,9 +125,9 @@ TEST(RayTracerTest, SphereMeshTest) {
   bool success = loader.LoadScene(path, scene, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-  int image_width = 512;
-  int image_height = 512;
-  glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, 1.0f);
+  int image_width = 1024;
+  int image_height = 1024;
+  glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, 1.2f);
   glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -180,8 +180,8 @@ TEST(RayTracerTest, BunnyMeshTest) {
   bool success = loader.LoadScene(path, scene, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-  int image_width = 512;
-  int image_height = 512;
+  int image_width = 1024;
+  int image_height = 1024;
   //[-0.0168008,0.110153,-0.00148227]
   glm::vec3 eye_pos = glm::vec3(-0.0168008f, 0.110153f, 0.3f);
   glm::vec3 at_pos = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
