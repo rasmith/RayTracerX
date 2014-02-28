@@ -35,6 +35,9 @@ include_directories(${GLM_INCLUDE_DIRS})
  
 find_package(Assimp REQUIRED)
 include_directories(${ASSIMP_INCLUDE_DIRS})
+if (BUILD_SITE_NAME MATCHES "*.cs.utexas.edu")
+  set(ASSIMP_LIBRARIES "/u/agrippa/sdks/assimp_3.0/lib/libassimp.so")
+endif()
 set(LIBS ${LIBS} ${ASSIMP_LIBRARIES})
 
 find_package(GraphicsMagick++ REQUIRED)
