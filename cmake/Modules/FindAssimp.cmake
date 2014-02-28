@@ -1,8 +1,15 @@
-# find headers
-set(_ASSIMP_HEADER_SEARCH_DIRS,
+# find header
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+set(_ASSIMP_HEADER_SEARCH_DIRS
     "/opt/local/include"
     "/usr/include"
     "/usr/local/include")
+else()
+set(_ASSIMP_HEADER_SEARCH_DIRS
+    "/usr/include"
+    "/usr/local/include")
+endif()
+
 set(_ASSIMP_ENV_ROOT_DIR "$ENV{_ASSIMP_ROOT_DIR}")
 
 if(NOT _ASSIMP_ROOT_DIR AND _ASSIMP_ENV_ROOT_DIR)
@@ -20,10 +27,16 @@ find_path(ASSIMP_INCLUDE_DIR "assimp/config.h"
     PATHS ${_ASSIMP_HEADER_SEARCH_DIRS})
 
 # find libraries
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 set(_ASSIMP_LIBRARY_SEARCH_DIRS
     "/opt/local/lib"
     "/usr/lib"
     "/usr/local/lib")
+else()
+set(_ASSIMP_LIBRARY_SEARCH_DIRS
+    "/usr/lib"
+    "/usr/local/lib")
+endif()
 
 message(STATUS "_ASSIMP_LIBRARY_SEARCH_DIRS = ${_ASSIMP_LIBRARY_SEARCH_DIRS}")
 if(ASSIMP_ROOT_DIR)
