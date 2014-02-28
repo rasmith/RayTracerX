@@ -10,7 +10,8 @@
 #define GLM_FORCE_CXX98
 #define GLM_SWIZZLE
 #include <glm/glm.hpp>
+#include <glm/detail/precision.hpp>
 namespace ray {
-typedef glm::detail::tvec3<unsigned char> ucvec3;
+typedef glm::detail::tvec3<unsigned char, glm::highp> ucvec3;
 } // namespace ray
 #endif /* TYPES_HPP_ */
