@@ -238,8 +238,8 @@ TEST(RayTracerTest, DragonMeshTest) {
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
   std::cout << "done loading" << std::endl;
-  int image_width = 512;
-  int image_height = 512;
+  int image_width = 32;
+  int image_height = 32;
   glm::vec3 eye_pos = glm::vec3(0.0f, -3.0f, 0.0f);
   glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
   glm::vec3 up_dir = glm::vec3(0.0f, 0.0f, 1.0f);
