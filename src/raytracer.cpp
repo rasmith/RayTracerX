@@ -84,8 +84,8 @@ glm::vec3 RayTracer::TraceRay(int pixel_x, int pixel_y) const {
   float x = pixel_x;
   float y = pixel_y;
   Ray ray = camera_->GenerateRay(x, y);
-  std::cout << "pixel = (" << pixel_x << "," << pixel_y << ") ray = " << ray
-      << std::endl;
+  //std::cout << "pixel = (" << pixel_x << "," << pixel_y << ") ray = " << ray
+  //    << std::endl;
   return TraceRay(ray);
 }
 
