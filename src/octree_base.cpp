@@ -84,6 +84,7 @@ OctNodeFactory& OctreeBase::GetNodeFactory() const {
   return OctNodeFactory::GetInstance();
 }
 bool OctreeBase::Intersect(const Ray& ray, Isect& isect) const {
+  std::cout << "OctreeBase::Intersect: ray = " << ray << "\n";
   return Traverse(GetRoot(), GetBounds(), ray, isect, 0);
 }
 ///////
