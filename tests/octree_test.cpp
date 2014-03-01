@@ -274,7 +274,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
-  octree.Print(std::cout);
+  //octree.Print(std::cout);
   std::cout << "Octree built.\n";
   std::cout << "bounds = " << octree.GetBounds() << "\n";
   trimesh->set_accelerator(&octree);

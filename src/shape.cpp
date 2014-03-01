@@ -62,7 +62,8 @@ glm::vec3 BoundingBox::GetCenter() const {
 bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
   float t_min = -std::numeric_limits<float>::max();
   float t_max = std::numeric_limits<float>::max();
-  for (int i = 0; i < 3; ++i) {
+  bool hit = true;
+  for (int i = 0; i < 3 && hit; ++i) {
     float inv = 1.0f / ray.direction()[i];
     float t_first = (min_[i] - ray.origin()[i]) * inv;
     float t_second = (max_[i] - ray.origin()[i]) * inv;
@@ -70,13 +71,14 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
       std::swap(t_first, t_second);
     t_min = std::max(t_min, t_first);
     t_max = std::min(t_max, t_second);
-    if (t_min > t_max)
-      return false;
+    hit = (t_min <= t_max);
   }
   if (t_near)
     t_near = t_min;
   if (t_far)
     t_far = t_max;
+  std::cout << "BoundingBox::Intersect: ray = " << ray << " t_near = " << t_near
+      << " t_far = " << t_far << " hit = " << hit << std::endl;
   return t_near < t_far;
 }
 
