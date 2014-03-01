@@ -14,8 +14,11 @@ namespace ray {
 RayTracer::RayTracer(Scene* scene, Camera* camera) :
     scene_(scene), camera_(camera) {
 }
-
+static int hit_count = 0;
+static int miss_count = 0;
 void RayTracer::Render(Image& image) {
+  hit_count = 0;
+  miss_count = 0;
   int width = camera_->screen_width();
   int height = camera_->screen_height();
   int img_size = width * height;
@@ -35,6 +38,8 @@ void RayTracer::Render(Image& image) {
     }
   }
   std::cout << "\n";
+  std::cout << "hits = " << hit_count << " misses = " << miss_count
+      << std::endl;
 }
 
 float RayTracer::Diffuse(const Isect& isect, const Light& light) const {
@@ -90,8 +95,11 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
   bool hit = scene_->Intersect(ray, isect);
   if (hit) {
     color = Shade(isect);
-     //std::cout << " N = " << isect.normal << " color = " << color
-     //        << std::endl;
+    //std::cout << " N = " << isect.normal << " color = " << color
+    //        << std::endl;
+    ++hit_count;
+  } else {
+    ++miss_count;
   }
   return 255.0f * color;
 }
