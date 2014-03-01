@@ -41,7 +41,8 @@ endif()
 message(STATUS "_ASSIMP_LIBRARY_SEARCH_DIRS = ${_ASSIMP_LIBRARY_SEARCH_DIRS}")
 if(ASSIMP_ROOT_DIR)
     set(_ASSIMP_LIBRARY_SEARCH_DIRS  "${ASSIMP_ROOT_DIR}"
-                                 ${_ASSIMP_LIBRARY_SEARCH_DIRS})
+                                    "${ASSIMP_ROOT_DIR}/lib"
+                                    ${_ASSIMP_LIBRARY_SEARCH_DIRS})
 endif(ASSIMP_ROOT_DIR)
 
 message(STATUS "_ASSIMP_LIBRARY_SEARCH_DIRS = ${_ASSIMP_LIBRARY_SEARCH_DIRS}")
