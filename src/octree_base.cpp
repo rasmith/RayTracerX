@@ -65,6 +65,9 @@ void OctreeBase::Print(std::ostream& out) const {
   std::vector<OctNode> nodes;
   std::vector<int> depths;
   std::vector<BoundingBox> bounds;
+  nodes.clear();
+  depths.clear();
+  bounds.clear();
   nodes.push_back(GetRoot());
   bounds.push_back(GetBounds());
   depths.push_back(0);
@@ -76,11 +79,13 @@ void OctreeBase::Print(std::ostream& out) const {
     bounds.pop_back();
     depths.pop_back();
     PrintNode(out, node, bbox, depth);
-    for (uint32_t i = 0; i < node.size(); ++i) {
-      OctNode child = GetIthChildOf(node, i);
-      nodes.push_back(child);
-      bounds.push_back(GetChildBounds(bbox, child.octant()));
-      depths.push_back(depth + 1);
+    if (node.IsInternal()) {
+      for (uint32_t i = 0; i < node.size(); ++i) {
+        OctNode child = GetIthChildOf(node, i);
+        nodes.push_back(child);
+        bounds.push_back(GetChildBounds(bbox, child.octant()));
+        depths.push_back(depth + 1);
+      }
     }
   }
 }
@@ -207,6 +212,25 @@ bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
     hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);
   return hit;
 }
+
+EncodedNode::EncodedNode() {
+  for (int i = 0; i < 8; ++i)
+    data[i] = 0;
+}
+
+EncodedNode::EncodedNode(const EncodedNode& node) {
+  for (int i = 0; i < 8; ++i)
+    data[i] = node.data[i];
+}
+
+EncodedNode& EncodedNode::operator =(const EncodedNode& node) {
+  if (this == &node)
+    return *this;
+  for (int i = 0; i < 8; ++i)
+    data[i] = node.data[i];
+  return *this;
+}
+
 OctNode::NodeType EncodedNode::GetType() const {
   return static_cast<OctNode::NodeType>((data[0] & 0x80) >> 7);
 }

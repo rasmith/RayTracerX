@@ -47,6 +47,9 @@ std::ostream& operator<<(std::ostream& out, const OctNode& scene);
 // data[5..7]: node size, 24 bits, max size 16,777,216, empty nodes not stored
 struct EncodedNode {
   u_char data[8];
+  EncodedNode();
+  EncodedNode(const EncodedNode& node);
+  EncodedNode& operator=(const EncodedNode& node);
   OctNode::NodeType GetType() const;
   uint32_t GetOctant() const;
   uint32_t GetSize() const;
