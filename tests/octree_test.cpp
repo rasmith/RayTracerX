@@ -276,7 +276,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   //octree.set_trace(true);
   std::cout << "Octree built.\n";
   std::cout << "bounds = " << octree.GetBounds() << "\n";
-  //trimesh->set_accelerator(&octree);
+  trimesh->set_accelerator(&octree);
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
