@@ -10,8 +10,8 @@
 #include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
-const uint32_t OctreeBase::kMaxDepth = 10;
-const uint32_t OctreeBase::kMaxLeafSize = 16;
+const uint32_t OctreeBase::kMaxDepth = 3;
+const uint32_t OctreeBase::kMaxLeafSize = 32;
 Accelerator::~Accelerator() {
 }
 
@@ -55,26 +55,31 @@ BoundingBox OctreeBase::GetChildBounds(const BoundingBox& bounds,
 }
 
 void OctreeBase::PrintNode(std::ostream& out, const OctNode& node,
-    int depth) const {
+    const BoundingBox& bbox, int depth) const {
   for (int i = 0; i < depth; ++i)
     out << " ";
-  out << node << "\n";
+  out << node << " " << bbox << "\n";
 }
 
 void OctreeBase::Print(std::ostream& out) const {
   std::vector<OctNode> nodes;
   std::vector<int> depths;
+  std::vector<BoundingBox> bounds;
   nodes.clear();
   nodes.push_back(GetRoot());
   depths.push_back(0);
   while (!nodes.empty()) {
     OctNode node = nodes.back();
     int depth = depths.back();
+    BoundingBox bbox = bounds.back();
     nodes.pop_back();
+    bounds.pop_back();
     depths.pop_back();
-    PrintNode(out, node, depth);
+    PrintNode(out, node, bbox, depth);
     for (uint32_t i = 0; i < node.size(); ++i) {
-      nodes.push_back(GetIthChildOf(node, i));
+      OctNode child = GetIthChildOf(node, i);
+      nodes.push_back(child);
+      bounds.push_back(GetChildBounds(bbox, child.octant()));
       depths.push_back(depth + 1);
     }
   }
@@ -123,7 +128,6 @@ void OctreeBase::IntersectChildren(const OctNode& node,
   float t_far;
   SortHolder h[4];
   count = 0;
-
   for (uint32_t i = 0; count < 4 && i < node.size(); ++i) {
     children[count] = GetIthChildOf(node, i);
     child_bounds[count] = GetChildBounds(bounds, children[count].octant());

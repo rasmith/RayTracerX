@@ -84,6 +84,7 @@ public:
       const glm::vec3& point) const;
   BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const;
   virtual bool Intersect(const Ray& ray, Isect& isect) const;
+  virtual void Print(std::ostream& out) const;
 protected:
   OctreeBase();
   virtual bool Traverse(const OctNode& node, const BoundingBox& bounds,
@@ -99,9 +100,8 @@ protected:
       uint32_t& count) const;
   virtual OctNode GetRoot() const = 0;
   virtual BoundingBox GetBounds() const = 0;
-  virtual void Print(std::ostream& out) const;
   virtual void PrintNode(std::ostream& out, const OctNode& node,
-      int depth) const;
+      const BoundingBox& bbox, int depth) const;
 };
 } // namespace ray
 #endif
