@@ -65,8 +65,8 @@ void OctreeBase::Print(std::ostream& out) const {
   std::vector<OctNode> nodes;
   std::vector<int> depths;
   std::vector<BoundingBox> bounds;
-  nodes.clear();
   nodes.push_back(GetRoot());
+  bounds.push_back(GetBounds());
   depths.push_back(0);
   while (!nodes.empty()) {
     OctNode node = nodes.back();
@@ -302,6 +302,7 @@ OctNode& OctNode::operator=(const OctNode& node) {
 
 OctNodeFactory::OctNodeFactory() {
 }
+
 OctNodeFactory & OctNodeFactory::GetInstance() {
   static OctNodeFactory instance;
   static bool is_initialized = false;
