@@ -27,16 +27,11 @@ find_path(ASSIMP_INCLUDE_DIR "assimp/config.h"
     PATHS ${_ASSIMP_HEADER_SEARCH_DIRS})
 
 # find libraries
-if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 set(_ASSIMP_LIBRARY_SEARCH_DIRS
     "/opt/local/lib"
     "/usr/lib"
     "/usr/local/lib")
-else()
-set(_ASSIMP_LIBRARY_SEARCH_DIRS
-    "/usr/lib"
-    "/usr/local/lib")
-endif()
+
 
 message(STATUS "_ASSIMP_LIBRARY_SEARCH_DIRS = ${_ASSIMP_LIBRARY_SEARCH_DIRS}")
 if(ASSIMP_ROOT_DIR)
