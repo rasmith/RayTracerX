@@ -21,6 +21,14 @@ Ray::Ray(const Ray& ray) :
     origin_(ray.origin_), direction_(ray.direction_) {
 }
 
+Ray& ray::Ray::operator=(const Ray& ray) {
+  if (this == &ray)
+    return *this;
+  origin_ = ray.origin_;
+  direction_ = ray.direction_;
+  return *this;
+}
+
 glm::vec3 Ray::operator ()(float t) const {
   return direction_ * t + origin_;
 }

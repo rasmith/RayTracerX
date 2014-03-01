@@ -16,6 +16,7 @@ public:
   Ray();
   Ray(const glm::vec3 &origin, const glm::vec3 &direction);
   Ray(const Ray& ray);
+  Ray& operator=(const Ray& ray);
   glm::vec3 operator()(float t) const;
   const glm::vec3& direction() const;
   const glm::vec3& origin() const;
