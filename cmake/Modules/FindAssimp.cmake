@@ -49,7 +49,6 @@ else()
 message(STATUS "Using NO_DEFAULT_PATH")
 find_library(ASSIMP_LIBRARY NAMES assimp
              PATHS "${_ASSIMP_LIBRARY_SEARCH_DIRS}"
-             PATH_SUFFIXES lib
              NO_DEFAULT_PATH)
 endif()
 message(STATUS "ASSIMP_INCLUDE_DIR = ${ASSIMP_INCLUDE_DIR}")
