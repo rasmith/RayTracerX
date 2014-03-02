@@ -77,6 +77,8 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
     if (t_min > t_max)
       return false;
   }
+  t_near = t_min;
+  t_far = t_max;
   //std::cout << "t_near = " << t_min << " t_far = " << t_max << std::endl;
   return t_near < t_far;
 }
