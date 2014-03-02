@@ -66,7 +66,7 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
     float inv = 1.0f / ray.direction()[i];
     float t_first = (min_[i] - ray.origin()[i]) * inv;
     float t_second = (max_[i] - ray.origin()[i]) * inv;
-    std::cout << "t_0 = " << t_first << " t_1" << t_first << std::endl;
+    std::cout << "t_0 = " << t_first << " t_1 = " << t_first << std::endl;
     if (t_first > t_second)
       std::swap(t_first, t_second);
     t_min = std::max(t_min, t_first);
