@@ -29,6 +29,13 @@ using ::testing::ElementsAre;
 #include "transform.hpp"
 
 namespace ray {
+TEST(OctreeTest, RayBoxTest) {
+  BoundingBox box(glm::vec3(0.0f), glm::vec3(1.0f));
+  float t_near, t_far;
+  Ray ray0(glm::vec3(0.5f), glm::vec3(0.5f));
+  EXPECT_TRUE(box.Intersect(ray0, t_near, t_far));
+}
+
 TEST(OctreeTest, TriangleBoundsTest) {
   Triangle triangle0(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(4.0f, 5.0f, 6.0f),
       glm::vec3(7.0f, 8.0f, 9.0f));

@@ -201,8 +201,16 @@ bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
   float t_near, t_far;
   if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
     return false;
-  if (node.IsLeaf()) // is this a leaf?
-    return IntersectLeaf(node, ray, isect);
+  if (node.IsLeaf()) { // is this a leaf?
+    bool hit = IntersectLeaf(node, ray, isect);
+    if (hit) {
+      //for (uint32_t i = 0; i < depth; ++i)
+      //  std::cout << " ";
+      //std::cout << depth << " ray = " << ray << " node = " << node << " bounds = "
+      //    << bounds << std::endl;
+    }
+    return hit;
+  }
   OctNode children[4];    // can hit at most four children
   BoundingBox child_bounds[4];
   uint32_t count = 0;
@@ -210,6 +218,12 @@ bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
   bool hit = false;
   for (uint32_t i = 0; i < count && !hit; ++i)
     hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);
+  if (hit) {
+    //for (uint32_t i = 0; i < depth; ++i)
+    //  std::cout << " ";
+    //std::cout << depth << " r = " << ray << " n = " << node << " b = " << bounds
+    //    << std::endl;
+  }
   return hit;
 }
 
