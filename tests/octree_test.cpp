@@ -34,6 +34,8 @@ TEST(OctreeTest, RayBoxTest) {
   float t_near, t_far;
   Ray ray0(glm::vec3(0.5f), glm::vec3(0.5f));
   EXPECT_TRUE(box.Intersect(ray0, t_near, t_far));
+  Ray ray1(glm::vec3(0.5f, 0.5f, 0.25f), glm::vec3(0.5f));
+  EXPECT_TRUE(box.Intersect(ray1, t_near, t_far));
 }
 
 TEST(OctreeTest, TriangleBoundsTest) {
