@@ -235,7 +235,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   success = storage.WriteImage("bunny_octree.jpg", image, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-}
+}**/
 TEST(RayTracerTest, DragonMeshTest) {
   SceneLoader& loader = SceneLoader::GetInstance();
   std::string path = "../assets/dragon.obj";
@@ -295,6 +295,6 @@ TEST(RayTracerTest, DragonMeshTest) {
   success = storage.WriteImage("dragon_octree.jpg", image, status);
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
-}**/
+}
 } // namespace ray
 
