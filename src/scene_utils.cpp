@@ -42,7 +42,8 @@ bool SceneLoader::LoadScene(const std::string& file_name, Scene& scene,
       aiPrimitiveType_POINT | aiPrimitiveType_LINE);
   const aiScene* assimp_scene = importer.ReadFile(file_name,
       aiProcess_Triangulate | aiProcess_JoinIdenticalVertices
-          | aiProcess_FixInfacingNormals | aiProcess_ValidateDataStructure);
+          | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates
+          | aiProcess_ValidateDataStructure);
   // | aiProcess_ImproveCacheLocality
   //  | aiProcess_RemoveRedundantMaterials
   //  | aiProcess_FixInfacingNormals | aiProcess_FindDegenerates
@@ -160,7 +161,8 @@ void SceneLoader::ImportMesh(Scene& scene, const aiMesh* const mesh) {
       trimesh->AddFace(f.mIndices[0], f.mIndices[1], f.mIndices[2]);
     }
   }
-  std::cout << "materials.size() = " << scene.material_list().materials.size() << std::endl;
+  std::cout << "materials.size() = " << scene.material_list().materials.size()
+      << std::endl;
   Material* mat = &scene.material_list().materials[mesh->mMaterialIndex];
   trimesh->set_material(mat);
   if (NULL == mesh->mNormals) {

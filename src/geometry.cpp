@@ -15,7 +15,7 @@
 #include "io_utils.hpp"
 #include "ray.hpp"
 namespace ray {
-const float Triangle::kEpsilon = 0.0000001;
+const float Triangle::kEpsilon = 2e-10;
 
 Triangle::Triangle() :
     Shape() {
@@ -70,6 +70,7 @@ bool Triangle::Intersect(const Ray& ray, Isect& isect) const {
   float v = glm::dot(ray.direction(), q_vec) * inv_det;
   if (v < 0.0f || u + v > 1.0f)
     return false;
+
   isect.t_hit = t;
   isect.bary = glm::vec3(1.0f - u - v, u, v);
   isect.ray = ray;

@@ -63,17 +63,14 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
   //std::cout << "BoundingBox::Intersect ray = " << ray <<  std::endl;
   float t_min = -std::numeric_limits<float>::max();
   float t_max = std::numeric_limits<float>::max();
-  //std::cout << "t_min = " << t_min << " t_max = " << t_max << std::endl;
   for (int i = 0; i < 3; ++i) {
     float inv = 1.0f / ray.direction()[i];
-    float t_first = (min_[i] - ray.origin()[i]) * inv;
-    float t_second = (max_[i] - ray.origin()[i]) * inv;
-    //std::cout << "t_0 = " << t_first << " t_1 = " << t_second << std::endl;
-    if (t_first > t_second)
-      std::swap(t_first, t_second);
-    t_min = std::max(t_min, t_first);
-    t_max = std::min(t_max, t_second);
-    //std::cout << "t_min = " << t_min << " t_max = " << t_max << std::endl;
+    float t_a = (min_[i] - ray.origin()[i]) * inv;
+    float t_b = (max_[i] - ray.origin()[i]) * inv;
+    if (t_a > t_b)
+      std::swap(t_a, t_b);
+    t_min = std::max(t_min, t_a);
+    t_max = std::min(t_max, t_b);
     if (t_min > t_max)
       return false;
   }

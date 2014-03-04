@@ -11,11 +11,21 @@
 #include "raytracer.hpp"
 #include "scene.hpp"
 namespace ray {
-RayTracer::RayTracer(Scene* scene, Camera* camera) :
-    scene_(scene), camera_(camera) {
-}
 static int hit_count = 0;
 static int miss_count = 0;
+
+RayTracer::RayTracer(Scene* scene, Camera* camera) :
+    scene_(scene), camera_(camera), background_color_(glm::vec3(0.0f)) {
+}
+
+const glm::vec3& RayTracer::background_color() const {
+  return background_color_;
+}
+
+void RayTracer::set_background_color(const glm::vec3& background_color) {
+  background_color_ = background_color;
+}
+
 void RayTracer::Render(Image& image) {
   hit_count = 0;
   miss_count = 0;
@@ -90,7 +100,7 @@ glm::vec3 RayTracer::TraceRay(int pixel_x, int pixel_y) const {
 }
 
 glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
-  glm::vec3 color = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 color = background_color_;
   Isect isect;
   bool hit = scene_->Intersect(ray, isect);
   if (hit) {
@@ -101,8 +111,7 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
   } else {
     ++miss_count;
   }
-  return 255.0f * color;
+  return 255.0f * color;//(0.5f*(isect.normal + 1.0f));
 }
 
 } // namespace ray
-
