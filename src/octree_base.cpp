@@ -93,10 +93,13 @@ void OctreeBase::Print(std::ostream& out) const {
 OctNodeFactory& OctreeBase::GetNodeFactory() const {
   return OctNodeFactory::GetInstance();
 }
+
 bool OctreeBase::Intersect(const Ray& ray, Isect& isect) const {
   //std::cout << "OctreeBase::Intersect: ray = " << ray << "\n";
   return Traverse(GetRoot(), GetBounds(), ray, isect, 0);
+  //return TraverseStackless(GetRoot(), GetBounds(), ray, isect);
 }
+
 ///////
 //
 // IntersectChildren
@@ -115,17 +118,21 @@ struct SortHolder {
   SortHolder() :
       t_near(0.0f), t_far(0.0f), child(OctNode()), bounds(BoundingBox()) {
   }
+
   SortHolder(const SortHolder& h) :
       t_near(h.t_near), t_far(h.t_far), child(h.child), bounds(h.bounds) {
   }
+
   explicit SortHolder(float t0, float t1, const OctNode& n,
       const BoundingBox& b) :
       t_near(t0), t_far(t1), child(n), bounds(b) {
   }
+
   bool operator<(const SortHolder& s) const {
     return t_near < s.t_near;
   }
 };
+
 void OctreeBase::IntersectChildren(const OctNode& node,
     const BoundingBox& bounds, const Ray& ray, OctNode* children,
     BoundingBox* child_bounds, uint32_t& count) const {
@@ -156,6 +163,7 @@ void OctreeBase::IntersectChildren(const OctNode& node,
           << h[i].t_far << " node = " << children[i] << "\n";
   }
 }
+
 bool OctreeBase::TraverseStackless(const OctNode& root,
     const BoundingBox& bounds, const Ray& ray, Isect& isect) const {
   float t_near, t_far;
@@ -165,7 +173,7 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
   std::vector<BoundingBox> bounds_stack;
   bool hit = false;
   uint32_t count = 0;
-  OctNode current, child;
+  OctNode current;
   OctNode children[4];    // can hit at most four children
   BoundingBox child_bounds[4];
   BoundingBox current_bounds;
@@ -175,14 +183,14 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
   bounds_stack.push_back(bounds);
   while (!node_stack.empty() && !hit) {
     current = node_stack.back();
-    node_stack.pop_back();
     current_bounds = bounds_stack.back();
+    node_stack.pop_back();
     bounds_stack.pop_back();
     if (current.IsLeaf())
       hit = IntersectLeaf(current, ray, isect);
     else {
-      IntersectChildren(current, bounds, ray, &children[0], &child_bounds[0],
-          count);
+      IntersectChildren(current, current_bounds, ray, &children[0],
+          &child_bounds[0], count);
       for (uint32_t i = 0; i < count; ++i) {
         node_stack.push_back(children[count - i - 1]);
         bounds_stack.push_back(child_bounds[count - i - 1]);
@@ -191,11 +199,9 @@ bool OctreeBase::TraverseStackless(const OctNode& root,
   }
   return hit;
 }
+
 bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
     const Ray& ray, Isect& isect, uint32_t depth) const {
-  //for (uint32_t i = 0; i < depth; ++i)
-  //  std::cout << " ";
-  //std::cout << node << "\n";
   if (depth > kMaxDepth) // check depth first
     return false;
   float t_near, t_far;
@@ -203,12 +209,6 @@ bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
     return false;
   if (node.IsLeaf()) { // is this a leaf?
     bool hit = IntersectLeaf(node, ray, isect);
-    if (hit) {
-      //for (uint32_t i = 0; i < depth; ++i)
-      //  std::cout << " ";
-      //std::cout << depth << " ray = " << ray << " node = " << node << " bounds = "
-      //    << bounds << std::endl;
-    }
     return hit;
   }
   OctNode children[4];    // can hit at most four children
@@ -218,12 +218,6 @@ bool OctreeBase::Traverse(const OctNode& node, const BoundingBox& bounds,
   bool hit = false;
   for (uint32_t i = 0; i < count && !hit; ++i)
     hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);
-  if (hit) {
-    //for (uint32_t i = 0; i < depth; ++i)
-    //  std::cout << " ";
-    //std::cout << depth << " r = " << ray << " n = " << node << " b = " << bounds
-    //    << std::endl;
-  }
   return hit;
 }
 
@@ -248,9 +242,11 @@ EncodedNode& EncodedNode::operator =(const EncodedNode& node) {
 OctNode::NodeType EncodedNode::GetType() const {
   return static_cast<OctNode::NodeType>((data[0] & 0x80) >> 7);
 }
+
 uint32_t EncodedNode::GetOctant() const {
   return static_cast<uint32_t>((data[0] & 0x70) >> 4);
 }
+
 uint32_t EncodedNode::GetSize() const {
   uint32_t size = 0x0;
   uint32_t byte = 0x0;
@@ -269,11 +265,13 @@ uint32_t EncodedNode::GetOffset() const {
   }
   return offset;
 }
+
 void EncodedNode::SetType(OctNode::NodeType type) {
   u_char mask = static_cast<u_char>(type);
   mask = (mask << 7) & 0x80;
   data[0] = (0x7F & data[0]) | mask;
 }
+
 void EncodedNode::SetOctant(uint32_t octant) {
   u_char mask = static_cast<u_char>(octant);
   mask = (mask << 4);
@@ -299,6 +297,7 @@ void EncodedNode::SetOffset(uint32_t offset) {
     data[i] = static_cast<u_char>(byte);
   }
 }
+
 std::ostream& operator<<(std::ostream& out, const EncodedNode& node) {
   for (uint32_t i = 0; i < 8; ++i) {
     for (uint32_t j = 0; j < 8; ++j)
@@ -349,6 +348,7 @@ OctNodeFactory & OctNodeFactory::GetInstance() {
   }
   return instance;
 }
+
 OctNode OctNodeFactory::CreateOctNode(const EncodedNode& encoded) const {
   OctNode node;
   node.set_size(encoded.GetSize());
@@ -357,12 +357,15 @@ OctNode OctNodeFactory::CreateOctNode(const EncodedNode& encoded) const {
   node.set_offset(encoded.GetOffset());
   return node;
 }
+
 OctNode OctNodeFactory::CreateLeaf(uint32_t octant) const {
   return OctNode(OctNode::kLeaf, octant, 0, 0);
 }
+
 OctNode OctNodeFactory::CreateInternal(uint32_t octant) const {
   return OctNode(OctNode::kInternal, octant, 0, 0);
 }
+
 EncodedNode OctNodeFactory::CreateEncodedNode(const OctNode& node) const {
   EncodedNode encoded;
   encoded.SetType(node.type());
@@ -371,24 +374,31 @@ EncodedNode OctNodeFactory::CreateEncodedNode(const OctNode& node) const {
   encoded.SetSize(node.size());
   return encoded;
 }
+
 uint32_t OctNode::octant() const {
   return octant_;
 }
+
 void OctNode::set_octant(uint32_t octant) {
   octant_ = octant;
 }
+
 uint32_t OctNode::offset() const {
   return offset_;
 }
+
 void OctNode::set_offset(uint32_t offset) {
   offset_ = offset;
 }
+
 uint32_t OctNode::size() const {
   return size_;
 }
+
 void OctNode::set_size(uint32_t size) {
   size_ = size;
 }
+
 OctNode::NodeType OctNode::type() const {
   return type_;
 }
@@ -396,12 +406,15 @@ OctNode::NodeType OctNode::type() const {
 void OctNode::set_type(NodeType type) {
   type_ = type;
 }
+
 bool OctNode::IsLeaf() const {
   return type_ == kLeaf;
 }
+
 bool OctNode::IsInternal() const {
   return type_ == kInternal;
 }
+
 std::ostream& operator<<(std::ostream& out, const OctNode& node) {
   if (node.IsLeaf())
     out << "L:";

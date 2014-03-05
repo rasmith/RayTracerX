@@ -195,7 +195,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   int image_width = 1024;
   int image_height = 1024;
   //[-0.0168008,0.110153,-0.00148227]
-  glm::vec3 eye_pos = glm::vec3(-0.0168008f, 0.110153f, 0.20f);
+  glm::vec3 eye_pos = glm::vec3(-0.0168008f, 0.110153f, 0.225f);
   glm::vec3 at_pos = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -254,7 +254,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   std::cout << "done loading" << std::endl;
   int image_width = 1024;
   int image_height = 1024;
-  glm::vec3 eye_pos = glm::vec3(-0.0058789f,0.124951f,0.25f);
+  glm::vec3 eye_pos = glm::vec3(-0.0058789f,0.124951f,0.275f);
   glm::vec3 at_pos = glm::vec3(-0.0058789f,0.124951f,-0.0046034f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   std::cout << "set camera" << std::endl;
@@ -316,7 +316,7 @@ TEST(RayTracerTest, BuddhaMeshTest) {
   std::cout << "done loading" << std::endl;
   int image_width = 1024;
   int image_height = 1024;
-  glm::vec3 eye_pos = glm::vec3(-0.0054393f,0.14769f,0.2f);
+  glm::vec3 eye_pos = glm::vec3(-0.0054393f,0.14769f,0.275f);
   glm::vec3 at_pos = glm::vec3(-0.0054393f,0.148769,-0.00669f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   std::cout << "set camera" << std::endl;
@@ -378,8 +378,8 @@ TEST(RayTracerTest, TurbineMeshTest) {
   std::cout << "done loading" << std::endl;
   int image_width = 1024;
   int image_height = 1024;
-  glm::vec3 eye_pos = glm::vec3(-274.564f,-302.243f,900.0f);
-  glm::vec3 at_pos = glm::vec3(-274.564f,-302.243f,254.327f);
+  glm::vec3 eye_pos = glm::vec3(-274.564f,-282.243f,950.0f);
+  glm::vec3 at_pos = glm::vec3(-274.564f,-282.243f,254.327f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   std::cout << "set camera" << std::endl;
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -391,7 +391,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
   point_light.ka = point_light_color;
   point_light.kd = point_light_color;
   point_light.ks = point_light_color;
-  point_light.ray = Ray(glm::vec3(0.0, -2.0, 2.0f), glm::vec3(0.0f));
+  point_light.ray = Ray(glm::vec3(0.0, -400.0, 400.0f), glm::vec3(0.0f));
   point_light.type = Light::kPoint;
   point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
       0.000045492f);
@@ -401,7 +401,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
   directional_light.ka = directional_light_color;
   directional_light.kd = directional_light_color;
   directional_light.ks = directional_light_color;
-  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
   directional_light.type = Light::kDirectional;
 
   scene.AddLight(point_light);
@@ -420,7 +420,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
-  ray_tracer.set_background_color(glm::vec3(0.0f, 1.0f, 0.0f));
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
   ray_tracer.Render(image);
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("blade_octree.jpg", image, status);
