@@ -12,64 +12,6 @@
 #include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
-class OctNode {
-public:
-  enum NodeType {
-    kInternal = 0, kLeaf = 1
-  };
-  OctNode();
-  OctNode(const OctNode& node);
-  OctNode(const OctNode::NodeType& node_type, uint32_t node_octant,
-      uint32_t node_size, uint32_t node_offset);
-  bool IsLeaf() const;
-  bool IsInternal() const;
-  uint32_t octant() const;
-  void set_octant(uint32_t octant);
-  uint32_t offset() const;
-  void set_offset(uint32_t offset);
-  uint32_t size() const;
-  void set_size(uint32_t size);
-  NodeType type() const;
-  void set_type(NodeType type);
-  bool operator==(const OctNode& node) const;
-  OctNode& operator=(const OctNode& node);
-private:
-  NodeType type_;
-  uint32_t octant_;
-  uint32_t size_;
-  uint32_t offset_;
-};
-std::ostream& operator<<(std::ostream& out, const OctNode& scene);
-// data[0]: top bit is type
-//      : next three bits indicate octant
-//      : bottom four bits unused
-// data[1..4]: offset into corresponding array, 32 bits, max size 4,294,967,296
-// data[5..7]: node size, 24 bits, max size 16,777,216, empty nodes not stored
-struct EncodedNode {
-  u_char data[8];
-  EncodedNode();
-  EncodedNode(const EncodedNode& node);
-  EncodedNode& operator=(const EncodedNode& node);
-  OctNode::NodeType GetType() const;
-  uint32_t GetOctant() const;
-  uint32_t GetSize() const;
-  uint32_t GetOffset() const;
-  void SetType(OctNode::NodeType type);
-  void SetOctant(uint32_t octant);
-  void SetSize(uint32_t size);
-  void SetOffset(uint32_t offset);
-};
-std::ostream& operator<<(std::ostream& out, const EncodedNode& scene);
-class OctNodeFactory {
-public:
-  static OctNodeFactory& GetInstance();
-  OctNode CreateOctNode(const EncodedNode& encoded) const;
-  OctNode CreateLeaf(uint32_t octant) const;
-  OctNode CreateInternal(uint32_t octant) const;
-  EncodedNode CreateEncodedNode(const OctNode& node) const;
-private:
-  OctNodeFactory();
-};
 class Accelerator: public SceneShape {
 public:
   virtual ~Accelerator();
@@ -79,32 +21,174 @@ protected:
   Accelerator();
   bool trace_;
 };
+
+template<class OctNode, class EncodedNode, class OctNodeFactory>
 class OctreeBase: public Accelerator {
 public:
   static const uint32_t kMaxDepth;
   static const uint32_t kMaxLeafSize;
+
   uint32_t PointToOctant(const BoundingBox& bounds,
-      const glm::vec3& point) const;
-  BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const;
-  virtual bool Intersect(const Ray& ray, Isect& isect) const;
-  virtual void Print(std::ostream& out) const;
+      const glm::vec3& point) const {
+    glm::vec3 center = bounds.GetCenter();
+    uint32_t x_bit = (point[0] > center[0]);
+    uint32_t y_bit = (point[1] > center[1]);
+    uint32_t z_bit = (point[2] > center[2]);
+    uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
+    return octant;
+  }
+
+  BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const {
+    glm::vec3 center = bounds.GetCenter();
+    BoundingBox child_bounds = bounds;
+    for (uint32_t i = 0; i < 3; ++i) {
+      if ((octant >> i) & 0x1)
+        child_bounds.min()[i] = center[i];
+      else
+        child_bounds.max()[i] = center[i];
+    }
+    return child_bounds;
+  }
+
+  virtual bool Intersect(const Ray& ray, Isect& isect) const {
+    return Traverse(GetRoot(), GetBounds(), ray, isect, 0);
+  }
+
+  virtual void Print(std::ostream& out) const {
+    std::vector<OctNode> nodes;
+    std::vector<int> depths;
+    std::vector<BoundingBox> bounds;
+    nodes.clear();
+    depths.clear();
+    bounds.clear();
+    nodes.push_back(GetRoot());
+    bounds.push_back(GetBounds());
+    depths.push_back(0);
+    while (!nodes.empty()) {
+      OctNode node = nodes.back();
+      int depth = depths.back();
+      BoundingBox bbox = bounds.back();
+      nodes.pop_back();
+      bounds.pop_back();
+      depths.pop_back();
+      PrintNode(out, node, bbox, depth);
+      if (node.IsInternal()) {
+        for (uint32_t i = 0; i < node.size(); ++i) {
+          OctNode child = GetIthChildOf(node, i);
+          nodes.push_back(child);
+          bounds.push_back(GetChildBounds(bbox, child.octant()));
+          depths.push_back(depth + 1);
+        }
+      }
+    }
+  }
+
 protected:
-  OctreeBase();
-  virtual bool Traverse(const OctNode& node, const BoundingBox& bounds,
-      const Ray& ray, Isect& isect, uint32_t depth) const;
-  bool TraverseStackless(const OctNode& node, const BoundingBox& bounds,
-      const Ray& ray, Isect& isect) const;
+  virtual BoundingBox GetBounds() const = 0;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
-  virtual OctNodeFactory& GetNodeFactory() const;
+  virtual OctNode GetRoot() const = 0;
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const = 0;
+
+  OctreeBase() :
+      Accelerator() {
+  }
+
+  bool Traverse(const OctNode& node, const BoundingBox& bounds, const Ray& ray,
+      Isect& isect, uint32_t depth) const {
+    if (depth > kMaxDepth) // check depth first
+      return false;
+    float t_near, t_far;
+    if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
+      return false;
+    if (node.IsLeaf()) { // is this a leaf?
+      bool hit = IntersectLeaf(node, ray, isect);
+      return hit;
+    }
+    OctNode children[4];    // can hit at most four children
+    BoundingBox child_bounds[4];
+    uint32_t count = 0;
+    IntersectChildren(node, bounds, ray, &children[0], &child_bounds[0], count);
+    bool hit = false;
+    for (uint32_t i = 0; i < count && !hit; ++i)
+      hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);
+    return hit;
+  }
+
+  virtual OctNodeFactory& GetNodeFactory() const {
+    return OctNodeFactory::GetInstance();
+  }
+
+  ///////
+  //
+  // IntersectChildren
+  //
+  //  Intersect children of given node and return in sorted order
+  //  that the given ray hit them along with child bounding boxes.
+  //  Can hit at most four (4) children.  Arrays passed in are
+  //  assumed to be of length four (4).
+  //
+  //////
+  struct SortHolder {
+    float t_near;
+    float t_far;
+    OctNode child;
+    BoundingBox bounds;
+    SortHolder() :
+        t_near(0.0f), t_far(0.0f), child(OctNode()), bounds(BoundingBox()) {
+    }
+
+    SortHolder(const SortHolder& h) :
+        t_near(h.t_near), t_far(h.t_far), child(h.child), bounds(h.bounds) {
+    }
+
+    explicit SortHolder(float t0, float t1, const OctNode& n,
+        const BoundingBox& b) :
+        t_near(t0), t_far(t1), child(n), bounds(b) {
+    }
+
+    bool operator<(const SortHolder& s) const {
+      return t_near < s.t_near;
+    }
+  };
+
   virtual void IntersectChildren(const OctNode& node, const BoundingBox& bounds,
       const Ray& ray, OctNode* children, BoundingBox* child_bounds,
-      uint32_t& count) const;
-  virtual OctNode GetRoot() const = 0;
-  virtual BoundingBox GetBounds() const = 0;
+      uint32_t& count) const {
+    float t_near;
+    float t_far;
+    SortHolder h[4];
+    count = 0;
+    for (uint32_t i = 0; count < 4 && i < node.size(); ++i) {
+      children[count] = GetIthChildOf(node, i);
+      child_bounds[count] = GetChildBounds(bounds, children[count].octant());
+      if (child_bounds[count].Intersect(ray, t_near, t_far)) {
+        h[count] = SortHolder(t_near, t_far, children[count],
+            child_bounds[count]);
+        if (trace_)
+          std::cout << "i = " << i << " t_near = " << t_near << " t_far = "
+              << t_far << " child = " << children[count] << "\n";
+        ++count;
+      }
+    }
+    if (trace_)
+      std::cout << "Sort children:\n";
+    std::sort(&h[0], &h[0] + count);
+    for (uint32_t i = 0; i < count; ++i) {
+      children[i] = h[i].child;
+      child_bounds[i] = h[i].bounds;
+      if (trace_)
+        std::cout << "i = " << i << " t_near = " << h[i].t_near << " t_far = "
+            << h[i].t_far << " node = " << children[i] << "\n";
+    }
+  }
+
   virtual void PrintNode(std::ostream& out, const OctNode& node,
-      const BoundingBox& bbox, int depth) const;
+      const BoundingBox& bbox, int depth) const {
+    for (int i = 0; i < depth; ++i)
+      out << " ";
+    out << node << " " << bbox << "\n";
+  }
 };
 } // namespace ray
 #endif
