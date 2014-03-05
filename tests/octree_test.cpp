@@ -160,7 +160,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   directional_light.ka = directional_light_color;
   directional_light.kd = directional_light_color;
   directional_light.ks = directional_light_color;
-  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.05f, 0.05f, 0.05f));
   directional_light.type = Light::kDirectional;
 
   scene.AddLight(point_light);
@@ -176,7 +176,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
-  ray_tracer.set_background_color(glm::vec3(0.0f, 1.0f, 0.0f));
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
   ray_tracer.Render(image);
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("sphere_octree.jpg", image, status);
@@ -234,7 +234,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
-  ray_tracer.set_background_color(glm::vec3(0.0f, 1.0f, 0.0f));
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
   ray_tracer.Render(image);
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("bunny_octree.jpg", image, status);
@@ -296,7 +296,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
-  ray_tracer.set_background_color(glm::vec3(0.0f, 1.0f, 0.0f));
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
   ray_tracer.Render(image);
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("dragon_octree.jpg", image, status);
@@ -358,7 +358,7 @@ TEST(RayTracerTest, BuddhaMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
-  ray_tracer.set_background_color(glm::vec3(0.0f, 1.0f, 0.0f));
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
   ray_tracer.Render(image);
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("buddha_octree.jpg", image, status);
