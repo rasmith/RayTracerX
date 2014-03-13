@@ -21,6 +21,7 @@ using ::testing::ElementsAre;
 #include "light.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
+#include "octnode64.hpp"
 #include "octree.hpp"
 #include "octree_base.hpp"
 #include "raytracer.hpp"
@@ -29,6 +30,9 @@ using ::testing::ElementsAre;
 #include "transform.hpp"
 
 namespace ray {
+typedef Octree<TrimeshFace, OctNode64, EncodedNode64, OctNodeFactory64, 32, 10>
+  Octree64;
+
 TEST(OctreeTest, RayBoxTest) {
   BoundingBox box(glm::vec3(0.0f), glm::vec3(1.0f));
   float t_near, t_far;
@@ -59,11 +63,11 @@ TEST(OctreeTest, BoundingBoxOverlapTest) {
 }
 
 TEST(OctreeTest, NodeEncodeTest) {
-  OctNode internal_node;
-  OctNode test_node;
-  EncodedNode encoded;
-  OctNodeFactory& fact = OctNodeFactory::GetInstance();
-  OctNode leaf_node = fact.CreateLeaf(0);
+  OctNode64 internal_node;
+  OctNode64 test_node;
+  EncodedNode64 encoded;
+  OctNodeFactory64& fact = OctNodeFactory64::GetInstance();
+  OctNode64 leaf_node = fact.CreateLeaf(0);
   leaf_node.set_offset(0);
   leaf_node.set_size(4968);
   //PrintBinary(4968u);
@@ -101,7 +105,7 @@ TEST(OctreeTest, NodeEncodeTest) {
 
 TEST(OctreeTest, ChildBoundsTest) {
   BoundingBox bounds = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
-  Octree<TrimeshFace> octree;
+  Octree64 octree;
   BoundingBox bounds0 = octree.GetChildBounds(bounds, 0); // 000
   EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.0f), bounds0.min());
   EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds0.max());
@@ -167,7 +171,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  Octree<TrimeshFace> octree;
+  Octree64 octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   std::cout << "Octree built.\n";
@@ -223,7 +227,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  Octree<TrimeshFace> octree;
+  Octree64 octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   std::cout << "Octree built.\n";
@@ -254,8 +258,8 @@ TEST(RayTracerTest, DragonMeshTest) {
   std::cout << "done loading" << std::endl;
   int image_width = 1024;
   int image_height = 1024;
-  glm::vec3 eye_pos = glm::vec3(-0.0058789f,0.124951f,0.275f);
-  glm::vec3 at_pos = glm::vec3(-0.0058789f,0.124951f,-0.0046034f);
+  glm::vec3 eye_pos = glm::vec3(-0.0058789f, 0.124951f, 0.275f);
+  glm::vec3 at_pos = glm::vec3(-0.0058789f, 0.124951f, -0.0046034f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   std::cout << "set camera" << std::endl;
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -284,7 +288,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  Octree<TrimeshFace> octree;
+  Octree64 octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
@@ -316,8 +320,8 @@ TEST(RayTracerTest, BuddhaMeshTest) {
   std::cout << "done loading" << std::endl;
   int image_width = 1024;
   int image_height = 1024;
-  glm::vec3 eye_pos = glm::vec3(-0.0054393f,0.14769f,0.275f);
-  glm::vec3 at_pos = glm::vec3(-0.0054393f,0.148769,-0.00669f);
+  glm::vec3 eye_pos = glm::vec3(-0.0054393f, 0.14769f, 0.275f);
+  glm::vec3 at_pos = glm::vec3(-0.0054393f, 0.148769, -0.00669f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   std::cout << "set camera" << std::endl;
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -346,7 +350,7 @@ TEST(RayTracerTest, BuddhaMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  Octree<TrimeshFace> octree;
+  Octree64 octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
@@ -378,8 +382,8 @@ TEST(RayTracerTest, TurbineMeshTest) {
   std::cout << "done loading" << std::endl;
   int image_width = 1024;
   int image_height = 1024;
-  glm::vec3 eye_pos = glm::vec3(-274.564f,-282.243f,950.0f);
-  glm::vec3 at_pos = glm::vec3(-274.564f,-282.243f,254.327f);
+  glm::vec3 eye_pos = glm::vec3(-274.564f, -282.243f, 950.0f);
+  glm::vec3 at_pos = glm::vec3(-274.564f, -282.243f, 254.327f);
   glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
   std::cout << "set camera" << std::endl;
   glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
@@ -408,7 +412,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  Octree<TrimeshFace> octree;
+  Octree64 octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);

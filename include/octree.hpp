@@ -16,13 +16,16 @@
 #include "octree_base.hpp"
 #include "shape.hpp"
 namespace ray {
-template<class SceneObject>
-class Octree: public OctreeBase {
+template<class SceneObject, class OctNode, class EncodedNode,
+    class OctNodeFactory, int max_leaf_size, int max_depth>
+class Octree: public OctreeBase<OctNode, EncodedNode, OctNodeFactory,
+    max_leaf_size, max_depth> {
 public:
   typedef std::vector<const SceneObject*> ObjectVector;
 
   Octree() :
-      OctreeBase(), nodes_(), scene_objects_(), bounds_(),
+          OctreeBase<OctNode, EncodedNode, OctNodeFactory, max_leaf_size,
+              max_depth>::OctreeBase(), nodes_(), scene_objects_(), bounds_(),
           num_internal_nodes_(0), num_leaves_(0) {
   }
 
@@ -49,7 +52,7 @@ public:
     BuildTree(objects);
   }
 
-private:
+protected:
   struct WorkNode {
     WorkNode() :
         node_index(0), bounds(), objects() {
@@ -72,11 +75,11 @@ private:
   uint32_t num_leaves_;
 
   OctNode DecodeNode(const EncodedNode& encoded) const {
-    return GetNodeFactory().CreateOctNode(encoded);
+    return this->GetNodeFactory().CreateOctNode(encoded);
   }
 
   EncodedNode EncodeNode(const OctNode& node) const {
-    return GetNodeFactory().CreateEncodedNode(node);
+    return this->GetNodeFactory().CreateEncodedNode(node);
   }
 
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const {
@@ -113,7 +116,7 @@ private:
     return hit;
   }
 
-  void BuildLeaf(OctNode& node, WorkNode& work_node) {
+  virtual void BuildLeaf(OctNode& node, WorkNode& work_node) {
     ++num_leaves_;
     node.set_offset(scene_objects_.size());
     node.set_size(work_node.objects.size());
@@ -123,14 +126,14 @@ private:
     }
   }
 
-  void BuildInternal(OctNode& node, WorkNode& work_node, WorkList& next_list,
-      uint32_t depth) {
+  virtual void BuildInternal(OctNode& node, WorkNode& work_node,
+      WorkList& next_list, uint32_t depth) {
     ++num_internal_nodes_;
     WorkNode child_work_nodes[8]; // process children tentatively
     node.set_offset(nodes_.size()); // children will have nodes pushed
     for (uint32_t j = 0; j < 8; ++j)
       child_work_nodes[j] = WorkNode( // initialize child lists
-          GetChildBounds(work_node.bounds, j));
+          this->GetChildBounds(work_node.bounds, j));
     while (!work_node.objects.empty()) {
       const SceneObject* obj = work_node.objects.back();
       work_node.objects.pop_back();
@@ -144,10 +147,10 @@ private:
         node.set_size(node.size() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         OctNode child;
-        if (depth + 1 >= kMaxDepth || count <= kMaxLeafSize)
-          child = GetNodeFactory().CreateLeaf(j);
+        if (depth + 1 >= max_depth || count <= max_leaf_size)
+          child = this->GetNodeFactory().CreateLeaf(j);
         else
-          child = GetNodeFactory().CreateInternal(j);
+          child = this->GetNodeFactory().CreateInternal(j);
         child_work_nodes[j].node_index = nodes_.size();
         next_list.push_back(child_work_nodes[j]);
         nodes_.push_back(EncodeNode(child));
@@ -176,11 +179,10 @@ private:
     std::vector<WorkNode> next_list;
     int depth = 0;
     OctNode root; // Create and insert root
-    if ((0 == OctreeBase::kMaxDepth)
-        || (work_root.objects.size() <= kMaxLeafSize))
-      root = GetNodeFactory().CreateLeaf(0);
+    if ((0 == max_depth) || (work_root.objects.size() <= max_leaf_size))
+      root = this->GetNodeFactory().CreateLeaf(0);
     else
-      root = GetNodeFactory().CreateInternal(0);
+      root = this->GetNodeFactory().CreateInternal(0);
     nodes_.push_back(EncodeNode(root));
     work_root.bounds = bounds_;
     work_root.node_index = 0;

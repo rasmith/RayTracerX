@@ -33,8 +33,6 @@ private:
   int vertices_[3];
 };
 
-typedef Octree<TrimeshFace> TrimeshFaceOctree;
-
 class Trimesh: public SceneShape {
 public:
   Trimesh();

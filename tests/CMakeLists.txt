@@ -21,6 +21,7 @@ add_executable(octree_test octree_test.cpp
                                   ${Ray_SOURCE_DIR}/src/light.cpp
                                   ${Ray_SOURCE_DIR}/src/material.cpp
                                   ${Ray_SOURCE_DIR}/src/mesh.cpp
+                                  ${Ray_SOURCE_DIR}/src/octnode64.cpp
                                   ${Ray_SOURCE_DIR}/src/octree_base.cpp
                                   ${Ray_SOURCE_DIR}/src/ray.cpp
                                   ${Ray_SOURCE_DIR}/src/raytracer.cpp

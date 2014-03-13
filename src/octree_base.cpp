@@ -10,8 +10,6 @@
 #include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
-const uint32_t OctreeBase::kMaxDepth = 8;
-const uint32_t OctreeBase::kMaxLeafSize = 32;
 Accelerator::~Accelerator() {
 }
 

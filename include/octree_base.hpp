@@ -22,12 +22,10 @@ protected:
   bool trace_;
 };
 
-template<class OctNode, class EncodedNode, class OctNodeFactory>
+template<class OctNode, class EncodedNode, class OctNodeFactory,
+    int max_leaf_size = 32, int max_depth = 8>
 class OctreeBase: public Accelerator {
 public:
-  static const uint32_t kMaxDepth;
-  static const uint32_t kMaxLeafSize;
-
   uint32_t PointToOctant(const BoundingBox& bounds,
       const glm::vec3& point) const {
     glm::vec3 center = bounds.GetCenter();
@@ -96,7 +94,7 @@ protected:
 
   bool Traverse(const OctNode& node, const BoundingBox& bounds, const Ray& ray,
       Isect& isect, uint32_t depth) const {
-    if (depth > kMaxDepth) // check depth first
+    if (depth > max_depth) // check depth first
       return false;
     float t_near, t_far;
     if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
