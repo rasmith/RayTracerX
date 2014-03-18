@@ -7,8 +7,6 @@
 
 #ifndef OCTNODE64_HPP_
 #define OCTNODE64_HPP_
-#include <sys/types.h>
-#include <stdint.h>
 #include <ostream>
 #include "types.hpp"
 namespace ray {
@@ -52,7 +50,7 @@ struct EncodedNode64 {
   EncodedNode64();
   EncodedNode64(const EncodedNode64& node);
   EncodedNode64& operator=(const EncodedNode64& node);
-  OctNode64::NodeType GetType() const;
+  typename OctNode64::NodeType GetType() const;
   uint32_t GetOctant() const;
   uint32_t GetSize() const;
   uint32_t GetOffset() const;

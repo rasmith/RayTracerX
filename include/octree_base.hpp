@@ -26,28 +26,6 @@ template<class OctNode, class EncodedNode, class OctNodeFactory,
     int max_leaf_size = 32, int max_depth = 8>
 class OctreeBase: public Accelerator {
 public:
-  uint32_t PointToOctant(const BoundingBox& bounds,
-      const glm::vec3& point) const {
-    glm::vec3 center = bounds.GetCenter();
-    uint32_t x_bit = (point[0] > center[0]);
-    uint32_t y_bit = (point[1] > center[1]);
-    uint32_t z_bit = (point[2] > center[2]);
-    uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
-    return octant;
-  }
-
-  BoundingBox GetChildBounds(const BoundingBox& bounds, uint32_t octant) const {
-    glm::vec3 center = bounds.GetCenter();
-    BoundingBox child_bounds = bounds;
-    for (uint32_t i = 0; i < 3; ++i) {
-      if ((octant >> i) & 0x1)
-        child_bounds.min()[i] = center[i];
-      else
-        child_bounds.max()[i] = center[i];
-    }
-    return child_bounds;
-  }
-
   virtual bool Intersect(const Ray& ray, Isect& isect) const {
     return Traverse(GetRoot(), GetBounds(), ray, isect, 0);
   }
@@ -74,7 +52,7 @@ public:
         for (uint32_t i = 0; i < node.size(); ++i) {
           OctNode child = GetIthChildOf(node, i);
           nodes.push_back(child);
-          bounds.push_back(GetChildBounds(bbox, child.octant()));
+          bounds.push_back(GetChildBounds(node, bbox, child.octant()));
           depths.push_back(depth + 1);
         }
       }
@@ -82,6 +60,10 @@ public:
   }
 
 protected:
+  virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
+      const glm::vec3& point) const = 0;
+  virtual BoundingBox GetChildBounds(const OctNode& node,
+      const BoundingBox& bounds, uint32_t octant) const = 0;
   virtual BoundingBox GetBounds() const = 0;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
   virtual OctNode GetRoot() const = 0;
@@ -159,7 +141,8 @@ protected:
     count = 0;
     for (uint32_t i = 0; count < 4 && i < node.size(); ++i) {
       children[count] = GetIthChildOf(node, i);
-      child_bounds[count] = GetChildBounds(bounds, children[count].octant());
+      child_bounds[count] = GetChildBounds(node, bounds,
+          children[count].octant());
       if (child_bounds[count].Intersect(ray, t_near, t_far)) {
         h[count] = SortHolder(t_near, t_far, children[count],
             child_bounds[count]);

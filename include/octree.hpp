@@ -98,6 +98,29 @@ protected:
     return num_leaves_;
   }
 
+  virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
+      const glm::vec3& point) const {
+    glm::vec3 center = bounds.GetCenter();
+    uint32_t x_bit = (point[0] > center[0]);
+    uint32_t y_bit = (point[1] > center[1]);
+    uint32_t z_bit = (point[2] > center[2]);
+    uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
+    return octant;
+  }
+
+  virtual BoundingBox GetChildBounds(const OctNode& node,
+      const BoundingBox& bounds, uint32_t octant) const {
+    glm::vec3 center = bounds.GetCenter();
+    BoundingBox child_bounds = bounds;
+    for (uint32_t i = 0; i < 3; ++i) {
+      if ((octant >> i) & 0x1)
+        child_bounds.min()[i] = center[i];
+      else
+        child_bounds.max()[i] = center[i];
+    }
+    return child_bounds;
+  }
+
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const {
     //std::cout << "IntersectLeaf: leaf = " << leaf << "\n";
@@ -133,7 +156,7 @@ protected:
     node.set_offset(nodes_.size()); // children will have nodes pushed
     for (uint32_t j = 0; j < 8; ++j)
       child_work_nodes[j] = WorkNode( // initialize child lists
-          this->GetChildBounds(work_node.bounds, j));
+          this->GetChildBounds(node, work_node.bounds, j));
     while (!work_node.objects.empty()) {
       const SceneObject* obj = work_node.objects.back();
       work_node.objects.pop_back();
