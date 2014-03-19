@@ -14,7 +14,6 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
-using ::testing::ElementsAre;
 #include "camera.hpp"
 #include "geometry.hpp"
 #include "io_utils.hpp"
@@ -28,6 +27,8 @@ using ::testing::ElementsAre;
 #include "scene.hpp"
 #include "scene_utils.hpp"
 #include "transform.hpp"
+
+using ::testing::ElementsAre;
 
 namespace ray {
 typedef Octree<TrimeshFace, OctNode64, EncodedNode64, OctNodeFactory64, 32, 10>
@@ -106,28 +107,29 @@ TEST(OctreeTest, NodeEncodeTest) {
 TEST(OctreeTest, ChildBoundsTest) {
   BoundingBox bounds = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
   Octree64 octree;
-  BoundingBox bounds0 = octree.GetChildBounds(bounds, 0); // 000
+  OctNode64 root = octree.GetRoot();
+  BoundingBox bounds0 = octree.GetChildBounds(root, bounds, 0); // 000
   EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.0f), bounds0.min());
   EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds0.max());
-  BoundingBox bounds1 = octree.GetChildBounds(bounds, 1); // 001
+  BoundingBox bounds1 = octree.GetChildBounds(root, bounds, 1); // 001
   EXPECT_EQ(glm::vec3(0.5f, 0.0f, 0.0f), bounds1.min());
   EXPECT_EQ(glm::vec3(1.0f, 0.5f, 0.5f), bounds1.max());
-  BoundingBox bounds2 = octree.GetChildBounds(bounds, 2); // 010
+  BoundingBox bounds2 = octree.GetChildBounds(root, bounds, 2); // 010
   EXPECT_EQ(glm::vec3(0.0f, 0.5f, 0.0f), bounds2.min());
   EXPECT_EQ(glm::vec3(0.5f, 1.0f, 0.5f), bounds2.max());
-  BoundingBox bounds3 = octree.GetChildBounds(bounds, 3); // 011
+  BoundingBox bounds3 = octree.GetChildBounds(root, bounds, 3); // 011
   EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.0f), bounds3.min());
   EXPECT_EQ(glm::vec3(1.0f, 1.0f, 0.5f), bounds3.max());
-  BoundingBox bounds4 = octree.GetChildBounds(bounds, 4); // 100
+  BoundingBox bounds4 = octree.GetChildBounds(root, bounds, 4); // 100
   EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.5f), bounds4.min());
   EXPECT_EQ(glm::vec3(0.5f, 0.5f, 1.0f), bounds4.max());
-  BoundingBox bounds5 = octree.GetChildBounds(bounds, 5); // 101
+  BoundingBox bounds5 = octree.GetChildBounds(root, bounds, 5); // 101
   EXPECT_EQ(glm::vec3(0.5f, 0.0f, 0.5f), bounds5.min());
   EXPECT_EQ(glm::vec3(1.0f, 0.5f, 1.0f), bounds5.max());
-  BoundingBox bounds6 = octree.GetChildBounds(bounds, 6); // 110
+  BoundingBox bounds6 = octree.GetChildBounds(root, bounds, 6); // 110
   EXPECT_EQ(glm::vec3(0.0f, 0.5f, 0.5f), bounds6.min());
   EXPECT_EQ(glm::vec3(0.5f, 1.0f, 1.0f), bounds6.max());
-  BoundingBox bounds7 = octree.GetChildBounds(bounds, 7); // 111
+  BoundingBox bounds7 = octree.GetChildBounds(root, bounds, 7); // 111
   EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds7.min());
   EXPECT_EQ(glm::vec3(1.0f, 1.0f, 1.0f), bounds7.max());
 }

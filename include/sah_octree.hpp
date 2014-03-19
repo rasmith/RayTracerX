@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <algorithm>
 #include <cstring>
+#include <limits>
 #include <list>
 #include <vector>
 #include "sah_octnode.hpp"
@@ -32,7 +33,6 @@ public:
   virtual ~SAHOctree() {
   }
 
-protected:
   virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
       const glm::vec3& point) const {
     glm::vec3 split = node.GetPoint();
@@ -55,6 +55,8 @@ protected:
     }
     return child_bounds;
   }
+
+protected:
 
   virtual void FindSplit(OctNode& node, WorkNode& work_node) {
 

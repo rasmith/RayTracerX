@@ -52,6 +52,36 @@ public:
     BuildTree(objects);
   }
 
+  virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const {
+    return DecodeNode(nodes_[node.offset() + index]);
+  }
+
+  virtual OctNode GetRoot() const {
+    return DecodeNode(nodes_[0]);
+  }
+
+  virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
+      const glm::vec3& point) const {
+    glm::vec3 center = bounds.GetCenter();
+    uint32_t x_bit = (point[0] > center[0]);
+    uint32_t y_bit = (point[1] > center[1]);
+    uint32_t z_bit = (point[2] > center[2]);
+    uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
+    return octant;
+  }
+
+  virtual BoundingBox GetChildBounds(const OctNode& node,
+      const BoundingBox& bounds, uint32_t octant) const {
+    glm::vec3 center = bounds.GetCenter();
+    BoundingBox child_bounds = bounds;
+    for (uint32_t i = 0; i < 3; ++i) {
+      if ((octant >> i) & 0x1)
+        child_bounds.min()[i] = center[i];
+      else
+        child_bounds.max()[i] = center[i];
+    }
+    return child_bounds;
+  }
 protected:
   struct WorkNode {
     WorkNode() :
@@ -82,43 +112,12 @@ protected:
     return this->GetNodeFactory().CreateEncodedNode(node);
   }
 
-  virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const {
-    return DecodeNode(nodes_[node.offset() + index]);
-  }
-
-  virtual OctNode GetRoot() const {
-    return DecodeNode(nodes_[0]);
-  }
-
   uint32_t num_internal_nodes() {
     return num_internal_nodes_;
   }
 
   uint32_t num_leaves() {
     return num_leaves_;
-  }
-
-  virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
-      const glm::vec3& point) const {
-    glm::vec3 center = bounds.GetCenter();
-    uint32_t x_bit = (point[0] > center[0]);
-    uint32_t y_bit = (point[1] > center[1]);
-    uint32_t z_bit = (point[2] > center[2]);
-    uint32_t octant = x_bit | (y_bit << 1) | (z_bit << 2);
-    return octant;
-  }
-
-  virtual BoundingBox GetChildBounds(const OctNode& node,
-      const BoundingBox& bounds, uint32_t octant) const {
-    glm::vec3 center = bounds.GetCenter();
-    BoundingBox child_bounds = bounds;
-    for (uint32_t i = 0; i < 3; ++i) {
-      if ((octant >> i) & 0x1)
-        child_bounds.min()[i] = center[i];
-      else
-        child_bounds.max()[i] = center[i];
-    }
-    return child_bounds;
   }
 
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,

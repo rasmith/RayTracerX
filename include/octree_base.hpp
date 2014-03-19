@@ -58,15 +58,14 @@ public:
       }
     }
   }
-
-protected:
+  virtual OctNode GetRoot() const = 0;
   virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
       const glm::vec3& point) const = 0;
   virtual BoundingBox GetChildBounds(const OctNode& node,
       const BoundingBox& bounds, uint32_t octant) const = 0;
   virtual BoundingBox GetBounds() const = 0;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
-  virtual OctNode GetRoot() const = 0;
+protected:
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const = 0;
 
