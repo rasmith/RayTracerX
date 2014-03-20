@@ -4,6 +4,8 @@
  *  Created on: Mar 5, 2014
  *      Author: randallsmith
  */
+#include <stdint.h>
+#include <iostream>
 #include "octnode64.hpp"
 namespace ray {
 EncodedNode64::EncodedNode64() {

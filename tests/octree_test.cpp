@@ -1,5 +1,5 @@
 /*
- * raytracer_test.cpp
+ * octree_test.cpp
  *
  *  Created on: Nov 27, 2013
  *      Author: agrippa
@@ -14,6 +14,7 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+using ::testing::ElementsAre;
 #include "camera.hpp"
 #include "geometry.hpp"
 #include "io_utils.hpp"
@@ -28,11 +29,9 @@
 #include "scene_utils.hpp"
 #include "transform.hpp"
 
-using ::testing::ElementsAre;
-
 namespace ray {
 typedef Octree<TrimeshFace, OctNode64, EncodedNode64, OctNodeFactory64, 32, 10>
-  Octree64;
+          Octree64;
 
 TEST(OctreeTest, RayBoxTest) {
   BoundingBox box(glm::vec3(0.0f), glm::vec3(1.0f));
@@ -107,7 +106,7 @@ TEST(OctreeTest, NodeEncodeTest) {
 TEST(OctreeTest, ChildBoundsTest) {
   BoundingBox bounds = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
   Octree64 octree;
-  OctNode64 root = octree.GetRoot();
+  OctNode64 root;
   BoundingBox bounds0 = octree.GetChildBounds(root, bounds, 0); // 000
   EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.0f), bounds0.min());
   EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds0.max());

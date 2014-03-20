@@ -60,7 +60,7 @@ public:
     return DecodeNode(nodes_[0]);
   }
 
-  virtual uint32_t PointToOctant(const OctNode& node, const BoundingBox& bounds,
+  virtual uint32_t PointToOctant(const OctNode&, const BoundingBox& bounds,
       const glm::vec3& point) const {
     glm::vec3 center = bounds.GetCenter();
     uint32_t x_bit = (point[0] > center[0]);
@@ -70,7 +70,7 @@ public:
     return octant;
   }
 
-  virtual BoundingBox GetChildBounds(const OctNode& node,
+  virtual BoundingBox GetChildBounds(const OctNode&,
       const BoundingBox& bounds, uint32_t octant) const {
     glm::vec3 center = bounds.GetCenter();
     BoundingBox child_bounds = bounds;

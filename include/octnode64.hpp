@@ -7,6 +7,8 @@
 
 #ifndef OCTNODE64_HPP_
 #define OCTNODE64_HPP_
+#include <stdint.h>
+#include <sys/types.h>
 #include <ostream>
 #include "types.hpp"
 namespace ray {
