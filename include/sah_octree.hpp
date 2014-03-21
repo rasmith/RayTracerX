@@ -5,8 +5,8 @@
  *      Author: agrippa
  */
 
-#ifndef OCTREE_HPP_
-#define OCTREE_HPP_
+#ifndef SAH_OCTREE_HPP_
+#define SAH_OCTREE_HPP_
 #include <sys/types.h>
 #include <stdint.h>
 #include <algorithm>
@@ -59,7 +59,8 @@ public:
 protected:
 
   virtual void FindSplit(OctNode& node, WorkNode& work_node) {
-
+    SAHOctNode& sah_node = node;
+    sah_node.set_point(work_node.bounds.GetCenter());
   }
 
   virtual void BuildInternal(OctNode& node, WorkNode& work_node,
@@ -96,4 +97,4 @@ protected:
   }
 };
 }
-#endif /* OCTREE_HPP_ */
+#endif /* SAH_OCTREE_HPP_ */

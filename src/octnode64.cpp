@@ -26,7 +26,7 @@ EncodedNode64& EncodedNode64::operator =(const EncodedNode64& node) {
   return *this;
 }
 
-typename OctNode64::NodeType EncodedNode64::GetType() const {
+OctNode64::NodeType EncodedNode64::GetType() const {
   return static_cast<OctNode64::NodeType>((data[0] & 0x80) >> 7);
 }
 

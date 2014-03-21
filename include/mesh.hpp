@@ -8,7 +8,7 @@
 #define MESH_HPP_
 #include <vector>
 #include "geometry.hpp"
-#include "octree.hpp"
+#include "octree_base.hpp"
 #include "scene.hpp"
 #include "shape.hpp"
 #include "texture.hpp"

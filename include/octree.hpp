@@ -237,7 +237,5 @@ protected:
       work_root.objects.push_back(objects[i]);
     BuildTree(work_root);
   }
-
 };
-}
 #endif /* OCTREE_HPP_ */

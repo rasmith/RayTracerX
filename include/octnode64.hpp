@@ -52,7 +52,7 @@ struct EncodedNode64 {
   EncodedNode64();
   EncodedNode64(const EncodedNode64& node);
   EncodedNode64& operator=(const EncodedNode64& node);
-  typename OctNode64::NodeType GetType() const;
+  OctNode64::NodeType GetType() const;
   uint32_t GetOctant() const;
   uint32_t GetSize() const;
   uint32_t GetOffset() const;
