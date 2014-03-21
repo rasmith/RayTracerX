@@ -54,7 +54,7 @@ uint32_t SAHEncodedNode::GetOffset() const {
 glm::vec3 SAHEncodedNode::GetPoint() const {
   glm::vec3 point;
   float* dest = &point[0];
-  float* src = reinterpret_cast<float*>(&data[8]);
+  const float* src = reinterpret_cast<const float*>(&data[8]);
   uint32_t num_bytes = sizeof(float) * 3;
   for (uint32_t i = 0; i < num_bytes; ++i) {
     dest[i] = src[i];
@@ -235,7 +235,7 @@ std::ostream& operator<<(std::ostream& out, const SAHOctNode&node) {
     out << "L:";
   else
     out << "N:";
-  out << "[" << node.octant() << "] #" << node.size() << " @" << node.offset() << " p(" << node.point() << ")";
+  out << "[" << node.octant() << "] #" << node.size() << " @" << node.offset();
   return out;
 }
 }
