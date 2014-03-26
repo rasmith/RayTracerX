@@ -238,4 +238,5 @@ protected:
     BuildTree(work_root);
   }
 };
+}
 #endif /* OCTREE_HPP_ */

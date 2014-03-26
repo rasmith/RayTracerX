@@ -18,7 +18,61 @@
 #include "octree_base.hpp"
 #include "shape.hpp"
 namespace ray {
-template<class SceneObject>
+
+template<int NumSamples>
+
+template<int NumStepsX, int NumStepsY, int NumStepsZ>
+class SampleGrid {
+public:
+  struct SampleGridIterator {
+    SampleGridIterator() :
+        value(glm::vec3(0.0f)), indices(glm::uvec3(0)), grid(NULL) {
+    }
+    explicit SampleGridIterator(const SampleGridIterator& sgi) :
+        value(sgi.value), indices(sgi.indices), grid(sgi.grid) {
+    }
+    explicit SampleGridIterator(const glm::vec3& val, const glm::vec3& ind,
+        const SampleGrid* g) :
+        value(val), indices(ind), grid(g) {
+    }
+    bool operator==(const SampleGridIterator& sgi) {
+      return grid == sgi.grid && value == sgi.value && indices == sgi.indices;
+    }
+    bool operator!=(const SampleGridIterator& sgi) {
+      return !(*this == sgi);
+    }
+    glm::vec3 value;
+    glm::uvec3 indices;
+    const SampleGrid* grid;
+  };
+  SampleGrid(const BoundingBox& bbox, const glm::vec3& direction) :
+      bounds_(bbox), direction_(direction), step_(glm::vec3(0.0f)), begin_(),
+          end_() {
+    step_ = glm::vec3(1.0f / NumStepsX, 1.0f / NumStepsY, 1.0f / NumStepsZ)
+        * (bounds_.max() - bounds_.min()) * direction_;
+    glm::vec3 a = 0.5f * (1.0f - direction_);
+    glm::vec3 b = 0.5f * (1.0f + direction_);
+    begin_ = SampleGridIterator(a * bounds_.min() + b * bounds_.max(),
+        glm::uvec3(0, 0, 0), this);
+    end_ = SampleGridIterator(b * bounds_.min() + a * bounds_.max(),
+        glm::uvec3(NumStepsX, NumStepsY, NumStepsZ), this);
+
+  }
+  const SampleGridIterator& begin() {
+    return begin_;
+  }
+  const SampleGridIterator& end() {
+    return end_;
+  }
+protected:
+  BoundingBox bounds_;
+  glm::vec3 direction_;
+  glm::vec3 step_;
+  SampleGridIterator begin_;
+  SampleGridIterator end_;
+};
+
+template<class SceneObject, int NumSamples>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, 1, std::numeric_limits<uint32_t>::max()> {
 public:
@@ -58,17 +112,29 @@ public:
 
 protected:
 
-  virtual void FindSplit(OctNode& node, WorkNode& work_node) {
-    SAHOctNode& sah_node = node;
-    sah_node.set_point(work_node.bounds.GetCenter());
+  virtual float SampleCounts(const ObjectVector& objects,
+      const BoundingBox& bounds, const glm::vec3 direction, float* counts) {
+    uint32_t total_num_samples = NumSamples * NumSamples * NumSamples;
+    BoundingBox* boxes;
+
+    for (uint32_t i = 0; i < objects.size(); ++i) {
+      for (uint32_t j = 0; j < total_num_samples; ++j) {
+
+      }
+    }
+    return 0.0f;
   }
 
-  virtual void BuildInternal(OctNode& node, WorkNode& work_node,
+  virtual float EvaluateCost(WorkNode& work_node, glm::vec3& best_split) {
+    best_split = work_node.bounds.GetCenter();
+    return 0.0f;
+  }
+
+  virtual void BuildInternal(SAHOctNode& node, WorkNode& work_node,
       WorkList& next_list, uint32_t depth) {
     ++num_internal_nodes_;
     WorkNode child_work_nodes[8]; // process children tentatively
     node.set_offset(nodes_.size()); // children will have nodes pushed
-    FindSplit(node, work_node);
     for (uint32_t j = 0; j < 8; ++j)
       child_work_nodes[j] = WorkNode( // initialize child lists
           this->GetChildBounds(node, work_node.bounds, j));
@@ -84,8 +150,11 @@ protected:
       if (child_work_nodes[j].objects.size() > 0) {
         node.set_size(node.size() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
+        glm::vec3 split = glm::vec3(0.0f);
+        float cost = EvaluateCost(child_work_nodes[j], split);
         OctNode child;
-        if (depth + 1 >= max_depth || count <= max_leaf_size)
+        if (cost <= min_cost || depth + 1 >= max_depth
+            || count <= max_leaf_size)
           child = this->GetNodeFactory().CreateLeaf(j);
         else
           child = this->GetNodeFactory().CreateInternal(j);

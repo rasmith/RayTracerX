@@ -21,8 +21,8 @@ using ::testing::ElementsAre;
 #include "light.hpp"
 #include "material.hpp"
 #include "mesh.hpp"
-#include "octnode64.hpp"
-#include "octree64.hpp"
+#include "sah_octnode.hpp"
+#include "sah_octree.hpp"
 #include "octree_base.hpp"
 #include "raytracer.hpp"
 #include "scene.hpp"
@@ -30,37 +30,8 @@ using ::testing::ElementsAre;
 #include "transform.hpp"
 
 namespace ray {
-typedef Octree64<TrimeshFace, 32, 10> OctreeType;
-
-TEST(OctreeTest, RayBoxTest) {
-  BoundingBox box(glm::vec3(0.0f), glm::vec3(1.0f));
-  float t_near, t_far;
-  Ray ray0(glm::vec3(0.5f), glm::vec3(0.5f));
-  EXPECT_TRUE(box.Intersect(ray0, t_near, t_far));
-  Ray ray1(glm::vec3(0.5f, 0.5f, 0.25f), glm::vec3(0.5f));
-  EXPECT_TRUE(box.Intersect(ray1, t_near, t_far));
-}
-
-TEST(OctreeTest, TriangleBoundsTest) {
-  Triangle triangle0(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(4.0f, 5.0f, 6.0f),
-      glm::vec3(7.0f, 8.0f, 9.0f));
-  BoundingBox box0 = triangle0.GetBounds();
-  EXPECT_EQ(box0,
-      BoundingBox(glm::vec3(1.0f, 2.0f, 3.0f), glm::vec3(7.0f, 8.0f, 9.0f)));
-}
-
-TEST(OctreeTest, BoundingBoxOverlapTest) {
-  BoundingBox box0 = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
-  BoundingBox box1 = BoundingBox(glm::vec3(1.0f, 2.0f, 3.0f),
-      glm::vec3(7.0f, 8.0f, 9.0f));
-  BoundingBox box2 = BoundingBox(glm::vec3(0.0f, 0.0f, 2.0f),
-      glm::vec3(1.0f, 1.0f, 9.0f));
-  EXPECT_FALSE(box0.Overlap(box1));
-  EXPECT_FALSE(box1.Overlap(box0));
-  EXPECT_FALSE(box0.Overlap(box2));
-  EXPECT_FALSE(box2.Overlap(box0));
-}
-
+typedef SAHOctree<TrimeshFace> TestOctree;
+/**
 TEST(OctreeTest, NodeEncodeTest) {
   OctNode64 internal_node;
   OctNode64 test_node;
@@ -100,37 +71,7 @@ TEST(OctreeTest, NodeEncodeTest) {
     EXPECT_EQ(internal_node.offset(), test_node.offset());
     EXPECT_EQ(internal_node.size(), test_node.size());
   }
-}
-
-TEST(OctreeTest, ChildBoundsTest) {
-  BoundingBox bounds = BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f));
-  OctreeType octree;
-  OctNode64 root;
-  BoundingBox bounds0 = octree.GetChildBounds(root, bounds, 0); // 000
-  EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.0f), bounds0.min());
-  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds0.max());
-  BoundingBox bounds1 = octree.GetChildBounds(root, bounds, 1); // 001
-  EXPECT_EQ(glm::vec3(0.5f, 0.0f, 0.0f), bounds1.min());
-  EXPECT_EQ(glm::vec3(1.0f, 0.5f, 0.5f), bounds1.max());
-  BoundingBox bounds2 = octree.GetChildBounds(root, bounds, 2); // 010
-  EXPECT_EQ(glm::vec3(0.0f, 0.5f, 0.0f), bounds2.min());
-  EXPECT_EQ(glm::vec3(0.5f, 1.0f, 0.5f), bounds2.max());
-  BoundingBox bounds3 = octree.GetChildBounds(root, bounds, 3); // 011
-  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.0f), bounds3.min());
-  EXPECT_EQ(glm::vec3(1.0f, 1.0f, 0.5f), bounds3.max());
-  BoundingBox bounds4 = octree.GetChildBounds(root, bounds, 4); // 100
-  EXPECT_EQ(glm::vec3(0.0f, 0.0f, 0.5f), bounds4.min());
-  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 1.0f), bounds4.max());
-  BoundingBox bounds5 = octree.GetChildBounds(root, bounds, 5); // 101
-  EXPECT_EQ(glm::vec3(0.5f, 0.0f, 0.5f), bounds5.min());
-  EXPECT_EQ(glm::vec3(1.0f, 0.5f, 1.0f), bounds5.max());
-  BoundingBox bounds6 = octree.GetChildBounds(root, bounds, 6); // 110
-  EXPECT_EQ(glm::vec3(0.0f, 0.5f, 0.5f), bounds6.min());
-  EXPECT_EQ(glm::vec3(0.5f, 1.0f, 1.0f), bounds6.max());
-  BoundingBox bounds7 = octree.GetChildBounds(root, bounds, 7); // 111
-  EXPECT_EQ(glm::vec3(0.5f, 0.5f, 0.5f), bounds7.min());
-  EXPECT_EQ(glm::vec3(1.0f, 1.0f, 1.0f), bounds7.max());
-}
+}**/
 
 TEST(RayTracerTest, SphereMeshTest) {
   SceneLoader& loader = SceneLoader::GetInstance();
@@ -171,7 +112,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  OctreeType octree;
+  TestOctree octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   std::cout << "Octree built.\n";
@@ -227,7 +168,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  OctreeType octree;
+  TestOctree octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   std::cout << "Octree built.\n";
@@ -288,7 +229,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  OctreeType octree;
+  TestOctree octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
@@ -350,7 +291,7 @@ TEST(RayTracerTest, BuddhaMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  OctreeType octree;
+  TestOctree octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
@@ -412,7 +353,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
   scene.AddLight(directional_light);
 
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  OctreeType octree;
+  TestOctree octree;
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
