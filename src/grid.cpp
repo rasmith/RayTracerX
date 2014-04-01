@@ -5,12 +5,15 @@
  *      Author: agrippa
  */
 #include "grid.hpp"
+#include "shape.hpp"
+#include "types.hpp"
 namespace ray {
 UniformGridSampler::UniformGridSampler() :
     size_(glm::ivec3(2)), bounds_(), real_step_(ComputeRealStep()) {
 }
 
-UniformGridSampler::UniformGridSampler(glm::ivec3 size, const BoundingBox& bounds) :
+UniformGridSampler::UniformGridSampler(glm::ivec3 size,
+    const BoundingBox& bounds) :
     size_(size), bounds_(bounds), real_step_(ComputeRealStep()) {
 }
 

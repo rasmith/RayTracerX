@@ -15,6 +15,7 @@
 #include <list>
 #include <vector>
 #include "sah_octnode.hpp"
+#include "octree.hpp"
 #include "octree_base.hpp"
 #include "shape.hpp"
 namespace ray {

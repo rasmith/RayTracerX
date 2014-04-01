@@ -8,6 +8,8 @@
 #ifndef GRID_HPP_
 #define GRID_HPP_
 #include <cstdlib>
+#include "shape.hpp"
+#include "types.hpp"
 namespace ray {
 template<class ValueType>
 class Grid {
