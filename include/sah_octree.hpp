@@ -18,60 +18,6 @@
 #include "octree_base.hpp"
 #include "shape.hpp"
 namespace ray {
-
-template<int NumSamples>
-
-template<int NumStepsX, int NumStepsY, int NumStepsZ>
-class SampleGrid {
-public:
-  struct SampleGridIterator {
-    SampleGridIterator() :
-        value(glm::vec3(0.0f)), indices(glm::uvec3(0)), grid(NULL) {
-    }
-    explicit SampleGridIterator(const SampleGridIterator& sgi) :
-        value(sgi.value), indices(sgi.indices), grid(sgi.grid) {
-    }
-    explicit SampleGridIterator(const glm::vec3& val, const glm::vec3& ind,
-        const SampleGrid* g) :
-        value(val), indices(ind), grid(g) {
-    }
-    bool operator==(const SampleGridIterator& sgi) {
-      return grid == sgi.grid && value == sgi.value && indices == sgi.indices;
-    }
-    bool operator!=(const SampleGridIterator& sgi) {
-      return !(*this == sgi);
-    }
-    glm::vec3 value;
-    glm::uvec3 indices;
-    const SampleGrid* grid;
-  };
-  SampleGrid(const BoundingBox& bbox, const glm::vec3& direction) :
-      bounds_(bbox), direction_(direction), step_(glm::vec3(0.0f)), begin_(),
-          end_() {
-    step_ = glm::vec3(1.0f / NumStepsX, 1.0f / NumStepsY, 1.0f / NumStepsZ)
-        * (bounds_.max() - bounds_.min()) * direction_;
-    glm::vec3 a = 0.5f * (1.0f - direction_);
-    glm::vec3 b = 0.5f * (1.0f + direction_);
-    begin_ = SampleGridIterator(a * bounds_.min() + b * bounds_.max(),
-        glm::uvec3(0, 0, 0), this);
-    end_ = SampleGridIterator(b * bounds_.min() + a * bounds_.max(),
-        glm::uvec3(NumStepsX, NumStepsY, NumStepsZ), this);
-
-  }
-  const SampleGridIterator& begin() {
-    return begin_;
-  }
-  const SampleGridIterator& end() {
-    return end_;
-  }
-protected:
-  BoundingBox bounds_;
-  glm::vec3 direction_;
-  glm::vec3 step_;
-  SampleGridIterator begin_;
-  SampleGridIterator end_;
-};
-
 template<class SceneObject, int NumSamples>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, 1, std::numeric_limits<uint32_t>::max()> {
