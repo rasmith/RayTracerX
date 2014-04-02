@@ -19,7 +19,7 @@
 #include "octree_base.hpp"
 #include "shape.hpp"
 namespace ray {
-template<class SceneObject, int NumSamples>
+template<class SceneObject, int num_samples>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, 1, 32> {
 public:
@@ -61,7 +61,11 @@ protected:
       SAHOctNodeFactory, 1, 32>::WorkNode WorkNodeType;
 
   typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
-        SAHOctNodeFactory, 1, 32>::WorkList WorkListType;
+      SAHOctNodeFactory, 1, 32>::WorkList WorkListType;
+
+  float GetMinCost() const {
+    return 1.0f;
+  }
 
   virtual float EvaluateCost(WorkNodeType& work_node, glm::vec3& best_split) {
     return 0.0f;
@@ -90,8 +94,8 @@ protected:
         glm::vec3 split = glm::vec3(0.0f);
         float cost = EvaluateCost(child_work_nodes[j], split);
         SAHOctNode child;
-        if (cost <= min_cost || depth + 1 >= max_depth
-            || count <= max_leaf_size)
+        if (cost <= this->GetMinCost() || depth + 1 >= this->GetMaxDepth()
+            || count <= this->GetMaxLeafSize())
           child = this->GetNodeFactory().CreateLeaf(j);
         else
           child = this->GetNodeFactory().CreateInternal(j);

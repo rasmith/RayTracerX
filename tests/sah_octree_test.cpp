@@ -32,11 +32,11 @@ using ::testing::ElementsAre;
 namespace ray {
 
 TEST(OctreeTest, NodeEncodeTest) {
-  OctNode64 internal_node;
-  OctNode64 test_node;
-  EncodedNode64 encoded;
-  OctNodeFactory64& fact = OctNodeFactory64::GetInstance();
-  OctNode64 leaf_node = fact.CreateLeaf(0);
+  SAHOctNode internal_node;
+  SAHOctNode test_node;
+  SAHEncodedNode encoded;
+  SAHOctNodeFactory& fact = SAHOctNodeFactory::GetInstance();
+  SAHOctNode leaf_node = fact.CreateLeaf(0);
   leaf_node.set_offset(0);
   leaf_node.set_size(4968);
   //PrintBinary(4968u);
@@ -127,7 +127,7 @@ TEST(OctreeTest, NodeEncodeTest) {
  EXPECT_TRUE(success);
  EXPECT_EQ("OK", status);
  }
- /***
+
  TEST(RayTracerTest, BunnyMeshTest) {
  SceneLoader& loader = SceneLoader::GetInstance();
  std::string path = "../assets/bunny.ply";

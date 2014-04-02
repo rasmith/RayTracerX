@@ -4,6 +4,9 @@
  *  Created on: Apr 1, 2014
  *      Author: agrippa
  */
+#include <glm/glm.hpp>
+#include <glm/detail/precision.hpp>
+#include "types.hpp"
 
 namespace ray {
 glm::vec3 operator+(const glm::ivec3& i, const glm::vec3& r) {

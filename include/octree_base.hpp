@@ -65,6 +65,14 @@ public:
       const BoundingBox& bounds, uint32_t octant) const = 0;
   virtual BoundingBox GetBounds() const = 0;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
+
+  int GetMaxLeafSize() const {
+    return max_leaf_size;
+  }
+
+  int GetMaxDepth() const {
+    return max_depth;
+  }
 protected:
   virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
       Isect& isect) const = 0;
@@ -98,16 +106,16 @@ protected:
     return OctNodeFactory::GetInstance();
   }
 
-  ///////
-  //
-  // IntersectChildren
-  //
-  //  Intersect children of given node and return in sorted order
-  //  that the given ray hit them along with child bounding boxes.
-  //  Can hit at most four (4) children.  Arrays passed in are
-  //  assumed to be of length four (4).
-  //
-  //////
+///////
+//
+// IntersectChildren
+//
+//  Intersect children of given node and return in sorted order
+//  that the given ray hit them along with child bounding boxes.
+//  Can hit at most four (4) children.  Arrays passed in are
+//  assumed to be of length four (4).
+//
+//////
   struct SortHolder {
     float t_near;
     float t_far;

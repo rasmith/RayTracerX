@@ -80,6 +80,7 @@ add_executable(sah_octree_test sah_octree_test.cpp
                                   ${Ray_SOURCE_DIR}/src/octree_base.cpp
                                   ${Ray_SOURCE_DIR}/src/ray.cpp
                                   ${Ray_SOURCE_DIR}/src/raytracer.cpp
+                                  ${Ray_SOURCE_DIR}/src/sah_octnode.cpp
                                   ${Ray_SOURCE_DIR}/src/scene.cpp
                                   ${Ray_SOURCE_DIR}/src/scene_utils.cpp
                                   ${Ray_SOURCE_DIR}/src/shape.cpp
