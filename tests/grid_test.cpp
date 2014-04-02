@@ -29,10 +29,31 @@ using ::testing::ElementsAre;
 #include "transform.hpp"
 
 namespace ray {
-TEST(GridTest, GridInitializationTest) {
-  SummableGrid<int> sg;
+TEST(GridTest, InitializationTest) {
+  SummableGrid<int> sg(glm::ivec3(3, 3, 3));
+  sg.Init();
   sg.AssignToAll(1);
   std::cout << sg;
+}
+TEST(GridTest, ImageIntegralTest) {
+  SummableGrid<int> sg(glm::ivec3(3, 3, 3));
+  sg.Init();
+  sg.AssignToAll(1);
+  sg.IntegralImage();
+  std::cout << sg;
+}
+TEST(GridTest, StepTest) {
+  SummableGrid<int> sg(glm::ivec3(3, 3, 3));
+  sg.Init();
+  glm::ivec3 index(0);
+  std::cout << sg.grid_size() << "\n";
+  for(int i = 0; i < sg.grid_size(); ++i) {
+    std::cout << index;
+    if(index[0] == sg.size()[0] - 1) std::cout << "\n";
+    if(index[0] == sg.size()[0] - 1 && index[1] == sg.size()[1] - 1) std::cout << "\n";
+    index = sg.Step(index);
+  }
+  std::cout << "\n";
 }
 }
 

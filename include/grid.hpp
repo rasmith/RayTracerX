@@ -125,7 +125,9 @@ public:
       out << g(index);
       if (index[0] == g.size_[0] - 1)
         out << "\n";
-      if (index[0] == g.size_[0] - 1 && index[2] == g.size_[0] - 1)
+      else
+        out << " ";
+      if (index[0] == g.size_[0] - 1 && index[1] == g.size_[0] - 1)
         out << "\n";
       index = g.Step(index);
     }

@@ -26,6 +26,21 @@ std::ostream& operator <<(std::ostream& out, const glm::vec4& v) {
   return out;
 }
 
+std::ostream& operator <<(std::ostream& out, const glm::ivec2& v) {
+  out << "[" << v[0] << "," << v[1] << "]";
+  return out;
+}
+
+std::ostream& operator <<(std::ostream& out, const glm::ivec3& v) {
+  out << "[" << v[0] << "," << v[1] << "," << v[2] << "]";
+  return out;
+}
+
+std::ostream& operator <<(std::ostream& out, const glm::ivec4& v) {
+  out << "[" << v[0] << "," << v[1] << "," << v[2] << "," << v[3] << "]";
+  return out;
+}
+
 std::ostream& operator <<(std::ostream& out, const glm::mat4x4& m) {
   glm::mat4x4 T = glm::transpose(m);
   out << "[" << T[0] << "," << T[1] << "," << T[2] << "," << T[3] << "]";

@@ -15,6 +15,9 @@ namespace ray {
 std::ostream& operator <<(std::ostream& out, const glm::vec2& v);
 std::ostream& operator<<(std::ostream& out, const glm::vec3& v);
 std::ostream& operator<<(std::ostream& out, const glm::vec4& v);
+std::ostream& operator <<(std::ostream& out, const glm::ivec2& v);
+std::ostream& operator<<(std::ostream& out, const glm::ivec3& v);
+std::ostream& operator<<(std::ostream& out, const glm::ivec4& v);
 std::ostream& operator <<(std::ostream& out, const glm::mat3x3& m);
 std::ostream& operator<<(std::ostream& out, const glm::mat4x4& m);
 template<typename T>
