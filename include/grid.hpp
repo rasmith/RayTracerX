@@ -70,22 +70,8 @@ public:
     }
   }
 
-  glm::ivec3 OrientedPrevious(glm::ivec3& index, const glm::ivec3& orientation,
-      int d) {
-    glm::ivec3 result = index;
-    int i = (size_[d] + index[d] + orientation[d]) % size_[d];
-    result[d] = i;
-    return result;
-  }
-
-  glm::ivec3 OrientedStep(const glm::ivec3& index,
-      const glm::ivec3& orientation) {
-    glm::ivec3 result = (size_ + orientation * index) % size_;
-    ++result[0];
-    result[1] += (result[0] == size_[0]);
-    result[2] += (result[1] == size_[1]);
-    result = (size_ + orientation * result) % size_;
-    return result;
+  glm::ivec3 OrientedIndex(const glm::ivec3& i, const glm::ivec3& o) {
+    return (size_ + i * o - ((1 - o) >> 1)) % size_;
   }
 
   glm::ivec3 Step(const glm::ivec3& index) const {
@@ -157,22 +143,23 @@ public:
   virtual ~SummableGrid() {
   }
 
-  void OrientedIntegralImage(const glm::ivec3& orientation) {
-    glm::ivec3 index((this->size_ + orientation) % this->size_);
+  void OrientedImageIntegral(const glm::ivec3& o) {
+    glm::ivec3 index(0);
     glm::ivec3 previous(0);
     for (int d = 0; d < 3; ++d) {
       for (int n = 0; n < this->grid_size(); ++n) {
-        if ((this->size_[d] + index[d] * orientation[d]) % this->size_[d] > 0) {
-          previous = this->OrientedPrevious(index, orientation, d);
+        if (index[d] > 0) {
+          previous = index;
           --previous[d];
-          (*this)(index) += (*this)(previous);
+          (*this)(this->OrientedIndex(index, o)) += (*this)(
+              (this->OrientedIndex(previous, o)) % this->size_);
         }
-        index = this->OrientedStep(index, orientation);
+        index = this->Step(index);
       }
     }
   }
 
-  void IntegralImage() {
+  void ImageIntegral() {
     glm::ivec3 index(0);
     glm::ivec3 previous(0);
     for (int d = 0; d < 3; ++d) {

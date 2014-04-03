@@ -67,7 +67,7 @@ protected:
     return 1.0f;
   }
 
-  virtual float EvaluateCost(WorkNodeType& work_node, glm::vec3& best_split) {
+  virtual float EvaluateCost(WorkNodeType&, glm::vec3&) {
     return 0.0f;
   }
 
