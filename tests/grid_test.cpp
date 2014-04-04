@@ -33,45 +33,76 @@ TEST(GridTest, InitializationTest) {
   SummableGrid<int> sg(glm::ivec3(3, 3, 3));
   sg.Init();
   sg.AssignToAll(1);
-  std::cout << sg;
+  for (int k = 0; k < 3; ++k) {
+    for (int j = 0; j < 3; ++j) {
+      for (int i = 0; i < 3; ++i) {
+        EXPECT_EQ(1, sg(i, j, k));
+      }
+    }
+  }
 }
+
 TEST(GridTest, StepTest) {
   SummableGrid<int> sg(glm::ivec3(3, 3, 3));
   sg.Init();
   glm::ivec3 index(0);
-  std::cout << sg.grid_size() << "\n";
-  for (int i = 0; i < sg.grid_size(); ++i) {
-    std::cout << index;
-    if (index[0] == sg.size()[0] - 1)
-      std::cout << "\n";
-    if (index[0] == sg.size()[0] - 1 && index[1] == sg.size()[1] - 1)
-      std::cout << "\n";
-    index = sg.Step(index);
+  for (int k = 0; k < 3; ++k) {
+    for (int j = 0; j < 3; ++j) {
+      for (int i = 0; i < 3; ++i) {
+        EXPECT_EQ(glm::ivec3(i, j, k), index);
+        index = sg.Step(index);
+      }
+    }
   }
-  std::cout << "\n";
 }
 
 TEST(GridTest, ImageIntegralTest) {
   SummableGrid<int> sg(glm::ivec3(3, 3, 3));
+  SummableGrid<int> check(glm::ivec3(3, 3, 3));
   sg.Init();
   sg.AssignToAll(1);
   sg.ImageIntegral();
-  std::cout << sg;
+  check.Init();
+  glm::ivec3 index(0);
+  for (int n = 0; n < check.grid_size(); ++n) {
+    int value = (index[0] + 1) * (index[1] + 1) * (index[2] + 1);
+    check(index) = value;
+    index = check.Step(index);
+  }
+  EXPECT_EQ(check, sg);
+  if (check != sg) {
+    std::cout << "sg = " << sg << std::endl;
+    std::cout << "check = " << check << std::endl;
+  }
 }
 
 TEST(GridTest, OrientedImageIntegralTest) {
   SummableGrid<int> sg(glm::ivec3(3, 3, 3));
+  SummableGrid<int> check(glm::ivec3(3, 3, 3));
   sg.Init();
-
-  std::cout << glm::ivec3(1, 1, 1) << "\n";
-  sg.AssignToAll(1);
-  sg.OrientedImageIntegral(glm::ivec3(1, 1, 1));
-  std::cout << sg;
-
-  std::cout << glm::ivec3(-1, -1, -1) << "\n";
-  sg.AssignToAll(1);
-  sg.OrientedImageIntegral(glm::ivec3(-1, -1, -1));
-  std::cout << sg;
+  check.Init();
+  int dirs[2] = { 1, -1 };
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      for (int k = 0; k < 2; ++k) {
+        glm::ivec3 o(dirs[i], dirs[j], dirs[k]);
+        sg.AssignToAll(1);
+        sg.OrientedImageIntegral(o);
+        glm::ivec3 index(0);
+        for (int n = 0; n < check.grid_size(); ++n) {
+          int value = (index[0] + 1) * (index[1] + 1) * (index[2] + 1);
+          check(check.OrientedIndex(index, o)) = value;
+          index = check.Step(index);
+        }
+        EXPECT_EQ(check, sg);
+        if (check != sg) {
+          std::cout << "o = " << o << std::endl;
+          std::cout << "sg = " << sg << std::endl;
+          std::cout << "check = " << check << std::endl;
+        }
+      }
+    }
+  }
 }
 }
 

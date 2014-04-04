@@ -14,9 +14,10 @@
 #include <limits>
 #include <list>
 #include <vector>
-#include "sah_octnode.hpp"
+#include "grid.hpp"
 #include "octree.hpp"
 #include "octree_base.hpp"
+#include "sah_octnode.hpp"
 #include "shape.hpp"
 namespace ray {
 template<class SceneObject, int num_samples>
@@ -67,7 +68,26 @@ protected:
     return 1.0f;
   }
 
-  virtual float EvaluateCost(WorkNodeType&, glm::vec3&) {
+  virtual float EvaluateCost(WorkNodeType& work_node, glm::vec3&) {
+    glm::ivec3 size(8, 8, 8);
+    Grid<int> vertex_costs(size);
+    Grid<int> cell_counts(size - 1);
+    Grid<BoundingBox> cell_bounds(size - 1);
+    UniformGridSampler s(size, work_node.bounds);
+    cell_counts.Init();
+    cell_bounds.Init();
+    glm::ivec3 index(0);
+    for (int n = 0; n < cell_counts.grid_size(); ++n) {
+      cell_bounds(index) = s.GetBoundsAt(index);
+      index = cell_counts.Step(index);
+    }
+    for (int i = 0; i < work_node.objects.size(); ++i) {
+      index = glm::ivec3(0);
+      for (int n = 0; n < cell_counts.grid_size(); ++n) {
+        if (cell_bounds[n].Overlap(work_node.objects.GetBounds()))
+          ++cell_counts[n];
+      }
+    }
     return 0.0f;
   }
 

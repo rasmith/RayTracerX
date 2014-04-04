@@ -22,6 +22,10 @@ public:
       size_(size), grid_size_(0), values_(NULL) {
   }
 
+  explicit Grid(int i, int j, int k) :
+      size_(glm::ivec3(i, j, k)), grid_size_(0), values_(NULL) {
+  }
+
   Grid(const Grid& g) :
       size_(glm::ivec3(0)), grid_size_(0), values_(NULL) {
     Copy(g);
@@ -33,21 +37,45 @@ public:
   }
 
   ValueType& operator()(int i, int j, int k) {
-    return values_[i * size_[0] * size_[1] + j * size_[1] + k];
+    return values_[ValueIndex(i, j, k)];
   }
 
   const ValueType& operator()(int i, int j, int k) const {
-    return values_[i * size_[0] * size_[1] + j * size_[1] + k];
+    return values_[ValueIndex(i, j, k)];
   }
 
   ValueType& operator()(const glm::ivec3& index) {
-    return values_[index[0] * size_[0] * size_[1] + index[1] * size_[1]
-        + index[2]];
+    return values_[ValueIndex(index)];
+  }
+
+  ValueType& operator[](unsigned int i) {
+    return values_[i];
+  }
+
+  const ValueType& operator[](unsigned int i) const {
+    return values_[i];
   }
 
   const ValueType& operator()(const glm::ivec3& index) const {
-    return values_[index[0] * size_[0] * size_[1] + index[1] * size_[1]
-        + index[2]];
+    return values_[ValueIndex(index)];
+  }
+
+  Grid<ValueType>& operator=(const Grid<ValueType>& g) {
+    Copy(g);
+    return *this;
+  }
+
+  bool operator==(const Grid<ValueType>& g) const {
+    if (size_ != g.size_)
+      return false;
+    bool equals = true;
+    for (int i = 0; i < grid_size_ && equals; ++i)
+      equals = (values_[i] == g.values_[i]);
+    return equals;
+  }
+
+  bool operator!=(const Grid<ValueType>& g) const {
+    return !(*this == g);
   }
 
   const glm::ivec3& size() const {
@@ -63,11 +91,8 @@ public:
   }
 
   void AssignToAll(const ValueType& v) {
-    glm::ivec3 index(0);
-    for (int n = 0; n < grid_size(); ++n) {
-      (*this)(index) = v;
-      index = Step(index);
-    }
+    for (int n = 0; n < grid_size(); ++n)
+      values_[n] = v;
   }
 
   glm::ivec3 OrientedIndex(const glm::ivec3& i, const glm::ivec3& o) {
@@ -88,21 +113,18 @@ public:
       delete[] values_;
     grid_size_ = size_[0] * size_[1] * size_[2];
     values_ = new ValueType[grid_size_];
-    for (int i = 0; i < grid_size_; ++i) {
+    for (int i = 0; i < grid_size_; ++i)
       values_[i] = ValueType();
-    }
   }
 
-  void Copy(const Grid& g) {
+  void Copy(const Grid<ValueType>& g) {
     size_ = g.size_;
     grid_size_ = size_[0] * size_[1] * size_[2];
-    if (!values_)
-      values_ = new ValueType[grid_size_];
-    else
+    if (values_)
       delete[] values_;
-    for (int i = 0; i < grid_size_; ++i) {
-      values_[i] = g.values_[i];
-    }
+    values_ = new ValueType[grid_size_];
+    for (int n = 0; n < grid_size_; ++n)
+      values_[n] = g.values_[n];
   }
 
   friend std::ostream& operator<<(std::ostream& out, const Grid<ValueType>& g) {
@@ -120,6 +142,12 @@ public:
     return out;
   }
 protected:
+  inline int ValueIndex(int i, int j, int k) const {
+    return i + j * size_[0] + k * size_[0] * size_[1];
+  }
+  inline int ValueIndex(const glm::ivec3 i) const {
+    return ValueIndex(i[0], i[1], i[2]);
+  }
   glm::ivec3 size_;
   int grid_size_;
   ValueType* values_;
@@ -152,7 +180,7 @@ public:
           previous = index;
           --previous[d];
           (*this)(this->OrientedIndex(index, o)) += (*this)(
-              (this->OrientedIndex(previous, o)) % this->size_);
+              this->OrientedIndex(previous, o));
         }
         index = this->Step(index);
       }
