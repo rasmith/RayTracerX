@@ -53,6 +53,14 @@ BoundingBox BoundingBox::Join(const BoundingBox& bbox) const {
   return result;
 }
 
+float BoundingBox::GetArea() const {
+  glm::vec3 extents = max_ - min_;
+  glm::vec3 a = glm::vec3(0.0f, 0.0f, extents[0]);
+  glm::vec3 b = glm::vec3(0.0f, extents[1], 0.0f);
+  glm::vec3 c = glm::vec3(extents[2], 0.0f, 0.0f);
+  return fabs(glm::dot(glm::cross(a, b), c));
+}
+
 glm::vec3 BoundingBox::GetCenter() const {
   return 0.5f * (min_ + max_);
 }

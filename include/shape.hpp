@@ -24,6 +24,7 @@ public:
   glm::vec3& max();
   glm::vec3& min();
   glm::vec3 GetCenter() const;
+  float GetArea() const;
   BoundingBox Join(const BoundingBox& bbox) const;
   bool Intersect(const Ray& ray, float& t_near, float& t_far) const;
   bool Overlap(const BoundingBox& bbox) const;

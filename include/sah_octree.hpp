@@ -44,6 +44,18 @@ public:
     return octant;
   }
 
+  BoundingBox GetOctantBounds(const glm::vec3& point, const BoundingBox& bounds,
+      uint32_t octant) const {
+    BoundingBox octant_bounds = bounds;
+    for (uint32_t i = 0; i < 3; ++i) {
+      if ((octant >> i) & 0x1)
+        octant_bounds.min()[i] = split[i];
+      else
+        octant_bounds.max()[i] = split[i];
+    }
+    return octant_bounds;
+  }
+
   virtual BoundingBox GetChildBounds(const SAHOctNode& node,
       const BoundingBox& bounds, uint32_t octant) const {
     glm::vec3 split = node.point();
@@ -97,6 +109,19 @@ protected:
     }
   }
 
+  uint32_t OrientationToOctant(const glm::ivec3& orientation) const {
+    glm::ivec3 bits = (1 - orientation) >> 1;
+    uint32_t octant = bits[0] | (bits[1] << 1) | (bits[2] << 2);
+    return octant;
+  }
+
+  glm::ivec3 OctantToOrientation(uint32_t octant) const {
+    glm::ivec3 bits = glm::ivec3(octant & 0x1, (octant & 0x2) >> 1,
+        (octant & 0x4) >> 2);
+    glm::ivec3 orientation = (bits + 1) << 1;
+    return orientation;
+  }
+
   virtual void FindMinCostPoint(const ObjectVector& objects,
       const BoundingBox& bounds, int num_samples, float& min_cost,
       glm::ivec3& best_point) {
@@ -120,14 +145,31 @@ protected:
 
     // find lowest cost vertex
     int N[8];
+    float best_cost = std::numeric_limits<float>::max();
+    float area = 0.0f, count = 0.0f;
+    glm::vec3 best = glm::vec3(0.0f);
     glm::ivec3 index = glm::ivec3(0);
-    for (int n = 0; n < cell_intersections.grid_size(); ++n) {
-      for (int i = 0; i < 8; ++i) {
-        N[i] = image_integrals[i].GetSafe(index - ((orientations[i] + 1) >> 1),
-            0);
+    glm::ivec3 bits = glm::ivec3(0);
+    BoundingBox octant_bounds = BoundingBox();
+    for (int n = 0; n < num_samples * num_samples * num_samples; ++n) {
+      glm::vec3 point = sampler.GetVertexAt(index);
+      for (uint32_t octant = 0; octant < 8; ++octant) {
+        bits = glm::ivec3((octant & 0x4) >> 2, (octant & 0x2) >> 1,
+            octant & 0x1);
+        octant_bounds = GetOctantBounds(point, bounds, octant);
+        area = octant_bounds.GetArea();
+        count = static_cast<float>(image_integrals[octant].GetSafe(index - bits,
+            0));
+        cost += area * count;
       }
+      if (cost < best_cost) {
+        best = point;
+        best_cost = cost;
+      }
+      index = GridBase::Step(index, size);
     }
-
+    best_point = point;
+    min_cost = best_cost;
   }
 
   virtual float EvaluateCost(const ObjectVector& objects,
@@ -185,7 +227,7 @@ protected:
           min_cost, split);
       index = errors.Step(index);
     }
-    return 0.0f;
+    return min_cost;
   }
 
   virtual void BuildInternal(SAHOctNode& node, WorkNodeType& work_node,
