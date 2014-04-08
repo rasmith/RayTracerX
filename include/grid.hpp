@@ -11,8 +11,17 @@
 #include "shape.hpp"
 #include "types.hpp"
 namespace ray {
+
+class GridBase {
+public:
+  glm::ivec3 OrientedIndex(const glm::ivec3& i, const glm::ivec3& o,
+      const glm::ivec3& size);
+
+  glm::ivec3 Step(const glm::ivec3& index, const glm::ivec3& size) const;
+};
+
 template<class ValueType>
-class Grid {
+class Grid: public GridBase {
 public:
   Grid() :
       size_(glm::ivec3(1)), grid_size_(0), values_(NULL) {
@@ -58,6 +67,19 @@ public:
 
   const ValueType& operator()(const glm::ivec3& index) const {
     return values_[ValueIndex(index)];
+  }
+
+  bool IsSafe(int i, int j, int k) const {
+    return ((i >= 0 && i < this->size_[0]) && (j >= 0 && j < this->size_[1])
+        && (k >= 0 && k < this->size_[2]));
+  }
+
+  const ValueType& GetSafe(int i, int j, int k, const ValueType& v) const {
+    return (IsSafe(i, j, k) ? (*this)(i, j, k) : v);
+  }
+
+  const ValueType& GetSafe(const glm::ivec3& i, const ValueType& v) const {
+    return (IsSafe(i[0], i[1], i[2]) ? (*this)(i[0], i[1], i[2]) : v);
   }
 
   Grid<ValueType>& operator=(const Grid<ValueType>& g) {

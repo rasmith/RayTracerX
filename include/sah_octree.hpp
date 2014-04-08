@@ -68,25 +68,122 @@ protected:
     return 1.0f;
   }
 
-  virtual float EvaluateCost(WorkNodeType& work_node, glm::vec3&) {
-    glm::ivec3 size(8, 8, 8);
-    Grid<int> vertex_costs(size);
-    Grid<int> cell_counts(size - 1);
-    Grid<BoundingBox> cell_bounds(size - 1);
-    UniformGridSampler s(size, work_node.bounds);
-    cell_counts.Init();
-    cell_bounds.Init();
+  void ComputeIntersections(const ObjectVector& objects,
+      const BoundingBox& bounds, SummableGrid<int>& intersections) {
     glm::ivec3 index(0);
-    for (int n = 0; n < cell_counts.grid_size(); ++n) {
-      cell_bounds(index) = s.GetBoundsAt(index);
-      index = cell_counts.Step(index);
-    }
-    for (int i = 0; i < work_node.objects.size(); ++i) {
-      index = glm::ivec3(0);
-      for (int n = 0; n < cell_counts.grid_size(); ++n) {
-        if (cell_bounds[n].Overlap(work_node.objects.GetBounds()))
-          ++cell_counts[n];
+    BoundingBox current_bounds;
+    UniformGridSampler sampler(intersections.size(), bounds);
+    for (int i = 0; i < objects.size(); ++i) {
+      for (int n = 0; n < intersections.grid_size(); ++n) {
+        current_bounds = sampler.GetBoundsAt(index);
+        index = intersections.Step(index);
+        ++isects(index);
       }
+    }
+  }
+
+  void ComputeImageIntegrals(const SummableGrid<int>& intersections,
+      SummableGrid<int>* image_integrals, glm::ivec3* orientations) {
+    for (int i = 0; i < 8; ++i) {
+      image_integrals[i] = intersections;
+      image_integrals[i].OrientedImageIntegral(orientations[i]);
+    }
+  }
+
+  void InitGrids(SummableGrid<int>* grids, int k) {
+    for (int i = 0; i < k; ++k) {
+      grids[i].Init();
+      grids[i].AssignToAll(0);
+    }
+  }
+
+  virtual void FindMinCostPoint(const ObjectVector& objects,
+      const BoundingBox& bounds, int num_samples, float& min_cost,
+      glm::ivec3& best_point) {
+    glm::ivec3 size(num_samples, num_samples, num_samples);
+    SummableGrid<int> cell_intersections(size - 1);
+    UniformGridSampler sampler(size, bounds);
+    glm::ivec3 orientations[8] = { glm::ivec3(1, 1, 1), glm::ivec3(1, 1, -1),
+        glm::ivec3(1, -1, 1), glm::ivec3(1, -1, -1), glm::ivec3(-1, 1, 1),
+        glm::ivec3(-1, 1, -1), glm::ivec3(-1, -1, 1), glm::ivec3(-1, -1, -1) };
+
+    // compute intersections
+    cell_intersections.Init();
+    cell_intersections.AssignToAll(0);
+    ComputeIntersections(objects, bounds, cell_intersections);
+
+    //  sample each counting function using image integral
+    SummableGrid<int> image_integrals[8];
+    InitGrids(&image_integrals[0], 8);
+    ComputeImageIntegrals(cell_intersections, &image_integrals[0],
+        &orientations[0]);
+
+    // find lowest cost vertex
+    int N[8];
+    glm::ivec3 index = glm::ivec3(0);
+    for (int n = 0; n < cell_intersections.grid_size(); ++n) {
+      for (int i = 0; i < 8; ++i) {
+        N[i] = image_integrals[i].GetSafe(index - ((orientations[i] + 1) >> 1),
+            0);
+      }
+    }
+
+  }
+
+  virtual float EvaluateCost(const ObjectVector& objects,
+      const BoundingBox& bounds, int num_samples, glm::ivec3& split) {
+    glm::ivec3 size(num_samples, num_samples, num_samples);
+    SummableGrid<int> cell_intersections(size - 1);
+    UniformGridSampler sampler(size, bounds);
+    glm::ivec3 orientations[8] = { glm::ivec3(1, 1, 1), glm::ivec3(1, 1, -1),
+        glm::ivec3(1, -1, 1), glm::ivec3(1, -1, -1), glm::ivec3(-1, 1, 1),
+        glm::ivec3(-1, 1, -1), glm::ivec3(-1, -1, 1), glm::ivec3(-1, -1, -1) };
+
+    // compute intersections
+    cell_intersections.Init();
+    cell_intersections.AssignToAll(0);
+    ComputeIntersections(objects, bounds, cell_intersections);
+
+    //  sample each counting function using image integral
+    SummableGrid<int> image_integrals[8];
+    InitGrids(&image_integrals[0], 8);
+    ComputeImageIntegrals(cell_intersections, &image_integrals[0],
+        &orientations[0]);
+
+    SummableGrid<int> errors(size - 1);
+    errors.Init();
+    errors.AssignToAll(0);
+    glm::ivec3 index = glm::ivec3(0);
+    int i, j, k, A, B, C, D, sum = 0;
+    int N0, N1, N2, N3, N4, N5, N6, N7, E;
+    for (int n = 0; n < errors.grid_size(); ++n) {
+      i = index[0];
+      j = index[1];
+      k = index[2];
+      N0 = image_integrals[0].GetSafe(i - 1, j - 1, k - 1, 0);
+      N1 = image_integrals[1].GetSafe(i - 1, j, k, 0);
+      N2 = image_integrals[2].GetSafe(i - 1, j, k, 0);
+      N3 = image_integrals[3].GetSafe(i, j, k, 0);
+      N4 = image_integrals[4].GetSafe(i + 1, j - 1, k - 1, 0);
+      N5 = image_integrals[5].GetSafe(i + 1, j + 1, k, 0);
+      N6 = image_integrals[6].GetSafe(i + 1, j, k, 0);
+      N7 = image_integrals[7].GetSafe(i + 1, j + 1, k + 1, 0);
+      A = abs(N7 - N0);
+      B = abs(N6 - N1);
+      C = abs(N5 - N2);
+      D = abs(N4 - N3);
+      E = A * B * C * D;
+      errors(i, j, k) = E;
+      sum += E;
+      index = errors.Step(index);
+    }
+
+    for (int n = 0; n < errors.grid_size(); ++n) {
+      FindMinPoint(objects, sampler.GetBoundsAt(index),
+          static_cast<float>(errors(index))
+              / static_cast<float>((num_samples * num_samples * num_samples)),
+          min_cost, split);
+      index = errors.Step(index);
     }
     return 0.0f;
   }
@@ -112,7 +209,8 @@ protected:
         node.set_size(node.size() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         glm::vec3 split = glm::vec3(0.0f);
-        float cost = EvaluateCost(child_work_nodes[j], split);
+        float cost = EvaluateCost(child_work_nodes[j].objects, 8,
+            child_work_nodes[j].bounds, split);
         SAHOctNode child;
         if (cost <= this->GetMinCost() || depth + 1 >= this->GetMaxDepth()
             || count <= this->GetMaxLeafSize())

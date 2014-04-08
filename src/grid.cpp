@@ -8,6 +8,21 @@
 #include "shape.hpp"
 #include "types.hpp"
 namespace ray {
+glm::ivec3 GridBase::OrientedIndex(const glm::ivec3& i, const glm::ivec3& o,
+    const glm::ivec3& size) {
+  return (size + i * o - ((1 - o) >> 1)) % size;
+}
+
+glm::ivec3 GridBase::Step(const glm::ivec3& index,
+    const glm::ivec3& size) const {
+  glm::ivec3 result = index;
+  ++result[0];
+  result[1] += (result[0] == size[0]);
+  result[2] += (result[1] == size[1]);
+  result = result % size;
+  return result;
+}
+
 UniformGridSampler::UniformGridSampler() :
     size_(glm::ivec3(2)), bounds_(), real_step_(ComputeRealStep()) {
 }
