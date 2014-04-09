@@ -44,8 +44,8 @@ public:
     return octant;
   }
 
-  BoundingBox GetOctantBounds(const glm::vec3& point, const BoundingBox& bounds,
-      uint32_t octant) const {
+  virtual BoundingBox GetOctantBounds(const glm::vec3& point,
+      const BoundingBox& bounds, uint32_t octant) const {
     BoundingBox octant_bounds = bounds;
     for (uint32_t i = 0; i < 3; ++i) {
       if ((octant >> i) & 0x1)
@@ -69,6 +69,9 @@ public:
     return child_bounds;
   }
 
+  virtual glm::ivec3 GetOctantBits(uint32_t octant) const {
+    return glm::ivec3(octant & 0x1, (octant & 0x2) >> 1, (octant & 0x4) >> 2);
+  }
 protected:
   typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
       SAHOctNodeFactory, 1, 32>::WorkNode WorkNodeType;
@@ -83,22 +86,39 @@ protected:
   void ComputeIntersections(const ObjectVector& objects,
       const BoundingBox& bounds, SummableGrid<int>& intersections) {
     glm::ivec3 index(0);
-    BoundingBox current_bounds;
+    BoundingBox object_bounds(0);
     UniformGridSampler sampler(intersections.size(), bounds);
-    for (int i = 0; i < objects.size(); ++i) {
-      for (int n = 0; n < intersections.grid_size(); ++n) {
-        current_bounds = sampler.GetBoundsAt(index);
-        index = intersections.Step(index);
-        ++isects(index);
+    float curr_val = 0.0f, curr_step = 0.0f;
+    glm::ivec3 min_index(0), max_index(0);
+    for (int m = 0; m < objects.size(); ++m) {
+      object_bounds = objects[i]->GetBounds();
+      for (int d = 0; d < 3; ++d) {
+        min_index[d] = 0;
+        curr_val = object_bounds.min()[d];
+        while (curr_val + curr_step < object_bounds.min()[d]
+            && min_index[d] <= intersections.size()[d] - 1) {
+          curr_val += curr_step;
+          ++min_index[d];
+        }
+        max_index[d] = min_index[d];
+        while (curr_val + curr_step < object_bounds.max()[d]
+            && max_index[d] <= intersections.size()[d] - 1) {
+          curr_val += curr_step;
+          ++max_index[d];
+        }
       }
+      for (int i = min_index[0]; i <= max_index[0]; ++i)
+        for (int j = min_index[1]; j <= max_index[1]; ++j)
+          for (int k = min_index[2]; k <= max_index[2]; ++k)
+            ++intersections(i, j, k);
     }
   }
 
   void ComputeImageIntegrals(const SummableGrid<int>& intersections,
-      SummableGrid<int>* image_integrals, glm::ivec3* orientations) {
-    for (int i = 0; i < 8; ++i) {
+      SummableGrid<int>* image_integrals) {
+    for (uint32_t octant = 0; i < octant; ++octant) {
       image_integrals[i] = intersections;
-      image_integrals[i].OrientedImageIntegral(orientations[i]);
+      image_integrals[i].OrientedImageIntegral(OctantToOrientation(octant));
     }
   }
 
@@ -123,28 +143,17 @@ protected:
   }
 
   virtual void FindMinCostPoint(const ObjectVector& objects,
-      const BoundingBox& bounds, int num_samples, float& min_cost,
-      glm::ivec3& best_point) {
+      const BoundingBox& bounds, const SummableGrid<int>& cell_intersections,
+      int num_samples, float& min_cost, glm::ivec3& best_point) {
     glm::ivec3 size(num_samples, num_samples, num_samples);
-    SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);
-    glm::ivec3 orientations[8] = { glm::ivec3(1, 1, 1), glm::ivec3(1, 1, -1),
-        glm::ivec3(1, -1, 1), glm::ivec3(1, -1, -1), glm::ivec3(-1, 1, 1),
-        glm::ivec3(-1, 1, -1), glm::ivec3(-1, -1, 1), glm::ivec3(-1, -1, -1) };
-
-    // compute intersections
-    cell_intersections.Init();
-    cell_intersections.AssignToAll(0);
-    ComputeIntersections(objects, bounds, cell_intersections);
 
     //  sample each counting function using image integral
     SummableGrid<int> image_integrals[8];
     InitGrids(&image_integrals[0], 8);
-    ComputeImageIntegrals(cell_intersections, &image_integrals[0],
-        &orientations[0]);
+    ComputeImageIntegrals(cell_intersections, &image_integrals[0]);
 
     // find lowest cost vertex
-    int N[8];
     float best_cost = std::numeric_limits<float>::max();
     float area = 0.0f, count = 0.0f;
     glm::vec3 best = glm::vec3(0.0f);
@@ -154,8 +163,7 @@ protected:
     for (int n = 0; n < num_samples * num_samples * num_samples; ++n) {
       glm::vec3 point = sampler.GetVertexAt(index);
       for (uint32_t octant = 0; octant < 8; ++octant) {
-        bits = glm::ivec3((octant & 0x4) >> 2, (octant & 0x2) >> 1,
-            octant & 0x1);
+        bits = GetOctantBits(octant);
         octant_bounds = GetOctantBounds(point, bounds, octant);
         area = octant_bounds.GetArea();
         count = static_cast<float>(image_integrals[octant].GetSafe(index - bits,
@@ -177,9 +185,6 @@ protected:
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);
-    glm::ivec3 orientations[8] = { glm::ivec3(1, 1, 1), glm::ivec3(1, 1, -1),
-        glm::ivec3(1, -1, 1), glm::ivec3(1, -1, -1), glm::ivec3(-1, 1, 1),
-        glm::ivec3(-1, 1, -1), glm::ivec3(-1, -1, 1), glm::ivec3(-1, -1, -1) };
 
     // compute intersections
     cell_intersections.Init();
@@ -189,9 +194,9 @@ protected:
     //  sample each counting function using image integral
     SummableGrid<int> image_integrals[8];
     InitGrids(&image_integrals[0], 8);
-    ComputeImageIntegrals(cell_intersections, &image_integrals[0],
-        &orientations[0]);
+    ComputeImageIntegrals(cell_intersections, &image_integrals[0]);
 
+    // compute uncertainty across each cell
     SummableGrid<int> errors(size - 1);
     errors.Init();
     errors.AssignToAll(0);
@@ -202,6 +207,7 @@ protected:
       i = index[0];
       j = index[1];
       k = index[2];
+      // for each vertex, compute the corresponding counting function
       N0 = image_integrals[0].GetSafe(i - 1, j - 1, k - 1, 0);
       N1 = image_integrals[1].GetSafe(i - 1, j, k, 0);
       N2 = image_integrals[2].GetSafe(i - 1, j, k, 0);
@@ -210,21 +216,31 @@ protected:
       N5 = image_integrals[5].GetSafe(i + 1, j + 1, k, 0);
       N6 = image_integrals[6].GetSafe(i + 1, j, k, 0);
       N7 = image_integrals[7].GetSafe(i + 1, j + 1, k + 1, 0);
+      // compute the absolute value of the difference between antipodal
+      // vertices of the cell
       A = abs(N7 - N0);
       B = abs(N6 - N1);
       C = abs(N5 - N2);
       D = abs(N4 - N3);
+      // take the product as the error
       E = A * B * C * D;
-      errors(i, j, k) = E;
+      errors(index) = E;
       sum += E;
       index = errors.Step(index);
     }
 
+    // adaptively sample each cell, only using a total of
+    // N = num_samples * num_samples * num_samples
+    float ratio = 0.0f;
+    int M = 0, N = num_samples * num_samples * num_samples;
+    float best_cost = std::numeric_limits<float>::max();
+    glm::vec3 best_point = glm::vec3(0.0f);
     for (int n = 0; n < errors.grid_size(); ++n) {
-      FindMinPoint(objects, sampler.GetBoundsAt(index),
-          static_cast<float>(errors(index))
-              / static_cast<float>((num_samples * num_samples * num_samples)),
-          min_cost, split);
+      // compute M = cube_root( (error(cell) / total_error) * N)
+      ratio = static_cast<float>(errors(index)) / static_cast<float>(sum);
+      M = static_cast<int>(roundf(pow(ratio, 1.0f / 3.0f)));
+      // populate grid and compute image integral
+
       index = errors.Step(index);
     }
     return min_cost;
