@@ -243,6 +243,7 @@ public:
   void set_bounds(const BoundingBox& bounds);
   BoundingBox GetBoundsAt(const glm::ivec3& index);
   glm::vec3 GetVertexAt(const glm::ivec3& index);
+  bool PointToCellIndex(const glm::vec3& point, glm::ivec3& index);
 protected:
   glm::vec3 ComputeRealStep();
   glm::ivec3 size_;

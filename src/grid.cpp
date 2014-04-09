@@ -67,5 +67,12 @@ glm::vec3 UniformGridSampler::ComputeRealStep() {
   real_step = (inv * (bounds_.max() - bounds_.min())) * glm::ivec3(1);
   return real_step;
 }
+
+bool UniformGridSampler::PointToCellIndex(const glm::vec3& point,
+    glm::ivec3& index) {
+  index = glm::floor(point / real_step_);
+  return index[0] >= 0 && index[0] < size_[0] && index[1] >= 0
+      && index[1] < size_[1] && index[2] >= 0 && index[2] < size_[2];
+}
 }
 
