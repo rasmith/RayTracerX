@@ -124,12 +124,13 @@ SAHOctNode::SAHOctNode(const SAHOctNode::NodeType& node_type,
 
 SAHOctNode::SAHOctNode(const SAHOctNode&node) :
     type_(node.type_), octant_(node.octant_), size_(node.size_),
-        offset_(node.offset_) {
+        offset_(node.offset_), point_(node.point_) {
 }
 
-bool SAHOctNode::operator==(const SAHOctNode&node) const {
+bool SAHOctNode::operator==(const SAHOctNode& node) const {
   return type() == node.type() && octant() == node.octant()
-      && size() == node.size() && offset() == node.offset();
+      && size() == node.size() && offset() == node.offset()
+      && point() == node.point();
 }
 
 SAHOctNode&SAHOctNode::operator=(const SAHOctNode&node) {
@@ -139,6 +140,7 @@ SAHOctNode&SAHOctNode::operator=(const SAHOctNode&node) {
   octant_ = node.octant_;
   size_ = node.size_;
   offset_ = node.offset_;
+  point_ = node.point_;
   return *this;
 }
 
@@ -161,6 +163,7 @@ SAHOctNode SAHOctNodeFactory::CreateOctNode(
   node.set_octant(encoded.GetOctant());
   node.set_type(encoded.GetType());
   node.set_offset(encoded.GetOffset());
+  node.set_point(encoded.GetPoint());
   return node;
 }
 
@@ -179,6 +182,7 @@ SAHEncodedNode SAHOctNodeFactory::CreateEncodedNode(
   encoded.SetOctant(node.octant());
   encoded.SetOffset(node.offset());
   encoded.SetSize(node.size());
+  encoded.SetPoint(node.point());
   return encoded;
 }
 

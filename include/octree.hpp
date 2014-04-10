@@ -70,8 +70,8 @@ public:
     return octant;
   }
 
-  virtual BoundingBox GetChildBounds(const OctNode&,
-      const BoundingBox& bounds, uint32_t octant) const {
+  virtual BoundingBox GetChildBounds(const OctNode&, const BoundingBox& bounds,
+      uint32_t octant) const {
     glm::vec3 center = bounds.GetCenter();
     BoundingBox child_bounds = bounds;
     for (uint32_t i = 0; i < 3; ++i) {
@@ -138,6 +138,13 @@ protected:
     return hit;
   }
 
+  virtual void BuildRoot(OctNode& root, WorkNode& work_root) {
+    if ((0 == max_depth) || (work_root.objects.size() <= max_leaf_size))
+      root = this->GetNodeFactory().CreateLeaf(0);
+    else
+      root = this->GetNodeFactory().CreateInternal(0);
+  }
+
   virtual void BuildLeaf(OctNode& node, WorkNode& work_node) {
     ++num_leaves_;
     node.set_offset(scene_objects_.size());
@@ -201,13 +208,10 @@ protected:
     std::vector<WorkNode> next_list;
     int depth = 0;
     OctNode root; // Create and insert root
-    if ((0 == max_depth) || (work_root.objects.size() <= max_leaf_size))
-      root = this->GetNodeFactory().CreateLeaf(0);
-    else
-      root = this->GetNodeFactory().CreateInternal(0);
-    nodes_.push_back(EncodeNode(root));
     work_root.bounds = bounds_;
     work_root.node_index = 0;
+    BuildRoot(root, work_root);
+    nodes_.push_back(EncodeNode(root));
     work_list.push_back(work_root);
     next_list.clear();
     // This is a breadth first build. There are two work lists: work_list

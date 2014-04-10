@@ -47,9 +47,12 @@ TEST(OctreeTest, NodeEncodeTest) {
   EXPECT_EQ(0u, leaf_node.offset());
   EXPECT_EQ(4968u, leaf_node.size());
   for (uint32_t i = 0; i < 8; ++i) {
+    int k = static_cast<int>(i);
     internal_node = fact.CreateInternal(i);
     internal_node.set_offset(42 * (0x1 << (4 * i)));
     internal_node.set_size(i);
+    internal_node.set_point(
+        glm::vec3(1.11f * (2048 - k), 2.22f * (2048 - k), 3.33f * (2048 - k)));
     encoded = fact.CreateEncodedNode(internal_node);
     test_node = fact.CreateOctNode(encoded);
     EXPECT_TRUE(internal_node.IsInternal());
@@ -57,6 +60,12 @@ TEST(OctreeTest, NodeEncodeTest) {
     EXPECT_EQ(internal_node.octant(), test_node.octant());
     EXPECT_EQ(internal_node.offset(), test_node.offset());
     EXPECT_EQ(internal_node.size(), test_node.size());
+    if (!(internal_node.point() == test_node.point())) {
+      std::cout << "internal_node.point() = " << internal_node.point()
+          << std::endl;
+      std::cout << "test_node.point() = " << test_node.point() << std::endl;
+    }
+    EXPECT_TRUE(internal_node.point() == test_node.point());
   }
   for (uint32_t i = 0; i < 8; ++i) {
     internal_node = fact.CreateLeaf(i);

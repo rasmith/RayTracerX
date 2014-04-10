@@ -20,15 +20,15 @@
 #include "sah_octnode.hpp"
 #include "shape.hpp"
 namespace ray {
-template<class SceneObject, int num_samples>
+template<class SceneObject, int max_leaf_size = 16, int max_depth = 10>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
-    SAHOctNodeFactory, 1, 32> {
+    SAHOctNodeFactory, max_leaf_size, max_depth> {
 public:
   typedef std::vector<const SceneObject*> ObjectVector;
 
   SAHOctree() :
-          Octree<SceneObject, SAHOctNode, SAHEncodedNode, SAHOctNodeFactory, 1,
-              32>::Octree() {
+          Octree<SceneObject, SAHOctNode, SAHEncodedNode, SAHOctNodeFactory,
+              max_leaf_size, max_depth>::Octree() {
   }
 
   virtual ~SAHOctree() {
@@ -49,9 +49,9 @@ public:
     BoundingBox octant_bounds = bounds;
     for (uint32_t i = 0; i < 3; ++i) {
       if ((octant >> i) & 0x1)
-        octant_bounds.min()[i] = split[i];
+        octant_bounds.min()[i] = point[i];
       else
-        octant_bounds.max()[i] = split[i];
+        octant_bounds.max()[i] = point[i];
     }
     return octant_bounds;
   }
@@ -79,8 +79,8 @@ protected:
   typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
       SAHOctNodeFactory, 1, 32>::WorkList WorkListType;
 
-  float GetMinCost() const {
-    return 1.0f;
+  float GetLeafCost(const ObjectVector& objs, const BoundingBox& bounds) const {
+    return objs.size() * bounds.GetArea();
   }
 
   void InitGrids(SummableGrid<int>* grids, int k) {
@@ -104,8 +104,12 @@ protected:
   }
 
   virtual void EvaluateCost(const ObjectVector& objects,
-      const BoundingBox& bounds, int num_samples, float& cost,
-      glm::ivec3& split) {
+      const BoundingBox& bounds, float& cost, glm::ivec3& split) {
+    int num_samples = 16;
+    if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
+      num_samples = 8;
+    if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
+      num_samples = 4;
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);
@@ -124,16 +128,17 @@ protected:
       for (int octant = 0; octant < 8; ++octant) {
         bits = GetOctantBits(octant);
         for (int d = 0; d < 3; ++d)
-          point[d] = (bits[d] == 1 ? obj_bounds.min()[0] : obj_bounds.max()[0]);
-        sampler.PointToCellIndex(point, index);
-        ++image_integrals[octant](index);
+          point[d] = (bits[d] == 0 ? obj_bounds.min()[d] : obj_bounds.max()[d]);
+        if (sampler.PointToCellIndex(point, index))
+          ++image_integrals[octant](index);
       }
     }
 
     //  sample each counting function using image integral
     InitGrids(&image_integrals[0], 8);
-    for (uint32_t octant = 0; i < octant; ++octant) {
-      image_integrals[i].OrientedImageIntegral(OctantToOrientation(octant));
+    for (uint32_t octant = 0; octant < 8; ++octant) {
+      image_integrals[octant].OrientedImageIntegral(
+          OctantToOrientation(octant));
     }
 
     // find lowest cost vertex
@@ -162,6 +167,19 @@ protected:
     cost = best_cost;
   }
 
+  virtual void BuildRoot(SAHOctNode& root, WorkNodeType& work_root) {
+    glm::vec3 split = glm::vec3(0.0f);
+    float cost = 0.0f;
+    EvaluateCost(work_root.objects, work_root.bounds, cost, split);
+    if (cost > this->GetLeafCost(work_root.objects, work_root.bounds)
+        || (0 == max_depth) || (work_root.objects.size() <= max_leaf_size))
+      root = this->GetNodeFactory().CreateLeaf(0);
+    else {
+      root = this->GetNodeFactory().CreateInternal(0);
+      root.set_point(split);
+    }
+  }
+
   virtual void BuildInternal(SAHOctNode& node, WorkNodeType& work_node,
       WorkListType& next_list, uint32_t depth) {
     ++this->num_internal_nodes_;
@@ -185,9 +203,11 @@ protected:
         glm::vec3 split = glm::vec3(0.0f);
         float cost = 0.0f;
         EvaluateCost(child_work_nodes[j].objects, child_work_nodes[j].bounds,
-            num_samples, cost, split);
+            cost, split);
         SAHOctNode child;
-        if (cost <= this->GetMinCost() || depth + 1 >= this->GetMaxDepth()
+        if (cost
+            > this->GetLeafCost(child_work_nodes[j].objects,
+                child_work_nodes[j].bounds) || depth + 1 >= this->GetMaxDepth()
             || count <= this->GetMaxLeafSize())
           child = this->GetNodeFactory().CreateLeaf(j);
         else {
