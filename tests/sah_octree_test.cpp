@@ -31,6 +31,8 @@ using ::testing::ElementsAre;
 
 namespace ray {
 
+typedef SAHOctree<TrimeshFace, 16, 1> TestOctree;
+
 TEST(OctreeTest, NodeEncodeTest) {
   SAHOctNode internal_node;
   SAHOctNode test_node;
@@ -65,7 +67,7 @@ TEST(OctreeTest, NodeEncodeTest) {
           << std::endl;
       std::cout << "test_node.point() = " << test_node.point() << std::endl;
     }
-    EXPECT_TRUE(internal_node.point() == test_node.point());
+    EXPECT_EQ(internal_node.point(), test_node.point());
   }
   for (uint32_t i = 0; i < 8; ++i) {
     internal_node = fact.CreateLeaf(i);
@@ -80,62 +82,91 @@ TEST(OctreeTest, NodeEncodeTest) {
     EXPECT_EQ(internal_node.size(), test_node.size());
   }
 }
-/**
- TEST(RayTracerTest, SphereMeshTest) {
- SceneLoader& loader = SceneLoader::GetInstance();
- std::string path = "../assets/sphere.obj";
- std::string status = "";
- Scene scene;
- std::cout << "loading" << std::endl;
- bool success = loader.LoadScene(path, scene, status);
- EXPECT_TRUE(success);
- EXPECT_EQ("OK", status);
- int image_width = 1024;
- int image_height = 1024;
- glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, 1.2f);
- glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
- glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
- glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
- Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
 
- Light point_light;
- glm::vec3 point_light_color = glm::vec3(1.0f, 0.3f, 0.3f);
- point_light.ka = point_light_color;
- point_light.kd = point_light_color;
- point_light.ks = point_light_color;
- point_light.ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
- point_light.type = Light::kPoint;
- point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+TEST(OctreeTest, OrientationToOctantTest) {
+  glm::ivec3 values[8] = { glm::ivec3(1, 1, 1), glm::ivec3(-1, 1, 1),
+      glm::ivec3(1, -1, 1), glm::ivec3(-1, -1, 1), glm::ivec3(1, 1, -1),
+      glm::ivec3(-1, 1, -1), glm::ivec3(1, -1, -1), glm::ivec3(-1, -1, -1) };
+  TestOctree octree;
+  for (uint32_t octant = 0; octant < 8; ++octant) {
+    if (!(values[octant] == octree.OctantToOrientation(octant)))
+      std::cout << octant << "-->" << octree.OctantToOrientation(octant)
+          << " should be " << values[octant] << std::endl;
+    EXPECT_EQ(values[octant], octree.OctantToOrientation(octant));
+  }
+}
 
- Light directional_light;
- glm::vec3 directional_light_color = glm::vec3(0.2f, 0.2f, 0.2f);
- directional_light.ka = directional_light_color;
- directional_light.kd = directional_light_color;
- directional_light.ks = directional_light_color;
- directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.05f, 0.05f, 0.05f));
- directional_light.type = Light::kDirectional;
+TEST(OctreeTest, OctantToOrientationTest) {
+  glm::ivec3 values[8] = { glm::ivec3(1, 1, 1), glm::ivec3(-1, 1, 1),
+      glm::ivec3(1, -1, 1), glm::ivec3(-1, -1, 1), glm::ivec3(1, 1, -1),
+      glm::ivec3(-1, 1, -1), glm::ivec3(1, -1, -1), glm::ivec3(-1, -1, -1) };
+  TestOctree octree;
+  glm::ivec3 orientation = glm::ivec3(0);
+  for (uint32_t octant = 0; octant < 8; ++octant) {
+    orientation = values[octant];
+    if (!(octant == octree.OrientationToOctant(orientation)))
+      std::cout << orientation << "-->"
+          << octree.OrientationToOctant(orientation) << " should be " << octant
+          << std::endl;
+    EXPECT_EQ(octant, octree.OrientationToOctant(orientation));
+  }
+}
 
- scene.AddLight(point_light);
- scene.AddLight(directional_light);
+TEST(RayTracerTest, SphereMeshTest) {
+  SceneLoader& loader = SceneLoader::GetInstance();
+  std::string path = "../assets/sphere.obj";
+  std::string status = "";
+  Scene scene;
+  std::cout << "loading" << std::endl;
+  bool success = loader.LoadScene(path, scene, status);
+  EXPECT_TRUE(success);
+  EXPECT_EQ("OK", status);
+  int image_width = 1024;
+  int image_height = 1024;
+  glm::vec3 eye_pos = glm::vec3(0.0f, 0.0f, 1.2f);
+  glm::vec3 at_pos = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
+  Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
 
- Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
- TestOctree octree;
- std::cout << "Building octree" << std::endl;
- octree.Build(trimesh->faces());
- std::cout << "Octree built.\n";
- trimesh->set_accelerator(&octree);
+  Light point_light;
+  glm::vec3 point_light_color = glm::vec3(1.0f, 0.3f, 0.3f);
+  point_light.ka = point_light_color;
+  point_light.kd = point_light_color;
+  point_light.ks = point_light_color;
+  point_light.ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
+  point_light.type = Light::kPoint;
+  point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- Image image;
- image.resize(image_width, image_height);
- RayTracer ray_tracer(&scene, &camera);
- ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
- ray_tracer.Render(image);
- ImageStorage& storage = ImageStorage::GetInstance();
- success = storage.WriteImage("sphere_octree.jpg", image, status);
- EXPECT_TRUE(success);
- EXPECT_EQ("OK", status);
- }
+  Light directional_light;
+  glm::vec3 directional_light_color = glm::vec3(0.2f, 0.2f, 0.2f);
+  directional_light.ka = directional_light_color;
+  directional_light.kd = directional_light_color;
+  directional_light.ks = directional_light_color;
+  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.05f, 0.05f, 0.05f));
+  directional_light.type = Light::kDirectional;
+
+  scene.AddLight(point_light);
+  scene.AddLight(directional_light);
+
+  Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
+  TestOctree octree;
+  std::cout << "Building octree" << std::endl;
+  octree.Build(trimesh->faces());
+  std::cout << "Octree built.\n";
+  trimesh->set_accelerator(&octree);
+
+  Image image;
+  image.resize(image_width, image_height);
+  RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+  ray_tracer.Render(image);
+  ImageStorage& storage = ImageStorage::GetInstance();
+  success = storage.WriteImage("sphere_octree.jpg", image, status);
+  EXPECT_TRUE(success);
+  EXPECT_EQ("OK", status);
+}
 
  TEST(RayTracerTest, BunnyMeshTest) {
  SceneLoader& loader = SceneLoader::GetInstance();
@@ -257,7 +288,7 @@ TEST(OctreeTest, NodeEncodeTest) {
  EXPECT_TRUE(success);
  EXPECT_EQ("OK", status);
  }
-
+/**
  TEST(RayTracerTest, BuddhaMeshTest) {
  SceneLoader& loader = SceneLoader::GetInstance();
  std::string path = "../assets/happy.ply";

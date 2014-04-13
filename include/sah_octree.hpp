@@ -72,23 +72,6 @@ public:
   virtual glm::ivec3 GetOctantBits(uint32_t octant) const {
     return glm::ivec3(octant & 0x1, (octant & 0x2) >> 1, (octant & 0x4) >> 2);
   }
-protected:
-  typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
-      SAHOctNodeFactory, 1, 32>::WorkNode WorkNodeType;
-
-  typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
-      SAHOctNodeFactory, 1, 32>::WorkList WorkListType;
-
-  float GetLeafCost(const ObjectVector& objs, const BoundingBox& bounds) const {
-    return objs.size() * bounds.GetArea();
-  }
-
-  void InitGrids(SummableGrid<int>* grids, int k) {
-    for (int i = 0; i < k; ++k) {
-      grids[i].Init();
-      grids[i].AssignToAll(0);
-    }
-  }
 
   uint32_t OrientationToOctant(const glm::ivec3& orientation) const {
     glm::ivec3 bits = (1 - orientation) >> 1;
@@ -99,12 +82,30 @@ protected:
   glm::ivec3 OctantToOrientation(uint32_t octant) const {
     glm::ivec3 bits = glm::ivec3(octant & 0x1, (octant & 0x2) >> 1,
         (octant & 0x4) >> 2);
-    glm::ivec3 orientation = 1 - (bits << 1);
+    glm::ivec3 orientation = 1 - 2 * bits;
     return orientation;
+  }
+protected:
+  typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
+      SAHOctNodeFactory, max_leaf_size, max_depth>::WorkNode WorkNodeType;
+
+  typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
+      SAHOctNodeFactory, max_leaf_size, max_depth>::WorkList WorkListType;
+
+  float GetLeafCost(const ObjectVector& objs, const BoundingBox& bounds) const {
+    return objs.size() * bounds.GetArea();
+  }
+
+  void InitGrids(SummableGrid<int>* grids, glm::ivec3 size, int k) {
+    for (int i = 0; i < k; ++i) {
+      grids[i].set_size(size - 1);
+      grids[i].Init();
+      grids[i].AssignToAll(0);
+    }
   }
 
   virtual void EvaluateCost(const ObjectVector& objects,
-      const BoundingBox& bounds, float& cost, glm::ivec3& split) {
+      const BoundingBox& bounds, float& cost, glm::vec3& split) {
     int num_samples = 16;
     if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
       num_samples = 8;
@@ -115,17 +116,18 @@ protected:
     UniformGridSampler sampler(size, bounds);
 
     glm::ivec3 index = glm::ivec3(0);
-    SceneObject* obj = NULL;
+    const SceneObject* obj = NULL;
     BoundingBox obj_bounds = BoundingBox();
     glm::ivec3 bits = glm::ivec3(0);
     glm::vec3 point = glm::vec3(0.0f);
 
     // populate image integrals
     SummableGrid<int> image_integrals[8];
-    for (int i = 0; i < objects.size(); ++i) {
+    InitGrids(&image_integrals[0], size - 1, 8);
+    for (uint32_t i = 0; i < objects.size(); ++i) {
       obj = objects[i];
       obj_bounds = obj->GetBounds();
-      for (int octant = 0; octant < 8; ++octant) {
+      for (uint32_t octant = 0; octant < 8; ++octant) {
         bits = GetOctantBits(octant);
         for (int d = 0; d < 3; ++d)
           point[d] = (bits[d] == 0 ? obj_bounds.min()[d] : obj_bounds.max()[d]);
@@ -135,7 +137,7 @@ protected:
     }
 
     //  sample each counting function using image integral
-    InitGrids(&image_integrals[0], 8);
+    InitGrids(&image_integrals[0], size - 1, 8);
     for (uint32_t octant = 0; octant < 8; ++octant) {
       image_integrals[octant].OrientedImageIntegral(
           OctantToOrientation(octant));

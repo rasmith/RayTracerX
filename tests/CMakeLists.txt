@@ -72,6 +72,7 @@ add_executable(raytracer_test raytracer_test.cpp
 add_executable(sah_octree_test sah_octree_test.cpp 
                                   ${Ray_SOURCE_DIR}/src/camera.cpp
                                   ${Ray_SOURCE_DIR}/src/geometry.cpp
+                                  ${Ray_SOURCE_DIR}/src/grid.cpp
                                   ${Ray_SOURCE_DIR}/src/io_utils.cpp
                                   ${Ray_SOURCE_DIR}/src/image.cpp
                                   ${Ray_SOURCE_DIR}/src/light.cpp

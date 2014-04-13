@@ -7,19 +7,19 @@
 #include "sah_octnode.hpp"
 namespace ray {
 SAHEncodedNode::SAHEncodedNode() {
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < 20; ++i)
     data[i] = 0;
 }
 
 SAHEncodedNode::SAHEncodedNode(const SAHEncodedNode& node) {
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < 20; ++i)
     data[i] = node.data[i];
 }
 
 SAHEncodedNode& SAHEncodedNode::operator =(const SAHEncodedNode& node) {
   if (this == &node)
     return *this;
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < 20; ++i)
     data[i] = node.data[i];
   return *this;
 }
@@ -53,12 +53,11 @@ uint32_t SAHEncodedNode::GetOffset() const {
 
 glm::vec3 SAHEncodedNode::GetPoint() const {
   glm::vec3 point;
-  float* dest = &point[0];
-  const float* src = reinterpret_cast<const float*>(&data[8]);
+  u_char* dest = reinterpret_cast<u_char *>(&point[0]);
+  const u_char* src = &data[8];
   uint32_t num_bytes = sizeof(float) * 3;
-  for (uint32_t i = 0; i < num_bytes; ++i) {
+  for (uint32_t i = 0; i < num_bytes; ++i)
     dest[i] = src[i];
-  }
   return point;
 }
 
@@ -98,15 +97,14 @@ void SAHEncodedNode::SetPoint(const glm::vec3& point) {
   const u_char* src = reinterpret_cast<const u_char*>(&point[0]);
   u_char* dest = &data[8];
   uint32_t num_bytes = sizeof(float) * 3;
-  for (uint32_t i = 0; i < num_bytes; ++i) {
+  for (uint32_t i = 0; i < num_bytes; ++i)
     dest[i] = src[i];
-  }
 }
 
 std::ostream& operator<<(std::ostream& out, const SAHEncodedNode& node) {
-  for (uint32_t i = 0; i < 8; ++i) {
-    for (uint32_t j = 0; j < 8; ++j)
-      out << ((0x1 << (7 - j)) & node.data[i] ? '1' : '0');
+  for (uint32_t i = 0; i < 20; ++i) {
+    for (uint32_t j = 0; j < 20; ++j)
+      out << ((0x1 << (19 - j)) & node.data[i] ? '1' : '0');
     out << ' ';
   }
   return out;

@@ -29,6 +29,20 @@ using ::testing::ElementsAre;
 #include "transform.hpp"
 
 namespace ray {
+TEST(GridTest, UniformGridSamplerTest) {
+  UniformGridSampler s(glm::ivec3(2, 2, 2),
+      BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f)));
+  glm::vec3 points[4] = { glm::vec3(0.25f), glm::vec3(0.25f, 0.75f), glm::vec3(
+      0.75f, 0.25f), glm::vec3(0.75f) };
+  glm::ivec3 values[4] = { glm::ivec3(0, 0), glm::ivec3(0, 1), glm::ivec3(1, 0),
+      glm::ivec3(1, 1) };
+  glm::ivec3 index = glm::ivec3(0);
+  for (int i = 0; i < 4; ++i) {
+    s.PointToCellIndex(points[i], index);
+    std::cout << "point = " << points[i] << " index = " << index << std::endl;
+  }
+}
+
 TEST(GridTest, InitializationTest) {
   SummableGrid<int> sg(glm::ivec3(3, 3, 3));
   sg.Init();

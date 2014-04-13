@@ -13,8 +13,7 @@ glm::ivec3 GridBase::OrientedIndex(const glm::ivec3& i, const glm::ivec3& o,
   return (size + i * o - ((1 - o) >> 1)) % size;
 }
 
-glm::ivec3 GridBase::Step(const glm::ivec3& index,
-    const glm::ivec3& size) const {
+glm::ivec3 GridBase::Step(const glm::ivec3& index, const glm::ivec3& size) {
   glm::ivec3 result = index;
   ++result[0];
   result[1] += (result[0] == size[0]);

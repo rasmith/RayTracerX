@@ -66,11 +66,11 @@ public:
   virtual BoundingBox GetBounds() const = 0;
   virtual OctNode GetIthChildOf(const OctNode& node, uint32_t index) const = 0;
 
-  int GetMaxLeafSize() const {
+  uint32_t GetMaxLeafSize() const {
     return max_leaf_size;
   }
 
-  int GetMaxDepth() const {
+  uint32_t GetMaxDepth() const {
     return max_depth;
   }
 protected:

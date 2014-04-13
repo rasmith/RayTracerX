@@ -14,10 +14,10 @@ namespace ray {
 
 class GridBase {
 public:
-  glm::ivec3 OrientedIndex(const glm::ivec3& i, const glm::ivec3& o,
+  static glm::ivec3 OrientedIndex(const glm::ivec3& i, const glm::ivec3& o,
       const glm::ivec3& size);
 
-  glm::ivec3 Step(const glm::ivec3& index, const glm::ivec3& size) const;
+  static glm::ivec3 Step(const glm::ivec3& index, const glm::ivec3& size);
 };
 
 template<class ValueType>

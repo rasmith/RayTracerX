@@ -54,7 +54,7 @@ std::ostream& operator<<(std::ostream& out, const SAHOctNode& scene);
 // data[12..15]: point_[1]
 // data[16..19]: point_[2]
 struct SAHEncodedNode {
-  u_char data[8];
+  u_char data[20];
   SAHEncodedNode();
   SAHEncodedNode(const SAHEncodedNode& node);
   SAHEncodedNode& operator=(const SAHEncodedNode& node);
