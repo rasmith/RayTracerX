@@ -32,14 +32,16 @@ namespace ray {
 TEST(GridTest, UniformGridSamplerTest) {
   UniformGridSampler s(glm::ivec3(2, 2, 2),
       BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f)));
-  glm::vec3 points[4] = { glm::vec3(0.25f), glm::vec3(0.25f, 0.75f), glm::vec3(
-      0.75f, 0.25f), glm::vec3(0.75f) };
-  glm::ivec3 values[4] = { glm::ivec3(0, 0), glm::ivec3(0, 1), glm::ivec3(1, 0),
-      glm::ivec3(1, 1) };
+  glm::ivec3 values[8] = { glm::ivec3(0, 0, 0), glm::ivec3(0, 0, 1), glm::ivec3(
+      0, 1, 0), glm::ivec3(0, 1, 1), glm::ivec3(1, 0, 0), glm::ivec3(1, 0, 1),
+      glm::ivec3(1, 1, 0), glm::ivec3(1, 1, 1) };
   glm::ivec3 index = glm::ivec3(0);
-  for (int i = 0; i < 4; ++i) {
-    s.PointToCellIndex(points[i], index);
-    std::cout << "point = " << points[i] << " index = " << index << std::endl;
+  glm::vec3 point = glm::vec3(0.0f);
+  for (int i = 0; i < 8; ++i) {
+    point = glm::vec3(0.25f) + 0.5f * values[i];
+    s.PointToCellIndex(point, index);
+    std::cout << "point = " << point << " index = " << index << " value = "
+        << values[i] << std::endl;
   }
 }
 
