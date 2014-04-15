@@ -150,7 +150,7 @@ protected:
    for (int i = 0; i < 8; ++i) {
    c += N[i] * A[i];
    }
-   c = K_T + K_I * c;
+   c = K_T + K_I * (c / bounds.GetArea()) ;
    return c;
    }
    };
@@ -211,11 +211,16 @@ protected:
    }**/
   virtual void EvaluateCost(const ObjectVector& objects,
       const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    int num_samples = 4;
+    int num_samples = 15;
     if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
-      num_samples = 4;
+      num_samples = 15;
     if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
-      num_samples = 4;
+      num_samples = 5;
+    if (objects.size() < (2 << 8)) {
+      split = bounds.GetCenter();
+      cost = 0.0f;
+      return;
+    }
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);
@@ -249,7 +254,7 @@ protected:
     for (uint32_t octant = 0; octant < 8; ++octant)
       image_integrals[octant].OrientedImageIntegral(
           OctantToOrientation(octant));
-    static bool test = true;
+    static bool test = false;
     if (test)
       std::cout << "EvaluateCost: bounds = " << bounds << std::endl;
     if (test)
@@ -270,8 +275,8 @@ protected:
         std::cout << "index = " << index << " P = " << point << " N = ";
         for (uint32_t octant = 0; octant < 8; ++octant) {
           std::cout
-              << image_integrals[octant].GetSafe(index - GetOctantBits(octant),
-                  0) << " ";
+              << image_integrals[octant].GetSafe(
+                  index + GetOctantBits(octant) - 1, 0) << " ";
         }
         std::cout << " A = ";
         for (uint32_t octant = 0; octant < 8; ++octant) {
@@ -282,9 +287,10 @@ protected:
         bits = GetOctantBits(octant);
         octant_bounds = GetOctantBounds(point, bounds, octant);
         area = octant_bounds.GetArea();
-        count = image_integrals[octant].GetSafe(index - bits, 0);
+        count = image_integrals[octant].GetSafe(index + bits - 1, 0);
         current_cost += area * count;
       }
+      current_cost = K_T + K_I * (current_cost / bounds.GetArea());
       if (test) {
         std::cout << " cost = " << current_cost << std::endl;
         for (uint32_t octant = 0; octant < 8; ++octant) {
@@ -294,8 +300,7 @@ protected:
         }
         for (uint32_t octant = 0; octant < 8; ++octant) {
           std::cout << "cell_index = " << index - GetOctantBits(octant)
-              << " bits = " <<
-          GetOctantBits(octant) << std::endl;
+              << " bits = " << GetOctantBits(octant) << std::endl;
         }
       }
       if (current_cost < best_cost) {
