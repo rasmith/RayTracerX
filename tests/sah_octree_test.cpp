@@ -31,7 +31,7 @@ using ::testing::ElementsAre;
 
 namespace ray {
 
-typedef SAHOctree<TrimeshFace, 16, 1> TestOctree;
+typedef SAHOctree<TrimeshFace> TestOctree;
 
 TEST(OctreeTest, NodeEncodeTest) {
   SAHOctNode internal_node;
@@ -215,7 +215,7 @@ TEST(RayTracerTest, SphereMeshTest) {
  std::cout << "bounds = " << octree.GetBounds() << " center = "
  << octree.GetBounds().GetCenter() << std::endl;
  trimesh->set_accelerator(&octree);
-
+ //octree.Print(std::cout);
  Image image;
  image.resize(image_width, image_height);
  RayTracer ray_tracer(&scene, &camera);

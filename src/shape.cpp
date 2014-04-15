@@ -54,11 +54,8 @@ BoundingBox BoundingBox::Join(const BoundingBox& bbox) const {
 }
 
 float BoundingBox::GetArea() const {
-  glm::vec3 extents = max_ - min_;
-  glm::vec3 a = glm::vec3(0.0f, 0.0f, extents[0]);
-  glm::vec3 b = glm::vec3(0.0f, extents[1], 0.0f);
-  glm::vec3 c = glm::vec3(extents[2], 0.0f, 0.0f);
-  return fabs(glm::dot(glm::cross(a, b), c));
+  glm::vec3 d = max_ - min_;
+  return 2.0f * (d[0] * d[1] + d[0] * d[2] + d[1] * d[2]);
 }
 
 glm::vec3 BoundingBox::GetCenter() const {
@@ -88,12 +85,17 @@ bool BoundingBox::Intersect(const Ray& ray, float& t_near, float& t_far) const {
   return t_near < t_far;
 }
 
+bool BoundingBox::Contains(const glm::vec3& point) const {
+  bool contains = true;
+  for (uint32_t i = 0; i < 3 && contains; ++i)
+    contains = contains && (min_[i] <= point[i] && point[i] <= max_[i]);
+  return contains;
+}
+
 bool BoundingBox::Overlap(const BoundingBox& bbox) const {
-  //std::cout << "this = " << *this << " bbox = " << bbox << "\n";
   bool overlap = true;
-  for (uint32_t i = 0; i < 3; ++i) {
+  for (uint32_t i = 0; i < 3 && overlap; ++i)
     overlap = overlap && (min_[i] <= bbox.max()[i] && bbox.min()[i] <= max_[i]);
-  }
   return overlap;
 }
 

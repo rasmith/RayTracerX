@@ -237,18 +237,25 @@ public:
   UniformGridSampler();
   explicit UniformGridSampler(glm::ivec3 size, const BoundingBox& bounds);
   explicit UniformGridSampler(const UniformGridSampler& sg);
+  const glm::ivec3& size() const;
   const BoundingBox& bounds() const;
   const glm::vec3& real_step() const;
+  int num_cells() const;
+  int num_vertices() const;
   void set_real_step(const glm::vec3& real_step);
   void set_bounds(const BoundingBox& bounds);
   BoundingBox GetBoundsAt(const glm::ivec3& index);
   glm::vec3 GetVertexAt(const glm::ivec3& index);
   bool PointToCellIndex(const glm::vec3& point, glm::ivec3& index);
+  glm::ivec3 StepCell(const glm::ivec3& index) const;
+  glm::ivec3 StepVertex(const glm::ivec3& index) const;
 protected:
   glm::vec3 ComputeRealStep();
   glm::ivec3 size_;
   BoundingBox bounds_;
   glm::vec3 real_step_;
+  int num_cells_;
+  int num_vertices_;
 };
 }
 

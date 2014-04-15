@@ -30,18 +30,41 @@ using ::testing::ElementsAre;
 
 namespace ray {
 TEST(GridTest, UniformGridSamplerTest) {
-  UniformGridSampler s(glm::ivec3(2, 2, 2),
-      BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f)));
-  glm::ivec3 values[8] = { glm::ivec3(0, 0, 0), glm::ivec3(0, 0, 1), glm::ivec3(
-      0, 1, 0), glm::ivec3(0, 1, 1), glm::ivec3(1, 0, 0), glm::ivec3(1, 0, 1),
-      glm::ivec3(1, 1, 0), glm::ivec3(1, 1, 1) };
+  glm::ivec3 size(8, 8, 8);
+  UniformGridSampler s(size, BoundingBox(glm::vec3(0.0f), glm::vec3(1.0f)));
   glm::ivec3 index = glm::ivec3(0);
+  glm::ivec3 check = glm::ivec3(0);
   glm::vec3 point = glm::vec3(0.0f);
-  for (int i = 0; i < 8; ++i) {
-    point = glm::vec3(0.25f) + 0.5f * values[i];
-    s.PointToCellIndex(point, index);
-    std::cout << "point = " << point << " index = " << index << " value = "
-        << values[i] << std::endl;
+  for (int i = 0; i < s.num_cells(); ++i) {
+    point = (0.5f / (size - 1)) + (1.0f / (size - 1)) * index;
+    s.PointToCellIndex(point, check);
+    if (index != check)
+      std::cout << "point = " << point << " index = " << index << " value = "
+          << check << std::endl;
+    EXPECT_EQ(index, check);
+    index = s.StepCell(index);
+  }
+  index = glm::ivec3(0);
+  for (int i = 0; i < s.num_cells(); ++i) {
+    point = (1.0f / (size - 1)) * index;
+    s.PointToCellIndex(point, check);
+    if (index != check)
+      std::cout << "point = " << point << " index = " << index << " value = "
+          << check << std::endl;
+    EXPECT_EQ(index, check);
+    index = s.StepCell(index);
+  }
+  index = glm::ivec3(0);
+  glm::ivec3 expected = glm::ivec3(0);
+  for (int i = 0; i < s.num_vertices(); ++i) {
+    point = (1.0f / (size - 1)) * index;
+    s.PointToCellIndex(point, check);
+    expected = glm::min(size - 2, index);
+    if (expected != check)
+      std::cout << "point = " << point << " index = " << expected << " value = "
+          << check << std::endl;
+    EXPECT_EQ(expected, check);
+    index = s.StepVertex(index);
   }
 }
 

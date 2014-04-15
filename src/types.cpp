@@ -28,5 +28,9 @@ glm::vec3 operator*(const glm::vec3& r, const glm::ivec3& i) {
 glm::vec3 operator*(float f, const glm::ivec3& i) {
   return glm::vec3(f * i[0], f * i[1], f * i[2]);
 }
+
+glm::vec3 operator/(float f, const glm::ivec3& i) {
+  return glm::vec3(f / i[0], f / i[1], f / i[2]);
+}
 }
 
