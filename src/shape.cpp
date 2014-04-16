@@ -58,6 +58,11 @@ float BoundingBox::GetArea() const {
   return 2.0f * (d[0] * d[1] + d[0] * d[2] + d[1] * d[2]);
 }
 
+float BoundingBox::GetVolume() const {
+  glm::vec3 d = max_ - min_;
+  return d[0] * d[1] * d[2];
+}
+
 glm::vec3 BoundingBox::GetCenter() const {
   return 0.5f * (min_ + max_);
 }
