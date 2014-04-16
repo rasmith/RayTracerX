@@ -21,9 +21,7 @@
 #include "shape.hpp"
 namespace ray {
 float K_I = 1.0f;
-float K_T = 8.0f;
-static bool test2 = true;
-static bool test = true;
+float K_T = 1.0f;
 template<class SceneObject, int max_leaf_size = 16, int max_depth = 10>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, max_leaf_size, max_depth> {
@@ -120,133 +118,18 @@ protected:
     }
   }
 
-  struct CostInfo {
-    CostInfo() {
-      for (int i = 0; i < 8; ++i) {
-        N[i] = 0;
-        A[i] = 0.0f;
-        bounds[i] = BoundingBox();
-      }
-    }
-    CostInfo(const CostInfo& ci) {
-      Copy(ci);
-    }
-    CostInfo& operator=(const CostInfo& ci) {
-      if (this == &ci)
-        return *this;
-      Copy(ci);
-      return *this;
-    }
-    void Copy(const CostInfo& ci) {
-      for (int i = 0; i < 8; ++i) {
-        N[i] = ci.N[i];
-        A[i] = ci.A[i];
-        bounds[i] = ci.bounds[i];
-      }
-    }
-    int N[8];
-    float A[8];
-    BoundingBox bounds[8];
-    float GetCost(float area) const {
-      float c = 0.0f;
-      for (int i = 0; i < 8; ++i) {
-        c += N[i] * A[i];
-      }
-      c = K_T + K_I * (c / area);
-      return c;
-    }
-  };
-
-  virtual void EvaluateCost2(const ObjectVector& objects,
-      const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    int num_samples = 4;
-    if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
-      num_samples = 4;
-    if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
-      num_samples = 4;
-    glm::ivec3 size(num_samples, num_samples, num_samples);
-    UniformGridSampler sampler(size, bounds);
-    SummableGrid<CostInfo> vertex_costs(size);
-    glm::ivec3 index = glm::ivec3(0);
-    BoundingBox obj_bounds = BoundingBox();
-
-    glm::vec3 point = glm::vec3(0.0f);
-    float best_cost = std::numeric_limits<float>::max();
-    float current_cost = 0.0f;
-    glm::vec3 best_point = glm::vec3(0.0f);
-    index = glm::ivec3(0);
-    vertex_costs.Init();
-
-    for (int n = 0; n < sampler.num_vertices(); ++n) {
-      point = sampler.GetVertexAt(index);
-      for (uint32_t octant = 0; octant < 8; ++octant) {
-        vertex_costs(index).bounds[octant] = GetOctantBounds(point, bounds,
-            octant);
-        vertex_costs(index).A[octant] = vertex_costs(index).bounds[octant]
-            .GetArea();
-      }
-      index = GridBase::Step(index, size);
-    }
-    for (uint32_t i = 0; i < objects.size(); ++i) {
-      index = glm::ivec3(0);
-      obj_bounds = objects[i]->GetBounds();
-      for (int n = 0; n < sampler.num_vertices(); ++n) {
-        for (uint32_t octant = 0; octant < 8; ++octant) {
-          const BoundingBox& oct_bounds = vertex_costs(index).bounds[octant];
-          if (oct_bounds.GetVolume() > 0.0f && obj_bounds.Overlap(oct_bounds))
-            ++vertex_costs(index).N[octant];
-        }
-        index = GridBase::Step(index, size);
-      }
-    }
-    if (test) {
-      std::cout << "EvaluateCost2 ---------------------------------"
-          << std::endl;
-      index = glm::ivec3(0);
-      for (int n = 0; n < sampler.num_vertices(); ++n) {
-        std::cout << "index = " << index << " P = "
-            << sampler.GetVertexAt(index) << " N = ";
-        for (uint32_t octant = 0; octant < 8; ++octant)
-          std::cout << vertex_costs(index).N[octant] << " ";
-        std::cout << " A = ";
-        for (uint32_t octant = 0; octant < 8; ++octant)
-          std::cout << vertex_costs(index).A[octant] << " ";
-        std::cout << " cost = " << vertex_costs(index).GetCost(bounds.GetArea())
-            << std::endl;
-        index = GridBase::Step(index, size);
-      }
-    }
-    index = glm::ivec3(0);
-    float a = bounds.GetArea();
-    for (int n = 0; n < sampler.num_vertices(); ++n) {
-      current_cost = vertex_costs(index).GetCost(a);
-      if (current_cost < best_cost) {
-        best_cost = current_cost;
-        best_point = sampler.GetVertexAt(index);
-      }
-      index = GridBase::Step(index, size);
-    }
-    split = best_point;
-    cost = best_cost;
-    test = false;
-    return;
-  }
-
   virtual void EvaluateCost(const ObjectVector& objects,
       const BoundingBox& bounds, float& cost, glm::vec3& split) {
-
-    if (test2)
-      EvaluateCost2(objects, bounds, cost, split);
-    int num_samples = 4;
+    int num_samples = 15;
     if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
-      num_samples = 4;
+      num_samples = 15;
     if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
-      num_samples = 4;
-    //if (objects.size() < (2 << 8)) {
-    //  split = bounds.GetCenter();
-    //  cost = 0.0f;
-    //  return;
-    //}
+      num_samples = 15;
+    if (objects.size() < 2 << 8)
+      num_samples = 7;
+    if (objects.size() < 2 << 4)
+      num_samples = 3;
+
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);
@@ -275,8 +158,7 @@ protected:
           ++image_integrals[octant](index);
       }
     }
-    if (test2)
-      std::cout << "EvaluateCost --------------------------------" << std::endl;
+
     //  sample each counting function using image integral
     for (uint32_t octant = 0; octant < 8; ++octant)
       image_integrals[octant].OrientedImageIntegral(
@@ -287,21 +169,10 @@ protected:
     int count = 0;
     BoundingBox octant_bounds = BoundingBox();
     index = glm::ivec3(0);
+    glm::ivec3 best_index = glm::ivec3(0);
     for (int n = 0; n < sampler.num_vertices(); ++n) {
       point = sampler.GetVertexAt(index);
       current_cost = 0.0f;
-      if (test2) {
-        std::cout << "index = " << index << " P = " << point << " N = ";
-        for (uint32_t octant = 0; octant < 8; ++octant) {
-          std::cout
-              << image_integrals[octant].GetSafe(
-                  index + GetOctantBits(octant) - 1, 0) << " ";
-        }
-        std::cout << " A = ";
-        for (uint32_t octant = 0; octant < 8; ++octant) {
-          std::cout << GetOctantBounds(point, bounds, octant).GetArea() << " ";
-        }
-      }
       for (uint32_t octant = 0; octant < 8; ++octant) {
         bits = GetOctantBits(octant);
         octant_bounds = GetOctantBounds(point, bounds, octant);
@@ -310,25 +181,13 @@ protected:
         current_cost += area * count;
       }
       current_cost = K_T + K_I * (current_cost / bounds.GetArea());
-      if (test2) {
-        std::cout << " cost = " << current_cost << std::endl;
-        /**for (uint32_t octant = 0; octant < 8; ++octant) {
-         std::cout << " bounds = " << GetOctantBounds(point, bounds, octant)
-         << " A = " << GetOctantBounds(point, bounds, octant).GetArea()
-         << std::endl;
-         }
-         for (uint32_t octant = 0; octant < 8; ++octant) {
-         std::cout << "cell_index = " << index - GetOctantBits(octant)
-         << " bits = " << GetOctantBits(octant) << std::endl;
-         }**/
-      }
       if (current_cost < best_cost) {
         best_point = point;
         best_cost = current_cost;
+        best_index = index;
       }
       index = GridBase::Step(index, size);
     }
-    test2 = false;
     split = best_point;
     cost = best_cost;
   }
@@ -358,7 +217,8 @@ protected:
       const SceneObject* obj = work_node.objects.back();
       work_node.objects.pop_back();
       for (uint32_t j = 0; j < 8; ++j)  // distribute to children
-        if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
+        if (child_work_nodes[j].bounds.GetVolume() > 0.0f
+            && obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
     for (uint32_t j = 0; j < 8; ++j) {
