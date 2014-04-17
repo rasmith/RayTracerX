@@ -20,6 +20,10 @@ public:
   void Render(Image& image);
   const glm::vec3& background_color() const;
   void set_background_color(const glm::vec3& background_color);
+  bool display_progress() const;
+  void set_display_progress(bool display_progress);
+  bool display_stats() const;
+  void set_display_stats(bool display_stats);
 
 private:
   float Diffuse(const Isect& isect, const Light& light) const;
@@ -31,6 +35,8 @@ private:
   Scene* scene_;
   Camera* camera_;
   glm::vec3 background_color_;
+  bool display_stats_;
+  bool display_progress_;
 };
 } // namespace ray
 #endif /* RAYTRACER_HPP_ */

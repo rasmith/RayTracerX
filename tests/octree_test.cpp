@@ -30,6 +30,8 @@ using ::testing::ElementsAre;
 #include "transform.hpp"
 
 namespace ray {
+
+bool use_timing = true;
 typedef Octree64<TrimeshFace, 32, 10> OctreeType;
 
 TEST(OctreeTest, RayBoxTest) {
@@ -187,6 +189,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
 }
+
 TEST(RayTracerTest, BunnyMeshTest) {
   SceneLoader& loader = SceneLoader::GetInstance();
   std::string path = "../assets/bunny.ply";
@@ -238,6 +241,9 @@ TEST(RayTracerTest, BunnyMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
+
+  ray_tracer.set_display_progress(!use_timing);
+  ray_tracer.set_display_stats(!use_timing);
   ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
   ray_tracer.Render(image);
   ImageStorage& storage = ImageStorage::GetInstance();

@@ -41,15 +41,18 @@ void RayTracer::Render(Image& image) {
       ++count;
       int progress = round(
           static_cast<float>(count) / static_cast<float>(img_size) * 100.0f);
-      if (progress >= current_progress + progress_increment) {
+      if (display_progress_
+          && progress >= current_progress + progress_increment) {
         std::cout << " " << progress << std::flush;
         current_progress = progress;
       }
     }
   }
-  std::cout << "\n";
-  std::cout << "hits = " << hit_count << " misses = " << miss_count
-      << std::endl;
+  if (display_stats_) {
+    std::cout << "\n";
+    std::cout << "hits = " << hit_count << " misses = " << miss_count
+        << std::endl;
+  }
 }
 
 float RayTracer::Diffuse(const Isect& isect, const Light& light) const {
@@ -107,7 +110,23 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
   } else {
     ++miss_count;
   }
-  return 255.0f * color;//(0.5f*(isect.normal + 1.0f));
+  return 255.0f * color; //(0.5f*(isect.normal + 1.0f));
+}
+
+bool RayTracer::display_progress() const {
+  return display_progress_;
+}
+
+void RayTracer::set_display_progress(bool display_progress) {
+  display_progress_ = display_progress;
+}
+
+bool RayTracer::display_stats() const {
+  return display_stats_;
+}
+
+void RayTracer::set_display_stats(bool display_stats) {
+  display_stats_ = display_stats;
 }
 
 } // namespace ray
