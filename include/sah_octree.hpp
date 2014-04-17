@@ -21,8 +21,8 @@
 #include "shape.hpp"
 namespace ray {
 float K_I = 1.0f;
-float K_T = 1.0f;
-template<class SceneObject, int max_leaf_size = 16, int max_depth = 10>
+float K_T = 8.0f;
+template<class SceneObject, int max_leaf_size = 16, int max_depth = 100>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, max_leaf_size, max_depth> {
 public:
@@ -120,15 +120,15 @@ protected:
 
   virtual void EvaluateCost(const ObjectVector& objects,
       const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    int num_samples = 15;
-    if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
-      num_samples = 15;
-    if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
-      num_samples = 15;
-    if (objects.size() < 2 << 8)
-      num_samples = 7;
-    if (objects.size() < 2 << 4)
-      num_samples = 3;
+    int num_samples = floor(pow(objects.size(), 1.0f / 3.0f)) + 1;
+    // if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
+    //    num_samples = 15;
+    //  if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
+    //    num_samples = 7;
+    if (objects.size() < 27) {
+      cost = std::numeric_limits<float>::max();
+      return;
+    }
 
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
@@ -167,7 +167,8 @@ protected:
     // find lowest cost vertex
     float area = 0.0f;
     int count = 0;
-    BoundingBox octant_bounds = BoundingBox();
+    BoundingBox octant_bounds;
+    BoundingBox best_bounds;
     index = glm::ivec3(0);
     glm::ivec3 best_index = glm::ivec3(0);
     for (int n = 0; n < sampler.num_vertices(); ++n) {
@@ -190,6 +191,10 @@ protected:
     }
     split = best_point;
     cost = best_cost;
+    if ((best_index[0] == 0 || best_index[0] == size[0] - 1)
+        && (best_index[1] == 0 || best_index[1] == size[1] - 1)
+        && (best_index[2] == 0 || best_index[2] == size[2] - 1))
+      cost = std::numeric_limits<float>::max();
   }
 
   virtual void BuildRoot(SAHOctNode& root, WorkNodeType& work_root) {

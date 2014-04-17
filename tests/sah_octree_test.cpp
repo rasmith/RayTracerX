@@ -216,7 +216,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   std::cout << "bounds = " << octree.GetBounds() << " center = "
       << octree.GetBounds().GetCenter() << std::endl;
   trimesh->set_accelerator(&octree);
-  octree.Print(std::cout);
+  //octree.Print(std::cout);
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
@@ -274,7 +274,7 @@ TEST(RayTracerTest, DragonMeshTest) {
   std::cout << "Building octree" << std::endl;
   octree.Build(trimesh->faces());
   //octree.set_trace(true);
-  octree.Print(std::cout);
+  //octree.Print(std::cout);
   std::cout << "Octree built.\n";
   std::cout << "bounds = " << octree.GetBounds() << " center = "
       << octree.GetBounds().GetCenter() << std::endl;
@@ -289,129 +289,129 @@ TEST(RayTracerTest, DragonMeshTest) {
   EXPECT_TRUE(success);
   EXPECT_EQ("OK", status);
 }
-/**
- TEST(RayTracerTest, BuddhaMeshTest) {
- SceneLoader& loader = SceneLoader::GetInstance();
- std::string path = "../assets/happy.ply";
- std::string status = "";
- Scene scene;
- std::cout << "loading" << std::endl;
- bool success = loader.LoadScene(path, scene, status);
- EXPECT_TRUE(success);
- EXPECT_EQ("OK", status);
- std::cout << "done loading" << std::endl;
- int image_width = 1024;
- int image_height = 1024;
- glm::vec3 eye_pos = glm::vec3(-0.0054393f, 0.14769f, 0.275f);
- glm::vec3 at_pos = glm::vec3(-0.0054393f, 0.148769, -0.00669f);
- glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
- std::cout << "set camera" << std::endl;
- glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
- Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
- std::cout << "camera set" << std::endl;
 
- Light point_light;
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- point_light.ka = point_light_color;
- point_light.kd = point_light_color;
- point_light.ks = point_light_color;
- point_light.ray = Ray(glm::vec3(0.0, -2.0, 2.0f), glm::vec3(0.0f));
- point_light.type = Light::kPoint;
- point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+TEST(RayTracerTest, BuddhaMeshTest) {
+  SceneLoader& loader = SceneLoader::GetInstance();
+  std::string path = "../assets/happy.ply";
+  std::string status = "";
+  Scene scene;
+  std::cout << "loading" << std::endl;
+  bool success = loader.LoadScene(path, scene, status);
+  EXPECT_TRUE(success);
+  EXPECT_EQ("OK", status);
+  std::cout << "done loading" << std::endl;
+  int image_width = 1024;
+  int image_height = 1024;
+  glm::vec3 eye_pos = glm::vec3(-0.0054393f, 0.14769f, 0.275f);
+  glm::vec3 at_pos = glm::vec3(-0.0054393f, 0.148769, -0.00669f);
+  glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
+  std::cout << "set camera" << std::endl;
+  glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
+  Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
+  std::cout << "camera set" << std::endl;
 
- Light directional_light;
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- directional_light.ka = directional_light_color;
- directional_light.kd = directional_light_color;
- directional_light.ks = directional_light_color;
- directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
- directional_light.type = Light::kDirectional;
+  Light point_light;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  point_light.ka = point_light_color;
+  point_light.kd = point_light_color;
+  point_light.ks = point_light_color;
+  point_light.ray = Ray(glm::vec3(0.0, -2.0, 2.0f), glm::vec3(0.0f));
+  point_light.type = Light::kPoint;
+  point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- scene.AddLight(point_light);
- scene.AddLight(directional_light);
+  Light directional_light;
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  directional_light.ka = directional_light_color;
+  directional_light.kd = directional_light_color;
+  directional_light.ks = directional_light_color;
+  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+  directional_light.type = Light::kDirectional;
 
- Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
- TestOctree octree;
- std::cout << "Building octree" << std::endl;
- octree.Build(trimesh->faces());
- //octree.set_trace(true);
- //octree.Print(std::cout);
- std::cout << "Octree built.\n";
- std::cout << "bounds = " << octree.GetBounds() << " center = "
- << octree.GetBounds().GetCenter() << std::endl;
- trimesh->set_accelerator(&octree);
- Image image;
- image.resize(image_width, image_height);
- RayTracer ray_tracer(&scene, &camera);
- ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
- ray_tracer.Render(image);
- ImageStorage& storage = ImageStorage::GetInstance();
- success = storage.WriteImage("buddha_octree.jpg", image, status);
- EXPECT_TRUE(success);
- EXPECT_EQ("OK", status);
- }
+  scene.AddLight(point_light);
+  scene.AddLight(directional_light);
 
- TEST(RayTracerTest, TurbineMeshTest) {
- SceneLoader& loader = SceneLoader::GetInstance();
- std::string path = "../assets/blade.ply";
- std::string status = "";
- Scene scene;
- std::cout << "loading" << std::endl;
- bool success = loader.LoadScene(path, scene, status);
- EXPECT_TRUE(success);
- EXPECT_EQ("OK", status);
- std::cout << "done loading" << std::endl;
- int image_width = 1024;
- int image_height = 1024;
- glm::vec3 eye_pos = glm::vec3(-274.564f, -282.243f, 950.0f);
- glm::vec3 at_pos = glm::vec3(-274.564f, -282.243f, 254.327f);
- glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
- std::cout << "set camera" << std::endl;
- glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
- Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
- std::cout << "camera set" << std::endl;
+  Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
+  TestOctree octree;
+  std::cout << "Building octree" << std::endl;
+  octree.Build(trimesh->faces());
+  //octree.set_trace(true);
+  //octree.Print(std::cout);
+  std::cout << "Octree built.\n";
+  std::cout << "bounds = " << octree.GetBounds() << " center = "
+      << octree.GetBounds().GetCenter() << std::endl;
+  trimesh->set_accelerator(&octree);
+  Image image;
+  image.resize(image_width, image_height);
+  RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+  ray_tracer.Render(image);
+  ImageStorage& storage = ImageStorage::GetInstance();
+  success = storage.WriteImage("buddha_octree.jpg", image, status);
+  EXPECT_TRUE(success);
+  EXPECT_EQ("OK", status);
+}
 
- Light point_light;
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- point_light.ka = point_light_color;
- point_light.kd = point_light_color;
- point_light.ks = point_light_color;
- point_light.ray = Ray(glm::vec3(0.0, -400.0, 400.0f), glm::vec3(0.0f));
- point_light.type = Light::kPoint;
- point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+TEST(RayTracerTest, TurbineMeshTest) {
+  SceneLoader& loader = SceneLoader::GetInstance();
+  std::string path = "../assets/blade.ply";
+  std::string status = "";
+  Scene scene;
+  std::cout << "loading" << std::endl;
+  bool success = loader.LoadScene(path, scene, status);
+  EXPECT_TRUE(success);
+  EXPECT_EQ("OK", status);
+  std::cout << "done loading" << std::endl;
+  int image_width = 1024;
+  int image_height = 1024;
+  glm::vec3 eye_pos = glm::vec3(-274.564f, -282.243f, 950.0f);
+  glm::vec3 at_pos = glm::vec3(-274.564f, -282.243f, 254.327f);
+  glm::vec3 up_dir = glm::vec3(0.0f, 1.0f, 0.0f);
+  std::cout << "set camera" << std::endl;
+  glm::mat4x4 look_at = LookAt(eye_pos, at_pos, up_dir);
+  Camera camera(image_width, image_height, Orthographic(0.0f, 1.0f), look_at);
+  std::cout << "camera set" << std::endl;
 
- Light directional_light;
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- directional_light.ka = directional_light_color;
- directional_light.kd = directional_light_color;
- directional_light.ks = directional_light_color;
- directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
- directional_light.type = Light::kDirectional;
+  Light point_light;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  point_light.ka = point_light_color;
+  point_light.kd = point_light_color;
+  point_light.ks = point_light_color;
+  point_light.ray = Ray(glm::vec3(0.0, -400.0, 400.0f), glm::vec3(0.0f));
+  point_light.type = Light::kPoint;
+  point_light.attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- scene.AddLight(point_light);
- scene.AddLight(directional_light);
+  Light directional_light;
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  directional_light.ka = directional_light_color;
+  directional_light.kd = directional_light_color;
+  directional_light.ks = directional_light_color;
+  directional_light.ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  directional_light.type = Light::kDirectional;
 
- Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
- TestOctree octree;
- std::cout << "Building octree" << std::endl;
- octree.Build(trimesh->faces());
- //octree.set_trace(true);
- //octree.Print(std::cout);
- std::cout << "Octree built.\n";
- std::cout << "bounds = " << octree.GetBounds() << " center = "
- << octree.GetBounds().GetCenter() << std::endl;
- trimesh->set_accelerator(&octree);
- Image image;
- image.resize(image_width, image_height);
- RayTracer ray_tracer(&scene, &camera);
- ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
- ray_tracer.Render(image);
- ImageStorage& storage = ImageStorage::GetInstance();
- success = storage.WriteImage("blade_octree.jpg", image, status);
- EXPECT_TRUE(success);
- EXPECT_EQ("OK", status);
- }**/
+  scene.AddLight(point_light);
+  scene.AddLight(directional_light);
+
+  Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
+  TestOctree octree;
+  std::cout << "Building octree" << std::endl;
+  octree.Build(trimesh->faces());
+  //octree.set_trace(true);
+  //octree.Print(std::cout);
+  std::cout << "Octree built.\n";
+  std::cout << "bounds = " << octree.GetBounds() << " center = "
+      << octree.GetBounds().GetCenter() << std::endl;
+  trimesh->set_accelerator(&octree);
+  Image image;
+  image.resize(image_width, image_height);
+  RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+  ray_tracer.Render(image);
+  ImageStorage& storage = ImageStorage::GetInstance();
+  success = storage.WriteImage("blade_octree.jpg", image, status);
+  EXPECT_TRUE(success);
+  EXPECT_EQ("OK", status);
+}
 } // namespace ray
 
