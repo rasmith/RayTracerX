@@ -20,17 +20,21 @@
 #include "sah_octnode.hpp"
 #include "shape.hpp"
 namespace ray {
-float K_I = 1.5f;
+float K_I = 1.0f;
 float K_T = 1.0f;
 template<class SceneObject, int max_leaf_size = 32, int max_depth = 20>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, max_leaf_size, max_depth> {
 public:
   typedef std::vector<const SceneObject*> ObjectVector;
-
+  enum EvaluationPolicy {
+    kBinnedSAH = 0, kCentroid, kFullSAH
+  };
+  EvaluationPolicy current_evaluation_policy_;
   SAHOctree() :
           Octree<SceneObject, SAHOctNode, SAHEncodedNode, SAHOctNodeFactory,
-              max_leaf_size, max_depth>::Octree() {
+              max_leaf_size, max_depth>::Octree(),
+          current_evaluation_policy_(kCentroid) {
   }
 
   virtual ~SAHOctree() {
@@ -118,17 +122,66 @@ protected:
     }
   }
 
-  virtual void EvaluateCost(const ObjectVector& objects,
-      const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    bool use_centroid = false;
-    if (use_centroid) {
-      split = bounds.GetCenter();
-      cost = 0.0f;
-      return;
+  void EvaluateFullCost(const ObjectVector& objects, const BoundingBox& bounds,
+      float& cost, glm::vec3& split) {
+    BoundingBox object_bounds, octant_bounds, result_bounds;
+    int N[8];
+    BoundingBox B[8];
+    glm::vec3 current_point(0.0f);
+    float current_cost = 0.0f;
+    float best_cost = std::numeric_limits<float>::max();
+    glm::vec3 best_point = glm::vec3(0.0f);
+    for (uint32_t i = 0; i < objects.size(); ++i) {
+      object_bounds = objects[i]->GetBounds();
+      for (uint32_t k = 0; k < 8; ++k) {
+        current_cost = 0.0f;
+        for (int d = 0; d < 3; ++d)
+          current_point[d] = (
+              (k >> d) & 0x1 ? object_bounds.max()[d] : object_bounds.min()[d]);
+        for (uint32_t octant = 0; octant < 8; ++octant) {
+          B[octant] = GetOctantBounds(current_point, bounds, octant);
+          N[octant] = 0;
+        }
+        for (uint32_t i = 0; i < objects.size(); ++i) {
+          for (uint32_t octant = 0; octant < 8; ++octant) {
+            if (object_bounds.Intersect(B[octant], result_bounds)
+                && result_bounds.GetVolume() > 0.0f)
+              ++N[octant];
+          }
+          for (uint32_t octant = 0; octant < 8; ++octant) {
+            current_cost += B[octant].GetArea() * N[octant];
+          }
+          current_cost = K_T + K_I * current_cost;
+          if (current_cost < best_cost) {
+            best_point = current_point;
+            best_cost = current_cost;
+          }
+        }
+      }
     }
+    split = best_point;
+    cost = best_cost;
+  }
+
+  void EvaluateCentroid(const ObjectVector&, const BoundingBox& bounds,
+      float& cost, glm::vec3& split) {
+    split = bounds.GetCenter();
+    cost = 0.0f;
+    return;
+  }
+
+  void EvaluateBinnedCost(const ObjectVector& objects,
+      const BoundingBox& bounds, float& cost, glm::vec3& split) {
+    //if (objects.size() < 256) {
+    //  EvaluateFullCost(objects, bounds, cost, split);
+    //  return;
+   // }
     int k = floor(pow(objects.size(), 1.0f / 3.0f));
+    if (objects.size() < 256) {
+      k = floor(pow(objects.size(), 2.0f / 3.0f));
+    }
     int num_samples = (k % 2 == 0 ? k + 1 : k + 2);
-    //int num_samples = 31;
+
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);
@@ -196,6 +249,23 @@ protected:
       cost = std::numeric_limits<float>::max();
   }
 
+  virtual void EvaluateCost(const ObjectVector& objects,
+      const BoundingBox& bounds, float& cost, glm::vec3& split) {
+    switch (current_evaluation_policy_) {
+    case kBinnedSAH:
+      EvaluateBinnedCost(objects, bounds, cost, split);
+      break;
+    case kCentroid:
+      EvaluateCentroid(objects, bounds, cost, split);
+      break;
+    case kFullSAH:
+      EvaluateFullCost(objects, bounds, cost, split);
+      break;
+    default:
+      EvaluateBinnedCost(objects, bounds, cost, split);
+    }
+  }
+
   virtual void BuildRoot(SAHOctNode& root, WorkNodeType& work_root) {
     glm::vec3 split = glm::vec3(0.0f);
     float cost = 0.0f;
@@ -220,10 +290,18 @@ protected:
     while (!work_node.objects.empty()) {
       const SceneObject* obj = work_node.objects.back();
       work_node.objects.pop_back();
-      for (uint32_t j = 0; j < 8; ++j)  // distribute to children
-        if (child_work_nodes[j].bounds.GetVolume() > 0.0f
-            && obj->GetBounds().Overlap(child_work_nodes[j].bounds))
+      for (uint32_t j = 0; j < 8; ++j) { // distribute to children
+        //if (child_work_nodes[j].bounds.GetVolume() > 0.0f
+        //    && obj->GetBounds().Overlap(child_work_nodes[j].bounds))
+        //  child_work_nodes[j].objects.push_back(obj);
+        BoundingBox result_bounds;
+        BoundingBox child_bounds = child_work_nodes[j].bounds;
+        bool overlap = child_bounds.GetVolume() > 0.0f
+            && child_bounds.Intersect(obj->GetBounds(), result_bounds)
+            && result_bounds.GetVolume();
+        if (overlap)
           child_work_nodes[j].objects.push_back(obj);
+      }
     }
     for (uint32_t j = 0; j < 8; ++j) {
       // If a child has a non-empty object list, process it.

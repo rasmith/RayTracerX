@@ -187,17 +187,41 @@ protected:
     }
   }
 
+  void UpdateMeanVar(int value, int num_samples, float& mean, float& variance) {
+    float delta = value - mean;
+    mean += delta / num_samples;
+    variance += delta * (value - mean);
+  }
+
   void BuildLevel(WorkList& work_list, WorkList& next_list, uint32_t depth) {
+    float mean_objects = 0.0f, variance_objects = 0.0f;
+    float mean_children = 0.0f, variance_children = 0.0f;
+    int num_nodes = 0, num_internal = 0, num_leaves = 0;
     while (!work_list.empty()) {
       WorkNode work_node = work_list.back();
       work_list.pop_back();
+      // calculate some stats
+      UpdateMeanVar(work_node.objects.size(), ++num_nodes, mean_objects,
+          variance_objects);
       OctNode node = DecodeNode(nodes_[work_node.node_index]);
-      if (node.IsLeaf())
+      if (node.IsLeaf()) {
         BuildLeaf(node, work_node);
-      else
+        ++num_leaves;
+      } else {
         BuildInternal(node, work_node, next_list, depth);
+        UpdateMeanVar(node.size(), ++num_internal, mean_children,
+            variance_children);
+      }
       nodes_[work_node.node_index] = EncodeNode(node);
     }
+    variance_objects /= num_nodes;
+    variance_children /= num_internal;
+    std::cout << " internal: " << num_internal << " num_leaves = "
+        << num_leaves;
+    std::cout << " mean obj: " << round(mean_objects) << " stdev: "
+        << round(100.0f * sqrt(variance_objects)) / 100.0f;
+    std::cout << " mean child: " << round(mean_children) << " stdev: "
+        << round(100.0f * sqrt(variance_children)) / 100.0f;
   }
 
   void BuildTree(WorkNode& work_root) {
@@ -218,9 +242,10 @@ protected:
     // and next_list.  The work_list gets swapped when empty while next_list
     // fills up. Each time this happens, one level has been completed.
     while (!work_list.empty()) {
+      std::cout << "level = " << depth << " ";
       BuildLevel(work_list, next_list, depth);
       work_list.swap(next_list);
-      std::cout << "level = " << depth << std::endl;
+      std::cout << std::endl;
       ++depth;
     }
     std::cout << "num internal nodes = " << num_internal_nodes() << std::endl;

@@ -30,6 +30,7 @@ public:
   bool Intersect(const Ray& ray, float& t_near, float& t_far) const;
   bool Overlap(const BoundingBox& bbox) const;
   bool Contains(const glm::vec3& point) const;
+  bool Intersect(const BoundingBox& bbox, BoundingBox& out) const;
   bool operator==(const BoundingBox& bbox) const;
   BoundingBox& operator=(const BoundingBox& bbox);
 private:

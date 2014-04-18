@@ -36,8 +36,8 @@ namespace ray {
 typedef SAHOctree<TrimeshFace> TestOctree;
 
 bool use_timing = true;
-bool print_tree = true;
-int num_timings = 1;
+bool print_tree = false;
+int num_timings = 10;
 int image_width = 1024;
 int image_height = 1024;
 
@@ -139,7 +139,6 @@ void SetupAndRun(const std::string& path, const std::string& output,
   EXPECT_EQ("OK", status);
 }
 
-/**
 TEST(OctreeTest, NodeEncodeTest) {
   SAHOctNode internal_node;
   SAHOctNode test_node;
@@ -368,9 +367,9 @@ TEST(RayTracerTest, TurbineMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
-**/
-TEST(RayTracerTest, ConferenceMeshTest) {
-  std::string path = "../assets/fairyforest.obj";
+
+TEST(RayTracerTest, FairyMeshTest) {
+  std::string path = "../assets/fairy_forest.obj";
   std::string output = "fairy.jpg";
 
   glm::vec3 eye, at, up;

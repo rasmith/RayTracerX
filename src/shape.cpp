@@ -104,6 +104,16 @@ bool BoundingBox::Overlap(const BoundingBox& bbox) const {
   return overlap;
 }
 
+bool BoundingBox::Intersect(const BoundingBox& bbox, BoundingBox& out) const {
+  bool overlap = true;
+  for (uint32_t i = 0; i < 3 && overlap; ++i) {
+    overlap = overlap && (min_[i] <= bbox.max()[i] && bbox.min()[i] <= max_[i]);
+    out.min_[i] = std::max(min_[i], bbox.min_[i]);
+    out.max_[i] = std::min(max_[i], bbox.max_[i]);
+  }
+  return overlap;
+}
+
 bool BoundingBox::operator==(const BoundingBox& bbox) const {
   return min_ == bbox.min() && max_ == bbox.max();
 }
