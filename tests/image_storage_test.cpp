@@ -33,7 +33,7 @@ TEST(ImageStorageTest, ImageWriteTest) {
     Image image;
     std::string path = "../assets/colors.jpg";
     std::string status = "";
-    image.resize(640, 480);
+    image.Resize(640, 480);
     for (int i = 0; i < 480; ++i) {
         for (int j = 0; j < 640; ++j) {
             image(i, j) = ucvec3(0u, 255u, 0u);

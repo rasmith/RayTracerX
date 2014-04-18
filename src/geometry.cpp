@@ -99,7 +99,7 @@ Sphere::Sphere() :
 }
 
 Sphere::Sphere(const Sphere& sphere) :
-    center_(sphere.center_), radius_(sphere.radius_) {
+    Shape(), center_(sphere.center_), radius_(sphere.radius_) {
 }
 
 Sphere::Sphere(const glm::vec3& center, float radius) :

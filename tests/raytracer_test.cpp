@@ -75,7 +75,7 @@ TEST(RayTracerTest, SphereTest) {
   scene.AddMaterial("sphere_material", sphere_material);
 
   Image image;
-  image.resize(512, 512);
+  image.Resize(512, 512);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.Render(image);
 
@@ -135,7 +135,7 @@ TEST(RayTracerTest, TriangleTest) {
   scene.AddMaterial("triangle_material", triangle_material);
 
   Image image;
-  image.resize(512, 512);
+  image.Resize(512, 512);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.Render(image);
 
@@ -184,7 +184,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   //std::cout << "scene:" << scene << std::endl;
 
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
   std::cout << "rendering" << std::endl;
   ray_tracer.Render(image);
@@ -235,7 +235,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   scene.AddLight(directional_light);
 
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
 
   ray_tracer.Render(image);

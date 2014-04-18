@@ -24,7 +24,8 @@ public:
   void set_display_progress(bool display_progress);
   bool display_stats() const;
   void set_display_stats(bool display_stats);
-
+  void set_scene(Scene* scene);
+  void set_camera(Camera* camera);
 private:
   float Diffuse(const Isect& isect, const Light& light) const;
   float Specular(const Isect& isect, const Light& light) const;

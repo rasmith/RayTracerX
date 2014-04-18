@@ -6,8 +6,9 @@
  */
 #ifndef TYPES_HPP_
 #define TYPES_HPP_
-#define GLM_FORCE_PURE
-#define GLM_FORCE_CXX98
+//#define GLM_FORCE_PURE
+//#define GLM_FORCE_AVX
+//#define GLM_FORCE_CXX98
 #define GLM_SWIZZLE
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

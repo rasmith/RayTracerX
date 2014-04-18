@@ -21,8 +21,8 @@ public:
     void set_width(uint32_t width);
     ucvec3& operator()(int i, int j);
     const std::vector<ucvec3>& pixels() const;
-    void resize(int width, int height);
-    void resize();
+    void Resize(int width, int height);
+    void Resize();
 private:
     std::vector<ucvec3> pixels_;
     uint32_t width_;

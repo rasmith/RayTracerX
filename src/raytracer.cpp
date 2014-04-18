@@ -14,6 +14,11 @@ namespace ray {
 static int hit_count = 0;
 static int miss_count = 0;
 
+RayTracer::RayTracer() :
+    scene_(NULL), camera_(NULL), background_color_(glm::vec3(0.0f)),
+        display_progress_(true), display_stats_(true) {
+}
+
 RayTracer::RayTracer(Scene* scene, Camera* camera) :
     scene_(scene), camera_(camera), background_color_(glm::vec3(0.0f)),
         display_progress_(true), display_stats_(true) {
@@ -130,4 +135,11 @@ void RayTracer::set_display_stats(bool display_stats) {
   display_stats_ = display_stats;
 }
 
+void RayTracer::set_scene(Scene* scene) {
+  scene_ = scene;
+}
+
+void RayTracer::set_camera(Camera* camera) {
+  camera_ = camera;
+}
 } // namespace ray

@@ -33,6 +33,7 @@ using ::testing::ElementsAre;
 
 namespace ray {
 
+
 bool use_timing = true;
 typedef Octree64<TrimeshFace, 32, 20> OctreeType;
 
@@ -182,7 +183,7 @@ TEST(RayTracerTest, SphereMeshTest) {
   trimesh->set_accelerator(&octree);
 
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.set_display_progress(!use_timing);
   ray_tracer.set_display_stats(!use_timing);
@@ -256,7 +257,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
   trimesh->set_accelerator(&octree);
 
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.set_display_progress(!use_timing);
   ray_tracer.set_display_stats(!use_timing);
@@ -333,7 +334,7 @@ TEST(RayTracerTest, DragonMeshTest) {
       << octree.GetBounds().GetCenter() << std::endl;
   trimesh->set_accelerator(&octree);
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.set_display_progress(!use_timing);
   ray_tracer.set_display_stats(!use_timing);
@@ -410,7 +411,7 @@ TEST(RayTracerTest, BuddhaMeshTest) {
       << octree.GetBounds().GetCenter() << std::endl;
   trimesh->set_accelerator(&octree);
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.set_display_progress(!use_timing);
   ray_tracer.set_display_stats(!use_timing);
@@ -487,7 +488,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
       << octree.GetBounds().GetCenter() << std::endl;
   trimesh->set_accelerator(&octree);
   Image image;
-  image.resize(image_width, image_height);
+  image.Resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
   ray_tracer.set_display_progress(!use_timing);
   ray_tracer.set_display_stats(!use_timing);

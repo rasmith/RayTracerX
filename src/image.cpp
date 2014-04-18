@@ -34,13 +34,13 @@ void Image::set_width(uint32_t width) {
     width_ = width;
 }
 
-void Image::resize(int width, int height) {
+void Image::Resize(int width, int height) {
     set_width(width);
     set_height(height);
-    resize();
+    Resize();
 }
 
-void Image::resize() {
+void Image::Resize() {
     pixels_.resize(width_ * height_);
 }
 
@@ -71,7 +71,7 @@ bool ImageStorage::ReadImage(
     status = "OK";
     try {
         image_gm.read(file_name);
-        image.resize(image_gm.columns(), image_gm.rows());
+        image.Resize(image_gm.columns(), image_gm.rows());
         pixels = &image(0, 0);
         image_gm.write(0, 0, image.width(), image.height(), "RGB",
                 Magick::CharPixel, pixels);
