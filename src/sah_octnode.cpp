@@ -4,23 +4,27 @@
  *  Created on: Mar 5, 2014
  *      Author: randallsmith
  */
+#include <string.h>
 #include "sah_octnode.hpp"
 namespace ray {
 SAHEncodedNode::SAHEncodedNode() {
-  for (int i = 0; i < 20; ++i)
-    data[i] = 0;
+  //for (int i = 0; i < 20; ++i)
+  //  data[i] = 0;
+  memset(&data[0], 0, sizeof(char) * 20);
 }
 
 SAHEncodedNode::SAHEncodedNode(const SAHEncodedNode& node) {
-  for (int i = 0; i < 20; ++i)
-    data[i] = node.data[i];
+  //for (int i = 0; i < 20; ++i)
+  //  data[i] = node.data[i];
+  memcpy(&data[0], &node.data[0], sizeof(char) * 20);
 }
 
 SAHEncodedNode& SAHEncodedNode::operator =(const SAHEncodedNode& node) {
   if (this == &node)
     return *this;
-  for (int i = 0; i < 20; ++i)
-    data[i] = node.data[i];
+  //for (int i = 0; i < 20; ++i)
+  //  data[i] = node.data[i];
+  memcpy(&data[0], &node.data[0], sizeof(char) * 20);
   return *this;
 }
 
@@ -56,8 +60,9 @@ glm::vec3 SAHEncodedNode::GetPoint() const {
   u_char* dest = reinterpret_cast<u_char *>(&point[0]);
   const u_char* src = &data[8];
   uint32_t num_bytes = sizeof(float) * 3;
-  for (uint32_t i = 0; i < num_bytes; ++i)
-    dest[i] = src[i];
+  memcpy(dest, src, sizeof(char) * num_bytes);
+  //for (uint32_t i = 0; i < num_bytes; ++i)
+  //  dest[i] = src[i];
   return point;
 }
 
@@ -97,8 +102,9 @@ void SAHEncodedNode::SetPoint(const glm::vec3& point) {
   const u_char* src = reinterpret_cast<const u_char*>(&point[0]);
   u_char* dest = &data[8];
   uint32_t num_bytes = sizeof(float) * 3;
-  for (uint32_t i = 0; i < num_bytes; ++i)
-    dest[i] = src[i];
+  memcpy(dest, src, sizeof(char) * num_bytes);
+  //for (uint32_t i = 0; i < num_bytes; ++i)
+  //  dest[i] = src[i];
 }
 
 std::ostream& operator<<(std::ostream& out, const SAHEncodedNode& node) {

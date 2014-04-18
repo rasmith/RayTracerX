@@ -79,7 +79,7 @@ bool Triangle::Intersect(const Ray& ray, Isect& isect) const {
   return true;
 }
 
-glm::vec3 Triangle::GetNormal() {
+glm::vec3 Triangle::GetNormal() const {
   glm::vec3 a = vertices_[0];
   glm::vec3 b = vertices_[1];
   glm::vec3 c = vertices_[2];
@@ -88,7 +88,7 @@ glm::vec3 Triangle::GetNormal() {
   return glm::normalize(glm::cross(e1, e2));
 }
 
-BoundingBox Triangle::GetBounds() {
+BoundingBox Triangle::GetBounds() const {
   glm::vec3 min = glm::min(glm::min(vertices_[0], vertices_[1]), vertices_[2]);
   glm::vec3 max = glm::max(glm::max(vertices_[0], vertices_[1]), vertices_[2]);
   return BoundingBox(min, max);

@@ -15,7 +15,8 @@ static int hit_count = 0;
 static int miss_count = 0;
 
 RayTracer::RayTracer(Scene* scene, Camera* camera) :
-    scene_(scene), camera_(camera), background_color_(glm::vec3(0.0f)) {
+    scene_(scene), camera_(camera), background_color_(glm::vec3(0.0f)),
+        display_progress_(true), display_stats_(true) {
 }
 
 const glm::vec3& RayTracer::background_color() const {

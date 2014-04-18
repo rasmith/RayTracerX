@@ -5,6 +5,8 @@
  *      Author: agrippa
  */
 
+#include <sys/time.h>
+
 #include <climits>
 #include <cstdlib>
 #include <cstdio>
@@ -32,7 +34,7 @@ using ::testing::ElementsAre;
 namespace ray {
 
 bool use_timing = true;
-typedef Octree64<TrimeshFace, 32, 10> OctreeType;
+typedef Octree64<TrimeshFace, 32, 20> OctreeType;
 
 TEST(OctreeTest, RayBoxTest) {
   BoundingBox box(glm::vec3(0.0f), glm::vec3(1.0f));
@@ -182,8 +184,23 @@ TEST(RayTracerTest, SphereMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_display_progress(!use_timing);
+  ray_tracer.set_display_stats(!use_timing);
   ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+
+  timeval t_start, t_finish;
+  if (use_timing)
+    gettimeofday(&t_start, NULL);
+  std::cout << "Rendering..." << std::endl;
   ray_tracer.Render(image);
+  if (use_timing) {
+    gettimeofday(&t_finish, NULL);
+    float sec = t_finish.tv_sec - t_start.tv_sec + t_finish.tv_usec / 1000000.0f
+        - t_start.tv_usec / 1000000.0f;
+    std::cout << "Render time:" << sec << std::endl;
+  } else
+    std::cout << "Done." << std::endl;
+
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("sphere_octree.jpg", image, status);
   EXPECT_TRUE(success);
@@ -241,11 +258,23 @@ TEST(RayTracerTest, BunnyMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
-
   ray_tracer.set_display_progress(!use_timing);
   ray_tracer.set_display_stats(!use_timing);
   ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+
+  timeval t_start, t_finish;
+  if (use_timing)
+    gettimeofday(&t_start, NULL);
+  std::cout << "Rendering..." << std::endl;
   ray_tracer.Render(image);
+  if (use_timing) {
+    gettimeofday(&t_finish, NULL);
+    float sec = t_finish.tv_sec - t_start.tv_sec + t_finish.tv_usec / 1000000.0f
+        - t_start.tv_usec / 1000000.0f;
+    std::cout << "Render time:" << sec << std::endl;
+  } else
+    std::cout << "Done." << std::endl;
+
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("bunny_octree.jpg", image, status);
   EXPECT_TRUE(success);
@@ -306,8 +335,23 @@ TEST(RayTracerTest, DragonMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_display_progress(!use_timing);
+  ray_tracer.set_display_stats(!use_timing);
   ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+
+  timeval t_start, t_finish;
+  if (use_timing)
+    gettimeofday(&t_start, NULL);
+  std::cout << "Rendering..." << std::endl;
   ray_tracer.Render(image);
+  if (use_timing) {
+    gettimeofday(&t_finish, NULL);
+    float sec = t_finish.tv_sec - t_start.tv_sec + t_finish.tv_usec / 1000000.0f
+        - t_start.tv_usec / 1000000.0f;
+    std::cout << "Render time:" << sec << std::endl;
+  } else
+    std::cout << "Done." << std::endl;
+
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("dragon_octree.jpg", image, status);
   EXPECT_TRUE(success);
@@ -368,8 +412,23 @@ TEST(RayTracerTest, BuddhaMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_display_progress(!use_timing);
+  ray_tracer.set_display_stats(!use_timing);
   ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+
+  timeval t_start, t_finish;
+  if (use_timing)
+    gettimeofday(&t_start, NULL);
+  std::cout << "Rendering..." << std::endl;
   ray_tracer.Render(image);
+  if (use_timing) {
+    gettimeofday(&t_finish, NULL);
+    float sec = t_finish.tv_sec - t_start.tv_sec + t_finish.tv_usec / 1000000.0f
+        - t_start.tv_usec / 1000000.0f;
+    std::cout << "Render time:" << sec << std::endl;
+  } else
+    std::cout << "Done." << std::endl;
+
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("buddha_octree.jpg", image, status);
   EXPECT_TRUE(success);
@@ -430,8 +489,23 @@ TEST(RayTracerTest, TurbineMeshTest) {
   Image image;
   image.resize(image_width, image_height);
   RayTracer ray_tracer(&scene, &camera);
+  ray_tracer.set_display_progress(!use_timing);
+  ray_tracer.set_display_stats(!use_timing);
   ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+
+  timeval t_start, t_finish;
+  if (use_timing)
+    gettimeofday(&t_start, NULL);
+  std::cout << "Rendering..." << std::endl;
   ray_tracer.Render(image);
+  if (use_timing) {
+    gettimeofday(&t_finish, NULL);
+    float sec = t_finish.tv_sec - t_start.tv_sec + t_finish.tv_usec / 1000000.0f
+        - t_start.tv_usec / 1000000.0f;
+    std::cout << "Render time:" << sec << std::endl;
+  } else
+    std::cout << "Done." << std::endl;
+
   ImageStorage& storage = ImageStorage::GetInstance();
   success = storage.WriteImage("blade_octree.jpg", image, status);
   EXPECT_TRUE(success);

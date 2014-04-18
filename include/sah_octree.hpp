@@ -20,9 +20,9 @@
 #include "sah_octnode.hpp"
 #include "shape.hpp"
 namespace ray {
-float K_I = 1.0f;
+float K_I = 1.5f;
 float K_T = 8.0f;
-template<class SceneObject, int max_leaf_size = 16, int max_depth = 100>
+template<class SceneObject, int max_leaf_size = 32, int max_depth = 20>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, max_leaf_size, max_depth> {
 public:
@@ -120,16 +120,14 @@ protected:
 
   virtual void EvaluateCost(const ObjectVector& objects,
       const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    int num_samples = floor(pow(objects.size(), 1.0f / 3.0f)) + 1;
-    // if (objects.size() < (2 << 20) && objects.size() >= (2 << 16))
-    //    num_samples = 15;
-    //  if (objects.size() < (2 << 16) && objects.size() >= (2 << 8))
-    //    num_samples = 7;
-    if (objects.size() < 27) {
-      cost = std::numeric_limits<float>::max();
+    bool use_centroid = false;
+    if (use_centroid) {
+      split = bounds.GetCenter();
+      cost = 0.0f;
       return;
     }
-
+    int k = floor(pow(objects.size(), 1.0f / 3.0f));
+    int num_samples = (k % 2 == 0 ? k + 1 : k + 2);
     glm::ivec3 size(num_samples, num_samples, num_samples);
     SummableGrid<int> cell_intersections(size - 1);
     UniformGridSampler sampler(size, bounds);

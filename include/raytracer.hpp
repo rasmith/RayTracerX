@@ -35,8 +35,8 @@ private:
   Scene* scene_;
   Camera* camera_;
   glm::vec3 background_color_;
-  bool display_stats_;
   bool display_progress_;
+  bool display_stats_;
 };
 } // namespace ray
 #endif /* RAYTRACER_HPP_ */

@@ -19,8 +19,8 @@ public:
     glm::vec3& operator[](int i);
     const glm::vec3& operator[](int i) const;
     bool Intersect(const Ray& ray, Isect& isect) const;
-    BoundingBox GetBounds();
-    glm::vec3 GetNormal();
+    BoundingBox GetBounds() const;
+    glm::vec3 GetNormal() const;
 private:
     static const float kEpsilon;
     glm::vec3 vertices_[3];

@@ -112,7 +112,7 @@ protected:
 //
 //  Intersect children of given node and return in sorted order
 //  that the given ray hit them along with child bounding boxes.
-//  Can hit at most four (4) children.  Arrays passed in are
+//  Can traverse at most four (4) children.  Arrays passed in are
 //  assumed to be of length four (4).
 //
 //////
