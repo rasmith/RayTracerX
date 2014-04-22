@@ -20,14 +20,14 @@
 #include "sah_octnode.hpp"
 #include "shape.hpp"
 namespace ray {
-template<class SceneObject, int max_leaf_size = 32, int max_depth = 6>
+template<class SceneObject, int max_leaf_size = 32, int max_depth = 8>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, max_leaf_size, max_depth> {
 public:
   typedef std::vector<const SceneObject*> ObjectVector;
   enum EvaluationPolicy {
     kBinnedSAH = 0, kCentroid, kFullSAH, kMixed64, kMixed128, kMixed256,
-    kMixed512, kBounded32, kBounded64, kNumPolicies
+    kMixed512, kBounded32, kBounded64, kBounded128, kNumPolicies
   };
   EvaluationPolicy evaluation_policy_;
   float cost_intersect_;
@@ -150,8 +150,9 @@ protected:
         }
         for (uint32_t i = 0; i < objects.size(); ++i) {
           for (uint32_t octant = 0; octant < 8; ++octant) {
-            if (object_bounds.Intersect(B[octant], result_bounds)
-                && result_bounds.GetVolume() > 0.0f)
+            //if (object_bounds.Intersect(B[octant], result_bounds)
+            //    && result_bounds.GetVolume() > 0.0f)
+            if (object_bounds.Intersect(B[octant], result_bounds))
               ++N[octant];
           }
           for (uint32_t octant = 0; octant < 8; ++octant) {
@@ -184,6 +185,8 @@ protected:
         || (kMixed256 == evaluation_policy_ && objects.size() < 256)
         || (kMixed512 == evaluation_policy_ && objects.size() < 512)) {
       k = floor(pow(objects.size() / 2.0f, 2.0f / 3.0f)) + 1;
+    } else if (kBounded128 == evaluation_policy_) {
+         k = 4 * floor(pow(2 * objects.size(), 1.0f / 3.0f)) + 1;
     } else if (kBounded64 == evaluation_policy_) {
       k = 2 * floor(pow(4 * objects.size(), 1.0f / 3.0f)) + 1;
     } else if (kBounded32 == evaluation_policy_) {
@@ -279,6 +282,7 @@ protected:
       break;
     case kBounded32:
     case kBounded64:
+    case kBounded128:
       EvaluateBinnedCost(objects, bounds, cost, split);
       break;
     default:
@@ -316,9 +320,10 @@ protected:
         //  child_work_nodes[j].objects.push_back(obj);
         BoundingBox result_bounds;
         BoundingBox child_bounds = child_work_nodes[j].bounds;
-        bool overlap = child_bounds.GetVolume() > 0.0f
-            && child_bounds.Intersect(obj->GetBounds(), result_bounds)
-            && result_bounds.GetVolume();
+        //bool overlap = child_bounds.GetVolume() > 0.0f
+        //    && child_bounds.Intersect(obj->GetBounds(), result_bounds)
+        //    && result_bounds.GetVolume();
+        bool overlap = child_bounds.Intersect(obj->GetBounds(), result_bounds);
         if (overlap)
           child_work_nodes[j].objects.push_back(obj);
       }
