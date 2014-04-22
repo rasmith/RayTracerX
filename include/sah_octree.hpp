@@ -20,21 +20,23 @@
 #include "sah_octnode.hpp"
 #include "shape.hpp"
 namespace ray {
-float K_I = 1.0f;
-float K_T = 1.0f;
-template<class SceneObject, int max_leaf_size = 32, int max_depth = 20>
+template<class SceneObject, int max_leaf_size = 32, int max_depth = 6>
 class SAHOctree: public Octree<SceneObject, SAHOctNode, SAHEncodedNode,
     SAHOctNodeFactory, max_leaf_size, max_depth> {
 public:
   typedef std::vector<const SceneObject*> ObjectVector;
   enum EvaluationPolicy {
-    kBinnedSAH = 0, kCentroid, kFullSAH
+    kBinnedSAH = 0, kCentroid, kFullSAH, kMixed64, kMixed128, kMixed256,
+    kMixed512, kBounded32, kBounded64, kNumPolicies
   };
-  EvaluationPolicy current_evaluation_policy_;
+  EvaluationPolicy evaluation_policy_;
+  float cost_intersect_;
+  float cost_traverse_;
   SAHOctree() :
           Octree<SceneObject, SAHOctNode, SAHEncodedNode, SAHOctNodeFactory,
               max_leaf_size, max_depth>::Octree(),
-          current_evaluation_policy_(kCentroid) {
+          evaluation_policy_(kCentroid), cost_intersect_(1.0f),
+          cost_traverse_(1.0f) {
   }
 
   virtual ~SAHOctree() {
@@ -95,6 +97,10 @@ public:
     glm::ivec3 orientation = 1 - 2 * bits;
     return orientation;
   }
+
+  void set_evaluation_policy(EvaluationPolicy policy) {
+    evaluation_policy_ = policy;
+  }
 protected:
   typedef typename Octree<SceneObject, SAHOctNode, SAHEncodedNode,
       SAHOctNodeFactory, max_leaf_size, max_depth>::WorkNode WorkNodeType;
@@ -103,7 +109,7 @@ protected:
       SAHOctNodeFactory, max_leaf_size, max_depth>::WorkList WorkListType;
 
   float GetLeafCost(const ObjectVector& objs, const BoundingBox&) const {
-    return K_I * objs.size();
+    return cost_intersect_ * objs.size();
   }
 
   void InitGrids(SummableGrid<int>* grids, glm::ivec3 size, int k) {
@@ -151,7 +157,7 @@ protected:
           for (uint32_t octant = 0; octant < 8; ++octant) {
             current_cost += B[octant].GetArea() * N[octant];
           }
-          current_cost = K_T + K_I * current_cost;
+          current_cost = cost_traverse_ + cost_intersect_ * current_cost;
           if (current_cost < best_cost) {
             best_point = current_point;
             best_cost = current_cost;
@@ -172,13 +178,16 @@ protected:
 
   void EvaluateBinnedCost(const ObjectVector& objects,
       const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    //if (objects.size() < 256) {
-    //  EvaluateFullCost(objects, bounds, cost, split);
-    //  return;
-   // }
-    int k = floor(pow(objects.size(), 1.0f / 3.0f));
-    if (objects.size() < 256) {
-      k = floor(pow(objects.size(), 2.0f / 3.0f));
+    int k = floor(pow(objects.size() / 2.0, 1.0f / 3.0f)) + 1;
+    if ((kMixed64 == evaluation_policy_ && objects.size() < 64)
+        || (kMixed128 == evaluation_policy_ && objects.size() < 128)
+        || (kMixed256 == evaluation_policy_ && objects.size() < 256)
+        || (kMixed512 == evaluation_policy_ && objects.size() < 512)) {
+      k = floor(pow(objects.size() / 2.0f, 2.0f / 3.0f)) + 1;
+    } else if (kBounded64 == evaluation_policy_) {
+      k = 2 * floor(pow(4 * objects.size(), 1.0f / 3.0f)) + 1;
+    } else if (kBounded32 == evaluation_policy_) {
+      k = 2 * floor(pow(2 * objects.size(), 1.0f / 3.0f)) + 1;
     }
     int num_samples = (k % 2 == 0 ? k + 1 : k + 2);
 
@@ -233,7 +242,8 @@ protected:
         count = image_integrals[octant].GetSafe(index + bits - 1, 0);
         current_cost += area * count;
       }
-      current_cost = K_T + K_I * (current_cost / bounds.GetArea());
+      current_cost = cost_traverse_
+          + cost_intersect_ * (current_cost / bounds.GetArea());
       if (current_cost < best_cost) {
         best_point = point;
         best_cost = current_cost;
@@ -251,7 +261,7 @@ protected:
 
   virtual void EvaluateCost(const ObjectVector& objects,
       const BoundingBox& bounds, float& cost, glm::vec3& split) {
-    switch (current_evaluation_policy_) {
+    switch (evaluation_policy_) {
     case kBinnedSAH:
       EvaluateBinnedCost(objects, bounds, cost, split);
       break;
@@ -260,6 +270,16 @@ protected:
       break;
     case kFullSAH:
       EvaluateFullCost(objects, bounds, cost, split);
+      break;
+    case kMixed64:
+    case kMixed128:
+    case kMixed256:
+    case kMixed512:
+      EvaluateBinnedCost(objects, bounds, cost, split);
+      break;
+    case kBounded32:
+    case kBounded64:
+      EvaluateBinnedCost(objects, bounds, cost, split);
       break;
     default:
       EvaluateBinnedCost(objects, bounds, cost, split);

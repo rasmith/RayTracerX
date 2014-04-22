@@ -36,18 +36,23 @@ namespace ray {
 typedef SAHOctree<TrimeshFace> TestOctree;
 
 bool use_timing = true;
+bool display_progress = true;
+bool display_stats = true;
+bool use_accelerator = true;
 bool print_tree = false;
-int num_timings = 10;
-int image_width = 1024;
-int image_height = 1024;
+int num_timings = 1;
+int image_width = 256;
+int image_height = 256;
+glm::vec3 background_color(0.5f, 0.0f, 0.5f);
+TestOctree::EvaluationPolicy policy = TestOctree::kMixed64;
 
 void ComputeLookAt(Scene& scene, glm::mat4x4& look_at) {
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
   BoundingBox bounds = trimesh->GetBounds();
-  glm::vec3 dir = glm::vec3(0.0f, 0.0f, 1.0f);
+  glm::vec3 dir = glm::vec3(-1.0f, 0.0f, 0.0f);
   glm::vec3 at = bounds.GetCenter();
   glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::vec3 eye = at + 0.5f * (bounds.max()[1] - bounds.min()[1]) * dir;
+  glm::vec3 eye = at + 0.5f * (bounds.max()[0] - bounds.min()[0]) * dir;
   look_at = LookAt(eye, at, up);
 }
 
@@ -78,20 +83,23 @@ void LoadScene(const std::string& path, Scene& scene, Camera& camera,
 
 void SetupRayTracer(RayTracer& ray_tracer, Scene& scene, Camera& camera,
     TestOctree& octree) {
-  Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
-  std::cout << "Building octree" << std::endl;
-  octree.Build(trimesh->faces());
-  if (print_tree)
-    octree.Print(std::cout);
-  std::cout << "Octree built.\n";
-  std::cout << "bounds = " << octree.GetBounds() << " center = "
-      << octree.GetBounds().GetCenter() << std::endl;
-  trimesh->set_accelerator(&octree);
+  if (use_accelerator) {
+    Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
+    std::cout << "Building octree" << std::endl;
+    octree.set_evaluation_policy(policy);
+    octree.Build(trimesh->faces());
+    if (print_tree)
+      octree.Print(std::cout);
+    std::cout << "Octree built.\n";
+    std::cout << "bounds = " << octree.GetBounds() << " center = "
+        << octree.GetBounds().GetCenter() << std::endl;
+    trimesh->set_accelerator(&octree);
+  }
   ray_tracer.set_scene(&scene);
   ray_tracer.set_camera(&camera);
-  ray_tracer.set_display_progress(!use_timing);
-  ray_tracer.set_display_stats(!use_timing);
-  ray_tracer.set_background_color(glm::vec3(0.05f, 0.05f, 0.05f));
+  ray_tracer.set_display_progress(display_progress);
+  ray_tracer.set_display_stats(display_stats);
+  ray_tracer.set_background_color(background_color);
 }
 
 void RunRayTracer(RayTracer& ray_tracer, Image& image) {
@@ -368,9 +376,9 @@ TEST(RayTracerTest, TurbineMeshTest) {
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
 
-TEST(RayTracerTest, FairyMeshTest) {
-  std::string path = "../assets/fairy_forest.obj";
-  std::string output = "fairy.jpg";
+TEST(RayTracerTest, SponzaMeshTest) {
+  std::string path = "../assets/sponza.obj";
+  std::string output = "sponza.jpg";
 
   glm::vec3 eye, at, up;
   bool auto_camera = true;
@@ -382,7 +390,137 @@ TEST(RayTracerTest, FairyMeshTest) {
   lights[0].ka = point_light_color;
   lights[0].kd = point_light_color;
   lights[0].ks = point_light_color;
-  lights[0].ray = Ray(glm::vec3(17.9583f,34.77f,27.9817f), glm::vec3(0.0f));
+  lights[0].ray = Ray(glm::vec3(17.9583f, 34.77f, 27.9817f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
+
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
+
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+}
+
+TEST(RayTracerTest, CathedralMeshTest) {
+  std::string path = "../assets/cathedral.obj";
+  std::string output = "cathedral.jpg";
+
+  glm::vec3 eye, at, up;
+  eye = glm::vec3(-10.7098f, -13.9444f, 0.299326f);
+  at = glm::vec3(-0.192988f, -12.8887f, -0.00787773f);
+  up = glm::vec3(-0.0997908f, 0.995004f, 0.00291497f);
+  bool auto_camera = false;
+
+  int num_lights = 2;
+  Light lights[2];
+
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
+
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
+
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+}
+
+/**
+TEST(RayTracerTest, SanMiguelMeshTest) {
+  std::string path = "../assets/san_miguel.obj";
+  std::string output = "san_miguel.jpg";
+
+  glm::vec3 eye, at, up;
+  eye = glm::vec3(22.4022f, 1.58558f, 13.3874f);
+  at = glm::vec3(15.0403f, 1.58558f, 8.88182f);
+  up = glm::vec3(0.0f, 1.0f, 0.0f);
+  bool auto_camera = false;
+
+  int num_lights = 2;
+  Light lights[2];
+
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
+
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
+
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+} **/
+
+TEST(RayTracerTest, FairyForestMeshTest) {
+  std::string path = "../assets/fairy_forest.obj";
+  std::string output = "fairy_forest.jpg";
+
+  bool auto_camera = false;
+  glm::vec3 eye, at, up;
+  eye = glm::vec3(-0.00549206f, 0.626197f, 0.278735f);
+  at = glm::vec3(0.0149054f, 0.714661f, 0.151047f);
+  up = glm::vec3(-0.0890694f, 0.825336f, 0.557573f);
+
+  int num_lights = 2;
+  Light lights[2];
+
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
+
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
+
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+}
+
+TEST(RayTracerTest, ConferenceMeshTest) {
+  std::string path = "../assets/conference.obj";
+  std::string output = "conference.jpg";
+
+  bool auto_camera = false;
+  glm::vec3 eye, at, up, dir;
+  eye = glm::vec3(0.61f, 2.74f, -2.06f);
+  dir = glm::vec3(-0.560723f, -0.233635f, 0.794358f);
+  at = dir + eye; // dir = at - eye
+  up = glm::vec3(0.0f, 0.0f, 1.0f);
+
+  int num_lights = 2;
+  Light lights[2];
+
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
   lights[0].type = Light::kPoint;
   lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
       0.000045492f);

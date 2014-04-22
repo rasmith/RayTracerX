@@ -112,11 +112,12 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
   bool hit = scene_->Intersect(ray, isect);
   if (hit) {
     color = Shade(isect);
+    //color = 0.5f * (isect.normal + 1.0f);
+    //std::cout << "normal = " << isect.normal << std::endl;
     ++hit_count;
-  } else {
+  } else
     ++miss_count;
-  }
-  return 255.0f * color; //(0.5f*(isect.normal + 1.0f));
+  return 255.0f * color;
 }
 
 bool RayTracer::display_progress() const {

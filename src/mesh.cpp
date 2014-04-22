@@ -106,106 +106,108 @@ void Trimesh::AddTexCoord(const TexCoord& tex_coord) {
 }
 
 Triangle Trimesh::GetPatch(const TrimeshFace& face) const {
-  return Triangle(vertices_[face[0]], vertices_[face[1]], vertices_[face[2]]);
+  Triangle result = Triangle(vertices_[face[0]], vertices_[face[1]],
+      vertices_[face[2]]);
+  return result;
 }
 
 Triangle Trimesh::GetPatch(int face_index) const {
-  return GetPatch(faces_[face_index]);
+return GetPatch(faces_[face_index]);
 }
 
 glm::vec3 Trimesh::InterpolateNormal(const TrimeshFace& face,
-    const glm::vec3& bary) const {
-  glm::vec3 N = glm::vec3(0.0f);
-  for (int j = 0; j < 3; ++j) {
-    N += normals_[face[j]] * bary[j];
-  }
-  return glm::normalize(N);
+  const glm::vec3& bary) const {
+glm::vec3 N = glm::vec3(0.0f);
+for (int j = 0; j < 3; ++j) {
+  N += normals_[face[j]] * bary[j];
+}
+return glm::normalize(N);
 }
 
 glm::vec3 Trimesh::InterpolateNormal(int i, const glm::vec3& bary) const {
-  return InterpolateNormal(faces_[i], bary);
+return InterpolateNormal(faces_[i], bary);
 }
 
 bool Trimesh::IntersectAccelerated(const Ray& ray, Isect& isect) const {
-  return accelerator_->Intersect(ray, isect);
+return accelerator_->Intersect(ray, isect);
 }
 
 bool Trimesh::IntersectUnaccelerated(const Ray& ray, Isect& isect) const {
-  bool hit = false;
-  Isect current, best;
-  best.t_hit = std::numeric_limits<float>::max();
-  for (uint32_t i = 0; i < faces_.size(); ++i) {
-    if (faces_[i].Intersect(ray, current) && current.t_hit < best.t_hit) {
-      best = current;
-      hit = true;
-    }
+bool hit = false;
+Isect current, best;
+best.t_hit = std::numeric_limits<float>::max();
+for (uint32_t i = 0; i < faces_.size(); ++i) {
+  if (faces_[i].Intersect(ray, current) && current.t_hit < best.t_hit) {
+    best = current;
+    hit = true;
   }
-  if (hit)
-    isect = best;
-  return hit;
+}
+if (hit)
+  isect = best;
+return hit;
 }
 
 bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
-  bool hit = false;
-  if (accelerator_)
-    hit = IntersectAccelerated(ray, isect);
-  else
-    hit = IntersectUnaccelerated(ray, isect);
-  /**if (accelerator_) {
-    Isect isect2;
-    bool hit2 = IntersectUnaccelerated(ray, isect2);
-    if (hit != hit2 || !(isect == isect2)) {
-      std::cout << "\nIntersect Mismatch\n";
-      std::cout << "hit = " << hit << "\nhit2 = " << hit2;
-      std::cout << "\nisect = " << isect << "\nisect2 = " << isect2;
-      accelerator_->set_trace(true);
-      IntersectAccelerated(ray, isect);
-    }
-    assert(hit == hit2);
-    assert(isect2 == isect);
-  }**/
-  if (hit && !isect.mat)
-    isect.mat = material_;
-  return hit;
+bool hit = false;
+if (accelerator_)
+  hit = IntersectAccelerated(ray, isect);
+else
+  hit = IntersectUnaccelerated(ray, isect);
+/**if (accelerator_) {
+ Isect isect2;
+ bool hit2 = IntersectUnaccelerated(ray, isect2);
+ if (hit != hit2 || !(isect == isect2)) {
+ std::cout << "\nIntersect Mismatch\n";
+ std::cout << "hit = " << hit << "\nhit2 = " << hit2;
+ std::cout << "\nisect = " << isect << "\nisect2 = " << isect2;
+ accelerator_->set_trace(true);
+ IntersectAccelerated(ray, isect);
+ }
+ assert(hit == hit2);
+ assert(isect2 == isect);
+ }**/
+if (hit && !isect.mat)
+  isect.mat = material_;
+return hit;
 }
 
 void Trimesh::GenNormals() {
-  normals_.clear();
-  normals_.resize(vertices_.size(), glm::vec3(0.0f));
-  for (uint32_t i = 0; i < faces_.size(); ++i) {
-    glm::vec3 N = GetPatch(i).GetNormal();
-    TrimeshFace f = faces_[i];
-    for (uint32_t j = 0; j < 3; ++j) {
-      normals_[f[j]] += N;
-    }
+normals_.clear();
+normals_.resize(vertices_.size(), glm::vec3(0.0f));
+for (uint32_t i = 0; i < faces_.size(); ++i) {
+  glm::vec3 N = GetPatch(i).GetNormal();
+  TrimeshFace f = faces_[i];
+  for (uint32_t j = 0; j < 3; ++j) {
+    normals_[f[j]] += N;
   }
-  for (uint32_t i = 0; i < normals_.size(); ++i) {
-    normals_[i] = glm::normalize(normals_[i]);
-  }
+}
+for (uint32_t i = 0; i < normals_.size(); ++i) {
+  normals_[i] = glm::normalize(normals_[i]);
+}
 }
 
 BoundingBox Trimesh::GetBounds() {
-  return bounds_;
+return bounds_;
 }
 
 void Trimesh::Print(std::ostream& out) const {
-  out << "[Trimesh, ";
-  out << " v:[";
-  PrintVector(out, vertices_, ",");
-  out << "]\n";
-  out << " n:[";
-  PrintVector(out, normals_, ",");
-  out << "]\n";
-  out << " f:[";
-  PrintVector(out, faces_, ",");
-  out << "]";
+out << "[Trimesh, ";
+out << " v:[";
+PrintVector(out, vertices_, ",");
+out << "]\n";
+out << " n:[";
+PrintVector(out, normals_, ",");
+out << "]\n";
+out << " f:[";
+PrintVector(out, faces_, ",");
+out << "]";
 }
 
 void Trimesh::set_accelerator(Accelerator* accelerator) {
-  accelerator_ = accelerator;
+accelerator_ = accelerator;
 }
 
 Accelerator* const & Trimesh::accelerator() const {
-  return accelerator_;
+return accelerator_;
 }
 } // namespace ray
