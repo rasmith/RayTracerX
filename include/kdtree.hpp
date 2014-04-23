@@ -27,7 +27,7 @@ public:
   }
 protected:
   enum SplitResult {
-    kLeaf = 0, kSplitX, kSplitY, kSplitZ
+    kSplitX = 0, kSplitY, kSplitZ, kLeaf
   };
   enum SplitPolicy {
     kSpatialMedian = 0, kFullSAH = 1
@@ -50,8 +50,10 @@ protected:
 
   void EvaluateSpatialMedian(Node& child, WorkNodeType& child_work,
       float& split_value, SplitResult& split_result) {
-    static uint16_t current_dim = 0;
-
+    uint32_t dim = static_cast<uint32_t>(child.type());
+    dim = (dim + 1) % 3;
+    split_value = child_work.bounds.GetCenter()[dim];
+    split_result = static_cast<SplitResult>(dim);
   }
 
   void EvaluateFullSAH(Node& child, WorkNodeType& child_work,
