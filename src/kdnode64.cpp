@@ -31,7 +31,7 @@ KdNode64::NodeType EncodedKdNode64::GetType() const {
 }
 
 uint32_t EncodedKdNode64::GetOffset() const {
-  uint32_t offset = 0x0;
+  uint32_t offset = (data[0] & 0x0F) << 24;
   uint32_t byte = 0x0;
   for (uint32_t i = 1; i < 4; ++i) {
     byte = static_cast<uint32_t>(data[i]);
@@ -41,16 +41,15 @@ uint32_t EncodedKdNode64::GetOffset() const {
 }
 
 uint32_t EncodedKdNode64::GetSize() const {
-  uint32_t size = 0x0;
-  return size;
+  return (data[0] & 0x10) >> 4;
 }
 
 uint32_t EncodedKdNode64::GetIndex() const {
-  return (data[0] & 0x20)
+  return (data[0] & 0x20) >> 5;
 }
 
 float EncodedKdNode64::GetSplitValue() const {
-  float value;
+  float value = 0.0f;
   float* src = reinterpret_cast<float *>(&data[4]);
   float* dest = &value;
   *dest = *src;
@@ -59,14 +58,20 @@ float EncodedKdNode64::GetSplitValue() const {
 
 void EncodedKdNode64::SetType(KdNode64::NodeType type) {
   u_char mask = static_cast<u_char>(type);
-  mask = (mask << 7) & 0x80;
-  data[0] = (0x7F & data[0]) | mask;
+  mask = (mask << 6) & 0xC0;
+  data[0] = (0x3F & data[0]) | mask;
 }
 
 void EncodedKdNode64::SetIndex(uint32_t index) {
+  u_char mask = static_cast<u_char>(index);
+  mask = (mask << 5) & 0x20;
+  data[0] = (0xDF & data[0]) | mask;
 }
 
 void EncodedKdNode64::SetSize(uint32_t size) {
+  u_char mask = static_cast<u_char>(size);
+  mask = (mask << 4) & 0x10;
+  data[0] = (0xEF & data[0]) | mask;
 }
 
 void EncodedKdNode64::SetOffset(uint32_t offset) {
@@ -77,6 +82,7 @@ void EncodedKdNode64::SetOffset(uint32_t offset) {
     byte = (offset >> shift) & 0x000000FF;
     data[i] = static_cast<u_char>(byte);
   }
+  data[0] = (data[0] & 0xF0) | ((offset & 0x0F000000) >> 24);
 }
 
 void EncodedKdNode64::SetSplitValue(float value) {
@@ -195,6 +201,18 @@ bool KdNode64::IsLeaf() const {
 
 bool KdNode64::IsInternal() const {
   return type_ != kLeaf;
+}
+
+bool KdNode64::IsLeft() const {
+  return index() == 0;
+}
+
+bool KdNode64::IsRight() const {
+  return index() == 1;
+}
+
+uint32_t KdNode64::GetNumChildren() const {
+  return static_cast<uint32_t>(IsInternal()) & (size() + 1);
 }
 
 std::ostream& operator<<(std::ostream& out, const KdNode64&node) {

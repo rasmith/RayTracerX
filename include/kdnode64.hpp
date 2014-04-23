@@ -24,6 +24,9 @@ public:
       uint32_t node_offset, float split_value);
   bool IsLeaf() const;
   bool IsInternal() const;
+  bool IsLeft() const;
+  bool IsRight() const;
+  uint32_t GetNumChildren() const;
   NodeType type() const;
   void set_type(NodeType type);
   uint32_t index() const;
@@ -46,11 +49,12 @@ private:
 
 std::ostream& operator<<(std::ostream& out, const KdNode64& node);
 
-// data[0]: top bit is type
-//      : next two bits indicate split dim
-//      : bottom four bits unused
-// data[1..4]: offset into corresponding array, 32 bits, max size 4,294,967,296
-// data[5..7]: node size, 24 bits, max size 16,777,216, empty nodes not stored
+// data[0]: bits 7-6: type (split_x, split_y, split_z, leaf)
+//      : bit 5: index (left or right)
+//      : bit 4: size (1 or 2 children)
+//      : bits 3-0: offset top bits
+// data[1..3]: offset lower bits (offset has 28 bits)
+// data[4..7]: split value or object count
 struct EncodedKdNode64 {
   u_char data[8];
   EncodedKdNode64();
