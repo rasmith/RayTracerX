@@ -86,6 +86,9 @@ void EncodedKdNode64::SetOffset(uint32_t offset) {
 }
 
 void EncodedKdNode64::SetSplitValue(float value) {
+  float* src = &value;
+  float* dest = reinterpret_cast<float *>(&data[4]);
+  *dest = *src;
 }
 
 std::ostream& operator<<(std::ostream& out, const EncodedKdNode64& node) {
@@ -97,14 +100,19 @@ std::ostream& operator<<(std::ostream& out, const EncodedKdNode64& node) {
   return out;
 }
 
-KdNode64::KdNode64() {
+KdNode64::KdNode64() :
+    type_(kSplitX), index_(0), size_(0), offset_(0), split_value_(0.0f) {
 }
 
-KdNode64::KdNode64(const KdNode64& node) {
+KdNode64::KdNode64(const KdNode64& node) :
+    type_(node.type_), index_(node.index_), size_(node.size_),
+        offset_(node.offset_), split_value_(node.split_value_) {
 }
 
 KdNode64::KdNode64(const KdNode64::NodeType& node_type, uint32_t node_size,
-    uint32_t node_offset, float split_value) {
+    uint32_t node_offset, float split_value) :
+    type_(type), index_(index), size_(size), offset_(offset),
+        split_value_(split_value) {
 }
 
 uint32_t KdNode64::index() const {
@@ -124,14 +132,18 @@ void KdNode64::set_split_value(float value) {
 }
 
 bool KdNode64::operator ==(const KdNode64& node) const {
+  return type_ == node.type_ && index_ == node.index_ && size_ == node.size_
+      && offset_ == node.offset_ && split_value_ && node.split_value_;
 }
 
 KdNode64&KdNode64::operator=(const KdNode64&node) {
   if (this == &node)
     return *this;
   type_ = node.type_;
+  index_ = node.index_;
   size_ = node.size_;
   offset_ = node.offset_;
+  split_value_ = node.split_value_;
   return *this;
 }
 
@@ -141,9 +153,8 @@ KdNodeFactory64::KdNodeFactory64() {
 KdNodeFactory64 & KdNodeFactory64::GetInstance() {
   static KdNodeFactory64 instance;
   static bool is_initialized = false;
-  if (!is_initialized) {
+  if (!is_initialized)
     instance = KdNodeFactory64();
-  }
   return instance;
 }
 
