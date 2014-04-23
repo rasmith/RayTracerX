@@ -22,6 +22,11 @@ public:
           num_leaves_(0), nodes_(), scene_objects_(), bounds_() {
   }
 
+  virtual ~TreeBase() {
+    nodes_.clear();
+    scene_objects_.clear();
+  }
+
   virtual bool Intersect(const Ray& ray, Isect& isect) const {
     return Traverse(GetRoot(), bounds_, ray, isect, 0);
   }
