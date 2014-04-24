@@ -28,18 +28,18 @@ public:
   }
 
   void Build(const ObjectVector& objects) {
-     bounds_ = BoundingBox();
-     scene_objects_.clear();
-     nodes_.clear();
-     BuildTree(objects);
-   }
+    bounds_ = BoundingBox();
+    scene_objects_.clear();
+    nodes_.clear();
+    BuildTree(objects);
+  }
 
-   void Build(const std::vector<SceneObject>& objects) {
-     bounds_ = BoundingBox();
-     scene_objects_.clear();
-     nodes_.clear();
-     BuildTree(objects);
-   }
+  void Build(const std::vector<SceneObject>& objects) {
+    bounds_ = BoundingBox();
+    scene_objects_.clear();
+    nodes_.clear();
+    BuildTree(objects);
+  }
 
   virtual bool Intersect(const Ray& ray, Isect& isect) const {
     return Traverse(GetRoot(), bounds_, ray, isect, 0);
@@ -117,7 +117,6 @@ protected:
   //
   ///////
 
-
   virtual BoundingBox GetChildBounds(const Node& node,
       const BoundingBox& bounds, uint32_t i) const = 0;
   virtual Node GetIthChildOf(const Node& node, uint32_t i) const = 0;
@@ -153,9 +152,9 @@ protected:
   //  that the given ray hit them along with child bounding boxes.
   //
   //////
-    virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
-        const Ray& ray, Node* children, BoundingBox* child_bounds,
-        uint32_t& count) const = 0;
+  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
+      const Ray& ray, float t_near, float t_far, Node* children,
+      BoundingBox* child_bounds, uint32_t& count) const = 0;
 
   //////
   //
@@ -164,7 +163,11 @@ protected:
   //////
 
   virtual Node GetRoot() const {
-    return nodes_[0];
+    return DecodeNode(nodes_[0]);
+  }
+
+  virtual Node GetIthChildOf(const Node& node, uint32_t index) const {
+    return DecodeNode(nodes_[node.offset() + index]);
   }
 
   virtual BoundingBox bounds() const {
@@ -216,7 +219,8 @@ protected:
     Node children[node.size()];
     BoundingBox child_bounds[node.size()];
     uint32_t count = 0;
-    IntersectChildren(node, bounds, ray, &children[0], &child_bounds[0], count);
+    IntersectChildren(node, bounds, ray, t_near, t_far, &children[0],
+        &child_bounds[0], count);
     bool hit = false;
     for (uint32_t i = 0; i < count && !hit; ++i)
       hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);

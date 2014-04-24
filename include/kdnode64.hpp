@@ -29,8 +29,8 @@ public:
   uint32_t GetNumChildren() const;
   NodeType type() const;
   void set_type(NodeType type);
-  uint32_t index() const;
-  void set_index(uint32_t index);
+  uint32_t order() const;
+  void set_order(uint32_t order);
   uint32_t size() const;
   void set_size(uint32_t size);
   uint32_t offset() const;
@@ -41,7 +41,7 @@ public:
   KdNode64& operator=(const KdNode64& node);
 private:
   NodeType type_;
-  uint32_t index_;
+  uint32_t order_;
   uint32_t size_;
   uint32_t offset_;
   float split_value_;
@@ -61,12 +61,12 @@ struct EncodedKdNode64 {
   EncodedKdNode64(const EncodedKdNode64& node);
   EncodedKdNode64& operator=(const EncodedKdNode64& node);
   KdNode64::NodeType GetType() const;
-  uint32_t GetIndex() const;
+  uint32_t GetOrder() const;
   uint32_t GetSize() const;
   uint32_t GetOffset() const;
   float GetSplitValue() const;
   void SetType(KdNode64::NodeType type);
-  void SetIndex(uint32_t index);
+  void SetOrder(uint32_t order);
   void SetSize(uint32_t size);
   void SetOffset(uint32_t offset);
   void SetSplitValue(float value);

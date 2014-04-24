@@ -57,10 +57,6 @@ protected:
     return child_bounds;
   }
 
-  virtual Node GetIthChildOf(const Node& node, uint32_t i) const {
-    return this->nodes_[node.offset() + i];
-  }
-
   void EvaluateSpatialMedian(Node& child, WorkNodeType& child_work,
       float& split_value, SplitResult& split_result) {
     uint32_t dim = static_cast<uint32_t>(child.type());
@@ -83,6 +79,55 @@ protected:
       break;
     default:
       EvaluateSpatialMedian(child, child_work, split_value, split_result);
+    }
+  }
+
+  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
+      const Ray& ray, float t_near, float t_far, Node* children,
+      BoundingBox* child_bounds, uint32_t& count) const {
+    uint32_t dim = static_cast<uint32_t>(node.type());
+    const glm::vec3& origin = ray.origin();
+    const glm::vec3& direction = ray.direction();
+    float split_value = node.split_value();
+    float t_split = (split_value - origin[dim]) / direction[dim];
+    bool has_left, has_right;
+    Node left, right, temp_node;
+    BoundingBox left_bounds, right_bounds, temp_bounds;
+    count = 0;
+    for (int i = 0; i < node.GetNumChildren(); ++i) {
+      temp_node = GetIthChildOf(node, i);
+      temp_bounds = GetChildBounds(node, temp_bounds, temp.order());
+      if (0 == temp.order()) {
+        has_left = true;
+        left = temp_node;
+        left_bounds = temp_bounds;
+      } else {
+        has_right = true;
+        right = temp_node;
+        right_bounds = temp_bounds;
+      }
+    }
+    if (has_left && t_far < t_split) {
+      count = 1;
+      children[0] = left;
+      child_bounds[0] = left_bounds;
+    } else if (has_right && t_split > t_near) {
+      count = 1;
+      children[0] = right;
+      child_bounds[0] = right_bounds;
+    } else {
+      int k = 0;
+      if (has_left) {
+        ++count;
+        children[k] = left;
+        child_bounds[k] = left_bounds;
+        ++k;
+      }
+      if (has_right) {
+        ++count;
+        children[k] = right;
+        child_bounds[k] = right_bounds;
+      }
     }
   }
 
