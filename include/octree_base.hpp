@@ -9,19 +9,10 @@
 #define OCTREE_BASE_HPP_
 #include <stdint.h>
 #include <sys/types.h>
+#include "accelerator.hpp"
 #include "scene.hpp"
 #include "shape.hpp"
 namespace ray {
-class Accelerator: public SceneShape {
-public:
-  virtual ~Accelerator();
-  bool trace() const;
-  void set_trace(bool trace);
-protected:
-  Accelerator();
-  bool trace_;
-};
-
 template<class OctNode, class EncodedNode, class OctNodeFactory,
     int max_leaf_size = 32, int max_depth = 8>
 class OctreeBase: public Accelerator {

@@ -27,6 +27,20 @@ public:
     scene_objects_.clear();
   }
 
+  void Build(const ObjectVector& objects) {
+     bounds_ = BoundingBox();
+     scene_objects_.clear();
+     nodes_.clear();
+     BuildTree(objects);
+   }
+
+   void Build(const std::vector<SceneObject>& objects) {
+     bounds_ = BoundingBox();
+     scene_objects_.clear();
+     nodes_.clear();
+     BuildTree(objects);
+   }
+
   virtual bool Intersect(const Ray& ray, Isect& isect) const {
     return Traverse(GetRoot(), bounds_, ray, isect, 0);
   }
@@ -60,6 +74,10 @@ public:
     }
   }
 
+  virtual const BoundingBox& GetBounds() const {
+    return bounds_;
+  }
+
   uint32_t max_leaf_size() const {
     return max_leaf_size_;
   }
@@ -90,17 +108,60 @@ protected:
   ObjectVector scene_objects_;
   BoundingBox bounds_;
 
-  virtual BoundingBox GetChildBounds(const Node& node,
-      const BoundingBox& bounds, uint32_t index) const = 0;
-  virtual Node GetIthChildOf(const Node& node, uint32_t index) const = 0;
+  ////////
+  //
+  // Pure Virtual Methods
+  //
+  // These methods need to be implemented in order to have a
+  // concrete tree class.
+  //
+  ///////
 
+
+  virtual BoundingBox GetChildBounds(const Node& node,
+      const BoundingBox& bounds, uint32_t i) const = 0;
+  virtual Node GetIthChildOf(const Node& node, uint32_t i) const = 0;
+
+  ////////
+  //
+  // Builder Methods
+  //
+  // The node argument is always the node being built.  The node
+  // will have already been determined to be a root, internal, or
+  // leaf node.  The work object will contain the scene object pointers
+  // that belong to the node to be built.
+  //
+  // BuildRoot should classify the root as a leaf or internal node.
+  // BuildLeaf should at least remove objects from the work node, add these
+  // objects to the scene_objects array, and update num_leaves_
+  // BuildInternal should at least determine how many children are to be created,
+  // add new work to the next_list, and update num_internal_nodes_
+  //
+  // Each method is expected to also update any properties for the node
+  // being built, e.g. if a node has 1 or 2 children, then the number
+  // of children should be set appropriately.
   virtual void BuildRoot(Node& root, WorkNode& work_root) = 0;
   virtual void BuildLeaf(Node& node, WorkNode& work_node) = 0;
   virtual void BuildInternal(Node& node, Node& work_node, WorkList& next_list,
       uint32_t depth) = 0;
 
-  virtual void BuildInternal(Node& node, WorkNode& work_node,
-      WorkList& next_list, uint32_t depth) = 0;
+  ///////
+  //
+  // IntersectChildren
+  //
+  //  Intersect children of given node and return in sorted order
+  //  that the given ray hit them along with child bounding boxes.
+  //
+  //////
+    virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
+        const Ray& ray, Node* children, BoundingBox* child_bounds,
+        uint32_t& count) const = 0;
+
+  //////
+  //
+  // End of Pure Virtual Methods
+  //
+  //////
 
   virtual Node GetRoot() const {
     return nodes_[0];
@@ -165,18 +226,6 @@ protected:
   virtual NodeFactory& GetNodeFactory() const {
     return NodeFactory::GetInstance();
   }
-
-///////
-//
-// IntersectChildren
-//
-//  Intersect children of given node and return in sorted order
-//  that the given ray hit them along with child bounding boxes.
-//
-//////
-  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
-      const Ray& ray, Node* children, BoundingBox* child_bounds,
-      uint32_t& count) const = 0;
 
   virtual void PrintNode(std::ostream& out, const Node& node,
       const BoundingBox& bbox, int depth) const {

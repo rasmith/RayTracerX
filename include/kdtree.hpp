@@ -16,6 +16,9 @@ namespace ray {
 template<class SceneObject, class Node, class EncodedNode, class NodeFactory>
 class Kdtree: public TreeBase<SceneObject, Node, EncodedNode, NodeFactory> {
 public:
+  enum SplitPolicy {
+    kSpatialMedian = 0, kFullSAH = 1
+  };
   typedef std::vector<const SceneObject*> ObjectVector;
 
   Kdtree() :
@@ -25,12 +28,17 @@ public:
 
   virtual ~Kdtree() {
   }
+
+  const SplitPolicy& split_policy() const {
+    return split_policy_;
+  }
+
+  void set_split_policy(const SplitPolicy& policy) {
+    split_policy_ = policy;
+  }
 protected:
   enum SplitResult {
     kSplitX = 0, kSplitY, kSplitZ, kLeaf
-  };
-  enum SplitPolicy {
-    kSpatialMedian = 0, kFullSAH = 1
   };
   typedef TreeBase<SceneObject, Node, EncodedNode, NodeFactory> TreeType;
   typedef typename TreeType::WorkNode WorkNodeType;
@@ -40,12 +48,17 @@ protected:
 
   virtual BoundingBox GetChildBounds(const Node& node,
       const BoundingBox& bounds, uint32_t i) const {
-    BoundingBox child_bounds;
+    BoundingBox child_bounds = bounds;
+    uint32_t dim = static_cast<uint32_t>(node.type());
+    if (i == 0)
+      child_bounds.max()[dim] = node.split_value();
+    else
+      child_bounds.min()[dim] = node.split_value();
     return child_bounds;
   }
 
   virtual Node GetIthChildOf(const Node& node, uint32_t i) const {
-    return nodes_[node.offset() + i];
+    return this->nodes_[node.offset() + i];
   }
 
   void EvaluateSpatialMedian(Node& child, WorkNodeType& child_work,
@@ -56,23 +69,20 @@ protected:
     split_result = static_cast<SplitResult>(dim);
   }
 
-  void EvaluateFullSAH(Node& child, WorkNodeType& child_work,
-      float& split_value, SplitResult& split_result) {
+  void EvaluateFullSAH(Node&, WorkNodeType&, float&, SplitResult&) {
   }
 
   void EvaluateSplit(Node& child, WorkNodeType& child_work, float& split_value,
       SplitResult& split_result) {
     switch (split_policy_) {
     case kSpatialMedian:
-      EvaluateSpatialMedian(child, child_work_nodes[j], split_value,
-          split_result);
+      EvaluateSpatialMedian(child, child_work, split_value, split_result);
       break;
     case kFullSAH:
-      EvaluateFullSAH(child, child_work_nodes[j], split_value, split_result);
+      EvaluateFullSAH(child, child_work, split_value, split_result);
       break;
     default:
-      EvaluateSpatialMedian(child, child_work_nodes[j], split_value,
-          split_result);
+      EvaluateSpatialMedian(child, child_work, split_value, split_result);
     }
   }
 
@@ -87,20 +97,20 @@ protected:
   }
 
   virtual void BuildLeaf(Node& node, WorkNodeType& work_node) {
-    ++num_leaves_;
-    node.set_offset(scene_objects_.size());
+    ++this->num_leaves_;
+    node.set_offset(this->scene_objects_.size());
     node.set_size(work_node.objects.size());
     while (!work_node.objects.empty()) {
-      scene_objects_.push_back(work_node.objects.back());
+      this->scene_objects_.push_back(work_node.objects.back());
       work_node.objects.pop_back();
     }
   }
 
-  virtual void BuildInternal(OctNode& node, WorkNodeType& work_node,
+  virtual void BuildInternal(Node& node, WorkNodeType& work_node,
       WorkListType& next_list, uint32_t depth) {
-    ++num_internal_nodes_;
+    ++this->num_internal_nodes_;
     WorkNodeType child_work_nodes[2]; // process children tentatively
-    node.set_offset(nodes_.size()); // children will have nodes pushed
+    node.set_offset(this->nodes_.size()); // children will have nodes pushed
     for (uint32_t j = 0; j < 2; ++j)
       child_work_nodes[j] = WorkNodeType( // initialize child lists
           this->GetChildBounds(node, work_node.bounds, j));
@@ -120,13 +130,14 @@ protected:
         float split_value;
         SplitResult split_result;
         EvaluateSplit(child, child_work_nodes[j], split_value, split_result);
-        if (kLeaf == split_result)
+        if (count <= this->max_leaf_size_ || depth >= this->max_depth_
+            || kLeaf == split_result)
           child = this->GetNodeFactory().CreateLeaf(j);
         else
           child = this->GetNodeFactory().CreateInternal(j);
-        child_work_nodes[j].node_index = nodes_.size();
+        child_work_nodes[j].node_index = this->nodes_.size();
         next_list.push_back(child_work_nodes[j]);
-        nodes_.push_back(EncodeNode(child));
+        this->nodes_.push_back(EncodeNode(child));
       }
     }
   }
