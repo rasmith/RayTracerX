@@ -94,10 +94,10 @@ protected:
     Node left, right, temp_node;
     BoundingBox left_bounds, right_bounds, temp_bounds;
     count = 0;
-    for (int i = 0; i < node.GetNumChildren(); ++i) {
-      temp_node = GetIthChildOf(node, i);
-      temp_bounds = GetChildBounds(node, temp_bounds, temp.order());
-      if (0 == temp.order()) {
+    for (uint32_t i = 0; i < node.num_children(); ++i) {
+      temp_node = this->GetIthChildOf(node, i);
+      temp_bounds = this->GetChildBounds(node, bounds, temp_node.order());
+      if (0 == temp_node.order()) {
         has_left = true;
         left = temp_node;
         left_bounds = temp_bounds;
@@ -144,7 +144,7 @@ protected:
   virtual void BuildLeaf(Node& node, WorkNodeType& work_node) {
     ++this->num_leaves_;
     node.set_offset(this->scene_objects_.size());
-    node.set_size(work_node.objects.size());
+    node.set_num_objects(work_node.objects.size());
     while (!work_node.objects.empty()) {
       this->scene_objects_.push_back(work_node.objects.back());
       work_node.objects.pop_back();
@@ -169,7 +169,7 @@ protected:
     for (uint32_t j = 0; j < 2; ++j) {
       // If a child has a non-empty object list, process it.
       if (child_work_nodes[j].objects.size() > 0) {
-        node.set_size(node.size() + 1); // update parent size
+        node.set_num_children(node.num_children() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         Node child;
         float split_value;
@@ -182,7 +182,7 @@ protected:
           child = this->GetNodeFactory().CreateInternal(j);
         child_work_nodes[j].node_index = this->nodes_.size();
         next_list.push_back(child_work_nodes[j]);
-        this->nodes_.push_back(EncodeNode(child));
+        this->nodes_.push_back(this->EncodeNode(child));
       }
     }
   }

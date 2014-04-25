@@ -11,10 +11,10 @@
 namespace ray {
 template<class SceneObject>
 class Kdtree64: public Kdtree<SceneObject, KdNode64, EncodedKdNode64,
-    KdNodeFactory64> {
+    KdNode64Factory> {
 public:
   Kdtree64() :
-      Kdtree<SceneObject, KdNode64, EncodedKdNode64, KdNodeFactory64>::Kdtree() {
+      Kdtree<SceneObject, KdNode64, EncodedKdNode64, KdNode64Factory>::Kdtree() {
   }
   virtual ~Kdtree64() {
   }

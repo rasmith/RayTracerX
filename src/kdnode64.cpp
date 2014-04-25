@@ -30,6 +30,22 @@ KdNode64::NodeType EncodedKdNode64::GetType() const {
   return static_cast<KdNode64::NodeType>((data[0] & 0xC0) >> 6);
 }
 
+uint32_t EncodedKdNode64::GetOrder() const {
+  return (data[0] & 0x20) >> 5;
+}
+
+uint32_t EncodedKdNode64::GetNumChildren() const {
+  return (data[0] & 0x10) >> 4;
+}
+
+uint32_t EncodedKdNode64::GetNumObjects() const {
+  uint32_t num_objects = 0;
+  const uint32_t* src = reinterpret_cast<const uint32_t *>(&data[4]);
+  uint32_t* dest = &num_objects;
+  *dest = *src;
+  return num_objects;
+}
+
 uint32_t EncodedKdNode64::GetOffset() const {
   uint32_t offset = (data[0] & 0x0F) << 24;
   uint32_t byte = 0x0;
@@ -40,17 +56,9 @@ uint32_t EncodedKdNode64::GetOffset() const {
   return offset;
 }
 
-uint32_t EncodedKdNode64::GetSize() const {
-  return (data[0] & 0x10) >> 4;
-}
-
-uint32_t EncodedKdNode64::GetOrder() const {
-  return (data[0] & 0x20) >> 5;
-}
-
 float EncodedKdNode64::GetSplitValue() const {
   float value = 0.0f;
-  float* src = reinterpret_cast<float *>(&data[4]);
+  const float* src = reinterpret_cast<const float *>(&data[4]);
   float* dest = &value;
   *dest = *src;
   return value;
@@ -68,10 +76,16 @@ void EncodedKdNode64::SetOrder(uint32_t order) {
   data[0] = (0xDF & data[0]) | mask;
 }
 
-void EncodedKdNode64::SetSize(uint32_t size) {
-  u_char mask = static_cast<u_char>(size);
+void EncodedKdNode64::SetNumChildren(uint32_t num_children) {
+  u_char mask = static_cast<u_char>(num_children);
   mask = (mask << 4) & 0x10;
   data[0] = (0xEF & data[0]) | mask;
+}
+
+void EncodedKdNode64::SetNumObjects(uint32_t num_objects) {
+  uint32_t* src = &num_objects;
+  uint32_t* dest = reinterpret_cast<uint32_t *>(&data[4]);
+  *dest = *src;
 }
 
 void EncodedKdNode64::SetOffset(uint32_t offset) {
@@ -101,109 +115,25 @@ std::ostream& operator<<(std::ostream& out, const EncodedKdNode64& node) {
 }
 
 KdNode64::KdNode64() :
-    type_(kSplitX), order_(0), size_(0), offset_(0), split_value_(0.0f) {
+    type_(kSplitX), order_(0), num_children_(0), num_objects_(0), offset_(0),
+        split_value_(0.0f) {
 }
 
 KdNode64::KdNode64(const KdNode64& node) :
-    type_(node.type_), order_(node.order_), size_(node.size_),
-        offset_(node.offset_), split_value_(node.split_value_) {
+    type_(node.type_), order_(node.order_), num_children_(node.num_children_),
+        num_objects_(node.num_objects_), offset_(node.offset_),
+        split_value_(node.split_value_) {
 }
 
-KdNode64::KdNode64(const KdNode64::NodeType& node_type, uint32_t node_size,
-    uint32_t node_offset, float split_value) :
-    type_(type), order_(order), size_(size), offset_(offset),
-        split_value_(split_value) {
+KdNode64::KdNode64(const KdNode64::NodeType& type, uint32_t order,
+    uint32_t num_children, uint32_t offset, float split_value) :
+    type_(type), order_(order), num_children_(num_children), num_objects_(0),
+        offset_(offset), split_value_(split_value) {
 }
 
-uint32_t KdNode64::order() const {
-  return order_;
-}
-
-void KdNode64::set_order(uint32_t order) {
-  order_ = order;
-}
-
-float KdNode64::split_value() const {
-  return split_value_;
-}
-
-void KdNode64::set_split_value(float value) {
-  split_value_ = value;
-}
-
-bool KdNode64::operator ==(const KdNode64& node) const {
-  return type_ == node.type_ && order_ == node.order_ && size_ == node.size_
-      && offset_ == node.offset_ && split_value_ && node.split_value_;
-}
-
-KdNode64&KdNode64::operator=(const KdNode64&node) {
-  if (this == &node)
-    return *this;
-  type_ = node.type_;
-  order_ = node.order_;
-  size_ = node.size_;
-  offset_ = node.offset_;
-  split_value_ = node.split_value_;
-  return *this;
-}
-
-KdNodeFactory64::KdNodeFactory64() {
-}
-
-KdNodeFactory64 & KdNodeFactory64::GetInstance() {
-  static KdNodeFactory64 instance;
-  static bool is_initialized = false;
-  if (!is_initialized)
-    instance = KdNodeFactory64();
-  return instance;
-}
-
-KdNode64 KdNodeFactory64::CreateOctNode(const EncodedKdNode64& encoded) const {
-  KdNode64 node;
-  node.set_size(encoded.GetSize());
-  node.set_type(encoded.GetType());
-  node.set_offset(encoded.GetOffset());
-  return node;
-}
-
-KdNode64 KdNodeFactory64::CreateLeaf(uint32_t octant) const {
-  return KdNode64(KdNode64::kLeaf, octant, 0, 0);
-}
-
-KdNode64 KdNodeFactory64::CreateInternal(uint32_t order) const {
-  return KdNode64(KdNode64::kSplitX, order, 0, 0);
-}
-
-EncodedKdNode64 KdNodeFactory64::CreateEncodedNode(const KdNode64& node) const {
-  EncodedKdNode64 encoded;
-  encoded.SetType(node.type());
-  encoded.SetOffset(node.offset());
-  encoded.SetSize(node.size());
-  return encoded;
-}
-
-uint32_t KdNode64::offset() const {
-  return offset_;
-}
-
-void KdNode64::set_offset(uint32_t offset) {
-  offset_ = offset;
-}
-
-uint32_t KdNode64::size() const {
-  return size_;
-}
-
-void KdNode64::set_size(uint32_t size) {
-  size_ = size;
-}
-
-KdNode64::NodeType KdNode64::type() const {
-  return type_;
-}
-
-void KdNode64::set_type(NodeType type) {
-  type_ = type;
+KdNode64::KdNode64(uint32_t order, uint32_t num_objects, uint32_t offset) :
+    type_(KdNode64::kLeaf), order_(order), num_children_(0),
+        num_objects_(num_objects), offset_(offset), split_value_(0.0f) {
 }
 
 bool KdNode64::IsLeaf() const {
@@ -222,12 +152,128 @@ bool KdNode64::IsRight() const {
   return order() == 1;
 }
 
-uint32_t KdNode64::GetNumChildren() const {
-  return static_cast<uint32_t>(IsInternal()) & (size() + 1);
+uint32_t KdNode64::num_children() const {
+  return num_children_;
 }
 
-std::ostream& operator<<(std::ostream& out, const KdNode64&node) {
+void KdNode64::set_num_children(uint32_t num_children) {
+  num_children_ = num_children;
+}
+
+uint32_t KdNode64::num_objects() const {
+  return num_objects_;
+}
+
+void KdNode64::set_num_objects(uint32_t num_objects) {
+  num_objects_ = num_objects;
+}
+
+KdNode64::NodeType KdNode64::type() const {
+  return type_;
+}
+
+void KdNode64::set_type(NodeType type) {
+  type_ = type;
+}
+
+uint32_t KdNode64::order() const {
+  return order_;
+}
+
+void KdNode64::set_order(uint32_t order) {
+  order_ = order;
+}
+
+uint32_t KdNode64::offset() const {
+  return offset_;
+}
+
+void KdNode64::set_offset(uint32_t offset) {
+  offset_ = offset;
+}
+
+float KdNode64::split_value() const {
+  return split_value_;
+}
+
+void KdNode64::set_split_value(float value) {
+  split_value_ = value;
+}
+
+bool KdNode64::operator ==(const KdNode64& node) const {
+  return type_ == node.type_ && order_ == node.order_
+      && num_children_ == node.num_children_
+      && num_objects_ == node.num_objects_ && offset_ == node.offset_
+      && split_value_ && node.split_value_;
+}
+
+KdNode64&KdNode64::operator=(const KdNode64&node) {
+  if (this == &node)
+    return *this;
+  type_ = node.type_;
+  order_ = node.order_;
+  num_objects_ = node.num_objects_;
+  num_children_ = node.num_children_;
+  offset_ = node.offset_;
+  split_value_ = node.split_value_;
+  return *this;
+}
+
+std::ostream& operator<<(std::ostream& out, const KdNode64& node) {
+  char char_type[4] = { 'X', 'Y', 'Z', 'L' };
+  out << char_type[static_cast<uint32_t>(node.type())] << ":";
+  out << "[" << node.order() << "] #";
+  if (node.IsLeaf())
+    out << node.num_objects();
+  else
+    out << node.num_children();
+  out << " @" << node.offset();
+  if (node.IsInternal())
+    out << " " << node.split_value();
   return out;
+}
+
+KdNode64Factory::KdNode64Factory() {
+}
+
+KdNode64Factory & KdNode64Factory::GetInstance() {
+  static KdNode64Factory instance;
+  static bool is_initialized = false;
+  if (!is_initialized)
+    instance = KdNode64Factory();
+  return instance;
+}
+
+KdNode64 KdNode64Factory::CreateNode(const EncodedKdNode64& encoded) const {
+  KdNode64 node;
+  node.set_type(encoded.GetType());
+  node.set_order(encoded.GetOrder());
+  node.set_num_objects(encoded.GetNumObjects());
+  node.set_num_children(encoded.GetNumChildren() + 1);
+  node.set_offset(encoded.GetOffset());
+  node.set_split_value(encoded.GetSplitValue());
+  return node;
+}
+
+KdNode64 KdNode64Factory::CreateLeaf(uint32_t order) const {
+  return KdNode64(order, 0, 0);
+}
+
+KdNode64 KdNode64Factory::CreateInternal(uint32_t order) const {
+  return KdNode64(KdNode64::kSplitX, order, 0, 0, 0.0f);
+}
+
+EncodedKdNode64 KdNode64Factory::CreateEncodedNode(const KdNode64& node) const {
+  EncodedKdNode64 encoded;
+  encoded.SetType(node.type());
+  encoded.SetOrder(node.order());
+  encoded.SetNumChildren(node.num_children() - 1);
+  encoded.SetOffset(node.offset());
+  if (node.IsLeaf())
+    encoded.SetNumObjects(node.num_objects());
+  else
+    encoded.SetSplitValue(node.split_value());
+  return encoded;
 }
 } // namespace ray
 

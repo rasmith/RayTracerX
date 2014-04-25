@@ -62,12 +62,12 @@ public:
       nodes.pop_back();
       bounds.pop_back();
       depths.pop_back();
-      Node(out, node, bbox, depth);
+      PrintNode(out, node, bbox, depth);
       if (node.IsInternal()) {
-        for (uint32_t i = 0; i < node.size(); ++i) {
+        for (uint32_t i = 0; i < node.num_children(); ++i) {
           Node child = GetIthChildOf(node, i);
           nodes.push_back(child);
-          bounds.push_back(GetChildBounds(node, bbox, child.index()));
+          bounds.push_back(GetChildBounds(node, bbox, child.order()));
           depths.push_back(depth + 1);
         }
       }
@@ -116,10 +116,8 @@ protected:
   // concrete tree class.
   //
   ///////
-
   virtual BoundingBox GetChildBounds(const Node& node,
       const BoundingBox& bounds, uint32_t i) const = 0;
-  virtual Node GetIthChildOf(const Node& node, uint32_t i) const = 0;
 
   ////////
   //
@@ -139,10 +137,12 @@ protected:
   // Each method is expected to also update any properties for the node
   // being built, e.g. if a node has 1 or 2 children, then the number
   // of children should be set appropriately.
+  //
+  //////
   virtual void BuildRoot(Node& root, WorkNode& work_root) = 0;
   virtual void BuildLeaf(Node& node, WorkNode& work_node) = 0;
-  virtual void BuildInternal(Node& node, Node& work_node, WorkList& next_list,
-      uint32_t depth) = 0;
+  virtual void BuildInternal(Node& node, WorkNode& work_node,
+      WorkList& next_list, uint32_t depth) = 0;
 
   ///////
   //
@@ -175,7 +175,7 @@ protected:
   }
 
   Node DecodeNode(const EncodedNode& encoded) const {
-    return this->GetNodeFactory().CreateOctNode(encoded);
+    return this->GetNodeFactory().CreateNode(encoded);
   }
 
   EncodedNode EncodeNode(const Node& node) const {
@@ -197,7 +197,7 @@ protected:
     Isect best;
     best.t_hit = std::numeric_limits<float>::max();
     const SceneObject* const * objects = &scene_objects_[leaf.offset()];
-    for (uint32_t i = 0; i < leaf.size(); ++i)
+    for (uint32_t i = 0; i < leaf.num_objects(); ++i)
       if (objects[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
         best = current;
         hit = true;
@@ -216,14 +216,16 @@ protected:
       return false;
     if (node.IsLeaf()) // is this a leaf?
       return IntersectLeaf(node, ray, isect);
-    Node children[node.size()];
-    BoundingBox child_bounds[node.size()];
+    Node* children = new Node[node.num_children()];
+    BoundingBox* child_bounds = new BoundingBox[node.num_children()];
     uint32_t count = 0;
     IntersectChildren(node, bounds, ray, t_near, t_far, &children[0],
         &child_bounds[0], count);
     bool hit = false;
     for (uint32_t i = 0; i < count && !hit; ++i)
       hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);
+    delete [] children;
+    delete [] child_bounds;
     return hit;
   }
 
@@ -260,7 +262,7 @@ protected:
         ++num_leaves;
       } else {
         BuildInternal(node, work_node, next_list, depth);
-        UpdateMeanVar(node.size(), ++num_internal, mean_children,
+        UpdateMeanVar(node.num_children(), ++num_internal, mean_children,
             variance_children);
       }
       nodes_[work_node.node_index] = EncodeNode(node);
