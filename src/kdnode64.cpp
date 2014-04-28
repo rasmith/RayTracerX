@@ -176,6 +176,10 @@ void KdNode64::set_type(NodeType type) {
   type_ = type;
 }
 
+void KdNode64::set_type(uint32_t type) {
+  type_ = static_cast<NodeType>(type);
+}
+
 uint32_t KdNode64::order() const {
   return order_;
 }

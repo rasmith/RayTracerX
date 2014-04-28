@@ -33,6 +33,7 @@ public:
   void set_num_objects(uint32_t num_objects);
   NodeType type() const;
   void set_type(NodeType type);
+  void set_type(uint32_t type);
   uint32_t order() const;
   void set_order(uint32_t order);
   uint32_t offset() const;

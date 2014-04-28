@@ -82,8 +82,16 @@ public:
     return max_leaf_size_;
   }
 
+  void set_max_leaf_size(uint32_t max_leaf_size) {
+    max_leaf_size_ = max_leaf_size;
+  }
+
   uint32_t max_depth() const {
     return max_depth_;
+  }
+
+  void set_max_depth(uint32_t max_depth) {
+    max_depth_ = max_depth;
   }
 protected:
   struct WorkNode {
@@ -224,8 +232,8 @@ protected:
     bool hit = false;
     for (uint32_t i = 0; i < count && !hit; ++i)
       hit = Traverse(children[i], child_bounds[i], ray, isect, depth + 1);
-    delete [] children;
-    delete [] child_bounds;
+    delete[] children;
+    delete[] child_bounds;
     return hit;
   }
 

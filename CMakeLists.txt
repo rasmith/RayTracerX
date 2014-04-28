@@ -3,7 +3,7 @@ project(Ray)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wall -Wextra -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Werror")
 site_name(BUILD_SITE_NAME)
 set(UTCS_SITE_NAME "shadow.csres.utexas.edu")
 message(STATUS "site_name = ${BUILD_SITE_NAME}")
