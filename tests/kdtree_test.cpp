@@ -37,11 +37,11 @@ bool use_timing = true;
 bool display_progress = true;
 bool display_stats = false;
 bool use_accelerator = true;
-bool print_tree = true;
+bool print_tree = false;
 int num_timings = 1;
 int image_width = 1024;
 int image_height = 1024;
-int max_depth = 1;
+int max_depth = 20;
 int max_leaf_size = 32;
 glm::vec3 background_color(0.5f, 0.0f, 0.5f);
 TestKdtree::SplitPolicy policy = TestKdtree::kSpatialMedian;
@@ -246,38 +246,38 @@ TEST(RayTracerTest, SphereMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
-/**
- TEST(RayTracerTest, BunnyMeshTest) {
- std::string path = "../assets/bunny.ply";
- std::string output = "bunny_kdtree.jpg";
 
- glm::vec3 eye = glm::vec3(-0.0168008f, 0.110153f, 0.225f);
- glm::vec3 at = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
- glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+TEST(RayTracerTest, BunnyMeshTest) {
+  std::string path = "../assets/bunny.ply";
+  std::string output = "bunny_kdtree.jpg";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye = glm::vec3(-0.0168008f, 0.110153f, 0.225f);
+  glm::vec3 at = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
- }
- **/
-/**
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  lights[1].type = Light::kDirectional;
+
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
+}
+
+
  TEST(RayTracerTest, DragonMeshTest) {
  std::string path = "../assets/dragon.ply";
  std::string output = "dragon_kdtree.jpg";
@@ -367,7 +367,7 @@ TEST(RayTracerTest, SphereMeshTest) {
 
  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
  }
-
+/**
  TEST(RayTracerTest, SponzaMeshTest) {
  std::string path = "../assets/sponza.obj";
  std::string output = "sponza.jpg";

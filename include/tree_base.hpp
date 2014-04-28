@@ -215,8 +215,8 @@ protected:
     return hit;
   }
 
-  bool Traverse(const Node& node, const BoundingBox& bounds, const Ray& ray,
-      Isect& isect, uint32_t depth) const {
+  virtual bool Traverse(const Node& node, const BoundingBox& bounds,
+      const Ray& ray, Isect& isect, uint32_t depth) const {
     if (depth > max_depth_) // check depth first
       return false;
     float t_near, t_far;

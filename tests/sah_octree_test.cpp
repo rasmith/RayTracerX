@@ -40,7 +40,7 @@ bool display_progress = false;
 bool display_stats = false;
 bool use_accelerator = true;
 bool print_tree = false;
-int num_timings = 10;
+int num_timings = 1;
 int image_width = 1024;
 int image_height = 1024;
 glm::vec3 background_color(0.5f, 0.0f, 0.5f);
