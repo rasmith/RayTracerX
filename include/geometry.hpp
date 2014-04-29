@@ -21,11 +21,11 @@ public:
     bool Intersect(const Ray& ray, Isect& isect) const;
     BoundingBox GetBounds() const;
     glm::vec3 GetNormal() const;
+    virtual void Print(std::ostream& out) const;
 private:
     static const float kEpsilon;
     glm::vec3 vertices_[3];
 };
-
 class Sphere: public Shape {
 public:
     Sphere();

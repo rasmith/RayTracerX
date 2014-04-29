@@ -120,8 +120,8 @@ protected:
     return num_leaves_;
   }
 
-  virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
-      Isect& isect) const {
+  virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray, float t_near,
+      float t_far, Isect& isect) const {
     //std::cout << "IntersectLeaf: leaf = " << leaf << "\n";
     bool hit = false;
     Isect current;
@@ -129,7 +129,8 @@ protected:
     best.t_hit = std::numeric_limits<float>::max();
     const SceneObject* const * objects = &scene_objects_[leaf.offset()];
     for (uint32_t i = 0; i < leaf.size(); ++i)
-      if (objects[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
+      if (objects[i]->Intersect(ray, current) && current.t_hit >= t_near
+          && current.t_hit <= t_far && current.t_hit < best.t_hit) {
         best = current;
         hit = true;
       }

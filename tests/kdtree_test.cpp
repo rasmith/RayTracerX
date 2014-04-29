@@ -41,8 +41,8 @@ bool print_tree = false;
 int num_timings = 1;
 int image_width = 1024;
 int image_height = 1024;
-int max_depth = 20;
-int max_leaf_size = 32;
+int max_depth = 25;
+int max_leaf_size = 8;
 glm::vec3 background_color(0.5f, 0.0f, 0.5f);
 TestKdtree::SplitPolicy policy = TestKdtree::kSpatialMedian;
 
@@ -216,7 +216,6 @@ TEST(KdtreeTest, LeafNodeEncodeTest) {
     EXPECT_EQ(leaf_node.offset(), test_node.offset());
   }
 }
-
 /**
 TEST(RayTracerTest, SphereMeshTest) {
   std::string path = "../assets/sphere.obj";
@@ -367,7 +366,6 @@ TEST(RayTracerTest, TurbineMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
-**/
 
 TEST(RayTracerTest, SponzaMeshTest) {
   std::string path = "../assets/sponza.obj";
@@ -431,39 +429,42 @@ TEST(RayTracerTest, CathedralMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
+**/
+TEST(RayTracerTest, ConferenceMeshTest) {
+  std::string path = "../assets/conference.obj";
+  std::string output = "conference_kdtree.jpg";
 
-/**
- TEST(RayTracerTest, SanMiguelMeshTest) {
- std::string path = "../assets/san_miguel.obj";
- std::string output = "san_miguel.jpg";
+  bool auto_camera = false;
+  glm::vec3 eye, at, up;
+  //eye = (15.4116,-0.033123,4.59248)
+  //center = (15.4275,10.9299,2.70166)
+  //up = (-0.00828234,0.169968,0.985415)
+  eye = glm::vec3(15.4116f, -0.033123f, 4.59248f);
+  at = glm::vec3(15.4275f, 10.9299f, 2.70166f);
+  up = glm::vec3(-0.00828234f, 0.169968f, 0.985415f);
 
- glm::vec3 eye, at, up;
- eye = glm::vec3(22.4022f, 1.58558f, 13.3874f);
- at = glm::vec3(15.0403f, 1.58558f, 8.88182f);
- up = glm::vec3(0.0f, 1.0f, 0.0f);
- bool auto_camera = false;
+  int num_lights = 2;
+  Light lights[2];
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(eye, glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
- lights[1].type = Light::kDirectional;
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+}
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
- }
 TEST(RayTracerTest, FairyForestMeshTest) {
   std::string path = "../assets/fairy_forest.obj";
   std::string output = "fairy_forest_kdtree.jpg";
@@ -495,16 +496,16 @@ TEST(RayTracerTest, FairyForestMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
-**/
-TEST(RayTracerTest, ConferenceMeshTest) {
-  std::string path = "../assets/conference.obj";
-  std::string output = "conference_kdtree.jpg";
 
-  bool auto_camera = false;
+TEST(RayTracerTest, SanMiguelMeshTest) {
+  std::string path = "../assets/san_miguel.obj";
+  std::string output = "san_miguel.jpg";
+
   glm::vec3 eye, at, up;
-  eye = glm::vec3(13.6994f, 0.196731f, 7.99243f);
-  at = glm::vec3(13.6938f, 11.23f, 4.44847f);
-  up = glm::vec3(0.00151883f, 0.305818f, 0.952089f);
+  eye = glm::vec3(22.4022f, 1.58558f, 13.3874f);
+  at = glm::vec3(15.0403f, 1.58558f, 8.88182f);
+  up = glm::vec3(0.0f, 1.0f, 0.0f);
+  bool auto_camera = false;
 
   int num_lights = 2;
   Light lights[2];

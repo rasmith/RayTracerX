@@ -28,6 +28,7 @@ public:
   const Trimesh* mesh() const;
   void set_mesh(Trimesh* mesh);
   const int* vertices() const;
+  virtual void Print(std::ostream& out) const;
 private:
   Trimesh* mesh_;
   int vertices_[3];

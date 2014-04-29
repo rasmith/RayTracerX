@@ -7,6 +7,7 @@
 
 #ifndef TREE_BASE_HPP_
 #define TREE_BASE_HPP_
+#include <iomanip>
 #include <stdint.h>
 #include <sys/types.h>
 #include "scene.hpp"
@@ -198,18 +199,27 @@ protected:
     return num_leaves_;
   }
 
-  virtual bool IntersectLeaf(const Node& leaf, const Ray& ray,
-      Isect& isect) const {
+  virtual bool IntersectLeaf(const Node& leaf, const Ray& ray, float t_near,
+      float t_far, Isect& isect) const {
     bool hit = false;
     Isect current;
     Isect best;
     best.t_hit = std::numeric_limits<float>::max();
+    if (this->trace_)
+      std::cout << "IntersectLeaf";
     const SceneObject* const * objects = &scene_objects_[leaf.offset()];
-    for (uint32_t i = 0; i < leaf.num_objects(); ++i)
-      if (objects[i]->Intersect(ray, current) && current.t_hit < best.t_hit) {
+    for (uint32_t i = 0; i < leaf.num_objects(); ++i) {
+      bool obj_hit = objects[i]->Intersect(ray, current);
+      if (obj_hit && this->trace_)
+        std::cout << std::setprecision(9) << current.t_hit << " ";
+      if (obj_hit && current.t_hit > t_near && current.t_hit < t_far
+          && current.t_hit < best.t_hit) {
         best = current;
         hit = true;
       }
+    }
+    if (this->trace_)
+      std::cout << std::endl;
     if (hit)
       isect = best;
     return hit;
@@ -223,10 +233,12 @@ protected:
     if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
       return false;
     if (node.IsLeaf()) // is this a leaf?
-      return IntersectLeaf(node, ray, isect);
+      return IntersectLeaf(node, ray, t_near, t_far, isect);
     Node* children = new Node[node.num_children()];
     BoundingBox* child_bounds = new BoundingBox[node.num_children()];
     uint32_t count = 0;
+    if (trace_ && depth == 0)
+      std::cout << ray << std::endl;
     IntersectChildren(node, bounds, ray, t_near, t_far, &children[0],
         &child_bounds[0], count);
     bool hit = false;

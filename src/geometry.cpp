@@ -94,6 +94,10 @@ BoundingBox Triangle::GetBounds() const {
   return BoundingBox(min, max);
 }
 
+void Triangle::Print(std::ostream& out) const {
+  out << "Tri:" << vertices_[0] << " " << vertices_[1] << " " << vertices_[2];
+}
+
 Sphere::Sphere() :
     center_(glm::vec3(0.0f)), radius_(0.0f) {
 }

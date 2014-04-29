@@ -89,7 +89,7 @@ protected:
     }
   }
 
-  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
+  virtual void IntersectChildren2(const Node& node, const BoundingBox& bounds,
       const Ray& ray, float t_near, float t_far, Node* children,
       BoundingBox* child_bounds, uint32_t& count) const {
     uint32_t dim = static_cast<uint32_t>(node.type());
@@ -194,7 +194,7 @@ protected:
     }
   };
 
-  virtual void IntersectChildren2(const Node& node, const BoundingBox& bounds,
+  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
       const Ray& ray, float, float, Node* children, BoundingBox* child_bounds,
       uint32_t& count) const {
     float t_near;
@@ -208,9 +208,9 @@ protected:
       if (child_bounds[count].Intersect(ray, t_near, t_far)) {
         h[count] = SortHolder(t_near, t_far, children[count],
             child_bounds[count]);
-        if (this->trace_)
-          std::cout << "i = " << i << " t_near = " << t_near << " t_far = "
-              << t_far << " child = " << children[count] << "\n";
+       // if (this->trace_)
+       //   std::cout << "i = " << i << " t_near = " << t_near << " t_far = "
+       //       << t_far << " child = " << children[count] << "\n";
         ++count;
       }
     }

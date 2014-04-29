@@ -17,10 +17,13 @@ class SceneShape: public Shape {
 public:
   Material* const & material() const;
   void set_material(Material* const & material);
+  bool trace() const;
+  void set_trace(bool trace);
 protected:
   SceneShape();
   SceneShape(Material* const & material);
   Material* material_;
+  bool trace_;
 };
 class MaterialShape: public SceneShape {
 public:
@@ -46,11 +49,14 @@ public:
   MaterialList& material_list();
   const std::vector<SceneShape*>& scene_objects() const;
   bool Intersect(const Ray& ray, Isect& isect);
+  bool trace() const;
+  void set_trace(bool trace);
 private:
   std::vector<Camera> cameras_;
   std::vector<Light> lights_;
   std::vector<SceneShape*> scene_shapes_;
   MaterialList material_list_;
+  bool trace_;
 };
 std::ostream& operator<<(std::ostream& out, const Scene& scene);
 } // namespace ray

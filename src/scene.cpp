@@ -14,11 +14,11 @@
 namespace ray {
 
 SceneShape::SceneShape() :
-    material_(NULL) {
+    material_(NULL), trace_(false) {
 }
 
 SceneShape::SceneShape(Material* const & material) :
-    material_(material) {
+    material_(material), trace_(false) {
 }
 
 Material* const & SceneShape::material() const {
@@ -31,6 +31,14 @@ void SceneShape::set_material(Material* const & material) {
 
 Shape* const & MaterialShape::shape() const {
   return shape_;
+}
+
+bool SceneShape::trace() const {
+  return trace_;
+}
+
+void SceneShape::set_trace(bool trace) {
+  trace_ = trace;
 }
 
 MaterialShape::MaterialShape() :
@@ -54,7 +62,7 @@ void MaterialShape::Print(std::ostream& out) const {
 }
 
 Scene::Scene() :
-    cameras_(), lights_(), scene_shapes_(), material_list_() {
+    cameras_(), lights_(), scene_shapes_(), material_list_(), trace_(false) {
 }
 
 void Scene::AddCamera(const Camera& camera) {
@@ -98,6 +106,7 @@ bool Scene::Intersect(const Ray& ray, Isect& isect) {
   Isect best;
   best.t_hit = std::numeric_limits<float>::max();
   for (uint32_t i = 0; i < scene_shapes_.size(); ++i) {
+    scene_shapes_[i]->set_trace(trace_);
     if (scene_shapes_[i]->Intersect(ray, current)
         && current.t_hit < best.t_hit) {
       best = current;
@@ -109,6 +118,14 @@ bool Scene::Intersect(const Ray& ray, Isect& isect) {
   if (hit)
     isect = best;
   return hit;
+}
+
+bool Scene::trace() const {
+  return trace_;
+}
+
+void Scene::set_trace(bool trace) {
+  trace_ = trace;
 }
 
 std::ostream& operator<<(std::ostream& out, const Scene& scene) {

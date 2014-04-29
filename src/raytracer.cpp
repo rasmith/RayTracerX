@@ -103,7 +103,6 @@ glm::vec3 RayTracer::TraceRay(int pixel_x, int pixel_y) const {
   float x = pixel_x;
   float y = pixel_y;
   Ray ray = camera_->GenerateRay(x, y);
-  //if(x == 535 && y == 512)  std::cout << "ray = " << ray <<std::endl;
   return TraceRay(ray);
 }
 

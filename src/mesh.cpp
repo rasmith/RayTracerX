@@ -66,6 +66,10 @@ const int* TrimeshFace::vertices() const {
   return vertices_;
 }
 
+void TrimeshFace::Print(std::ostream& out) const {
+  out << "TrimeshFace:" << mesh_->GetPatch(*this);
+}
+
 Trimesh::Trimesh() :
     SceneShape(), vertices_(), normals_(), tex_coords_(), faces_(), bounds_(),
         accelerator_(NULL) {
@@ -129,17 +133,8 @@ glm::vec3 Trimesh::InterpolateNormal(int i, const glm::vec3& bary) const {
 }
 
 bool Trimesh::IntersectAccelerated(const Ray& ray, Isect& isect) const {
-  // [Ray o = [-13.7738,1.08912,1.7613], d = [0.987114,0.0204824,-0.158701]]
-  Ray test(glm::vec3(-13.7738f, 1.08912f, 1.7613f),
-      glm::vec3(0.987114f, 0.0204824f, -0.158701f));
-  bool eq = glm::length(test.origin() - ray.origin()) < 1e-5
-      && glm::length(test.direction() - ray.direction()) < 1e-5;
-  if (eq)
-    accelerator_->set_trace(true);
-  bool hit = accelerator_->Intersect(ray, isect);
-  if (eq)
-    accelerator_->set_trace(false);
-  return hit;
+  accelerator_->set_trace(trace_);
+  return accelerator_->Intersect(ray, isect);
 }
 
 bool Trimesh::IntersectUnaccelerated(const Ray& ray, Isect& isect) const {
@@ -159,9 +154,18 @@ bool Trimesh::IntersectUnaccelerated(const Ray& ray, Isect& isect) const {
 
 bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
   bool hit = false;
-  if (accelerator_)
+  if (accelerator_) {
+    if (trace_) {
+      std::cout << "Trimesh::Intersect ";
+      hit = IntersectUnaccelerated(ray, isect);
+      std::cout << " t_hit = " << isect.t_hit << " obj =" << *isect.obj
+          << std::endl;
+    }
     hit = IntersectAccelerated(ray, isect);
-  else
+    if(trace_)
+    std::cout << " t_hit = " << isect.t_hit << " obj =" << *isect.obj
+              << std::endl;
+  } else
     hit = IntersectUnaccelerated(ray, isect);
   /**if (accelerator_) {
    Isect isect2;

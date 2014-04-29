@@ -65,8 +65,8 @@ public:
     return max_depth;
   }
 protected:
-  virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray,
-      Isect& isect) const = 0;
+  virtual bool IntersectLeaf(const OctNode& leaf, const Ray& ray, float t_near,
+      float t_far, Isect& isect) const = 0;
 
   OctreeBase() :
       Accelerator() {
@@ -80,7 +80,7 @@ protected:
     if (!bounds.Intersect(ray, t_near, t_far)) // check bounds next
       return false;
     if (node.IsLeaf()) { // is this a leaf?
-      bool hit = IntersectLeaf(node, ray, isect);
+      bool hit = IntersectLeaf(node, ray, t_near, t_far, isect);
       return hit;
     }
     OctNode children[4];    // can hit at most four children

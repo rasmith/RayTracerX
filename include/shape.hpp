@@ -46,7 +46,7 @@ public:
   virtual bool Intersect(const Ray& ray, Isect& isect) const = 0;
   virtual void Print(std::ostream& out) const;
 };
-std::ostream& operator<<(std::ostream& out, const Shape& scene);
+std::ostream& operator<<(std::ostream& out, const Shape& shape);
 struct Isect {
   Isect();
   const Shape* obj;
