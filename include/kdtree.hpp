@@ -89,72 +89,88 @@ protected:
     }
   }
 
-  /**virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
-   const Ray& ray, float t_near, float t_far, Node* children,
-   BoundingBox* child_bounds, uint32_t& count) const {
-   uint32_t dim = static_cast<uint32_t>(node.type());
-   const glm::vec3& origin = ray.origin();
-   const glm::vec3& direction = ray.direction();
-   float split_value = node.split_value();
-   float t_split = (split_value - origin[dim]) / direction[dim];
-   bool has_near = false, has_far = false;
-   Node near = Node(), far = Node(), temp_node;
-   BoundingBox near_bounds = BoundingBox(), far_bounds = BoundingBox(),
-   temp_bounds;
-   count = 0;
-   for (uint32_t i = 0; i < node.num_children(); ++i) {
-   temp_node = this->GetIthChildOf(node, i);
-   temp_bounds = this->GetChildBounds(node, bounds, temp_node.order());
-   if (0 == temp_node.order()) {
-   has_near = true;
-   near = temp_node;
-   near_bounds = temp_bounds;
-   } else {
-   has_far = true;
-   far = temp_node;
-   far_bounds = temp_bounds;
-   }
-   }
-   if (origin[dim] > split_value
-   || (origin[dim] == split_value && direction[dim] < 0)) {
-   std::swap(has_near, has_far);
-   std::swap(near, far);
-   std::swap(near_bounds, far_bounds);
-   }
-   if (has_near && t_far < t_split) {
-   count = 1;
-   children[0] = near;
-   child_bounds[0] = near_bounds;
-   } else if (has_far && t_split > t_near) {
-   count = 1;
-   children[0] = far;
-   child_bounds[0] = far_bounds;
-   } else {
-   int k = 0;
-   if (has_near) {
-   ++count;
-   children[k] = near;
-   child_bounds[k] = near_bounds;
-   ++k;
-   }
-   if (has_far) {
-   ++count;
-   children[k] = far;
-   child_bounds[k] = far_bounds;
-   }
-   }
-   if (count == 2) {
-   std::cout << " IntersectChildren: ray = " << ray << " v = " << split_value
-   << " t_near = " << t_near << " t_far = " << t_far << " t_ split = "
-   << t_split << std::endl;
-   for (uint32_t i = 0; i < count; ++i) {
-   float t_n = 0.0f, t_f = 0.0f;
-   child_bounds[i].Intersect(ray, t_n, t_f);
-   std::cout << children[i] << " " << child_bounds[i] << " t_n = " << t_n
-   << " t_f = " << t_f << std::endl;
-   }
-   }
-   }**/
+  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
+      const Ray& ray, float t_near, float t_far, Node* children,
+      BoundingBox* child_bounds, uint32_t& count) const {
+    uint32_t dim = static_cast<uint32_t>(node.type());
+    const glm::vec3& origin = ray.origin();
+    const glm::vec3& direction = ray.direction();
+    float split_value = node.split_value();
+    float t_split = (split_value - origin[dim]) / direction[dim];
+    bool has_near = false, has_far = false;
+    Node near = Node(), far = Node(), temp_node;
+    BoundingBox near_bounds = BoundingBox(), far_bounds = BoundingBox(),
+        temp_bounds;
+
+    int nchild = 0;
+    for (uint32_t i = 0; i < node.num_children(); ++i) {
+      temp_node = this->GetIthChildOf(node, i);
+      temp_bounds = this->GetChildBounds(node, bounds, temp_node.order());
+      ++nchild;
+      if (0 == temp_node.order()) {
+        has_near = true;
+        near = temp_node;
+        near_bounds = temp_bounds;
+      } else {
+        has_far = true;
+        far = temp_node;
+        far_bounds = temp_bounds;
+      }
+    }
+
+    if (direction[dim] < 0) {
+      std::swap(has_near, has_far);
+      std::swap(near, far);
+      std::swap(near_bounds, far_bounds);
+    }
+
+    count = 0;
+    if (has_near && t_near < t_split) {
+      children[count] = near;
+      child_bounds[count] = near_bounds;
+      ++count;
+    }
+    if (has_far && t_far > t_split) {
+      children[count] = far;
+      child_bounds[count] = far_bounds;
+      ++count;
+    }
+
+    /**Node* children2 = new Node[node.num_children()];
+    BoundingBox* child_bounds2 = new BoundingBox[node.num_children()];
+    uint32_t count2 = 0;
+    IntersectChildren2(node, bounds, ray, t_near, t_far, children2,
+        child_bounds2, count2);
+    if (count > 0) {
+      bool check = (count == count2) && (children2[0] == children[0])
+          && (child_bounds2[0] == child_bounds[0]);
+      if (!check) {
+        std::cout << "\n IntersectChildren: ray = " << ray << " v = "
+            << split_value << " t_near = " << t_near << " t_far = " << t_far
+            << " t_ split = " << t_split << std::endl;
+        std::cout << "nchild = " << nchild << " has_near = " << has_near
+            << " has_far = " << has_far << std::endl;
+        std::cout << "node = " << node << " bounds = " << bounds << std::endl;
+        std::cout << "Actual*******" << std::endl;
+        for (uint32_t i = 0; i < count; ++i) {
+          float t_n = 0.0f, t_f = 0.0f;
+          child_bounds[i].Intersect(ray, t_n, t_f);
+          std::cout << children[i] << " " << child_bounds[i] << " t_n = " << t_n
+              << " t_f = " << t_f << std::endl;
+        }
+        std::cout << "Expected*******" << std::endl;
+        for (uint32_t i = 0; i < count2; ++i) {
+          float t_n = 0.0f, t_f = 0.0f;
+          child_bounds2[i].Intersect(ray, t_n, t_f);
+          std::cout << children2[i] << " " << child_bounds2[i] << " t_n = "
+              << t_n << " t_f = " << t_f << std::endl;
+        }
+        std::cout << std::endl << std::flush;
+        assert(check);
+      }
+    }
+    **/
+  }
 
   struct SortHolder {
     float t_near;
@@ -169,8 +185,7 @@ protected:
         t_near(h.t_near), t_far(h.t_far), child(h.child), bounds(h.bounds) {
     }
 
-    explicit SortHolder(float t0, float t1, const Node& n,
-        const BoundingBox& b) :
+    explicit SortHolder(float t0, float t1, const Node& n, const BoundingBox& b) :
         t_near(t0), t_far(t1), child(n), bounds(b) {
     }
 
@@ -179,7 +194,7 @@ protected:
     }
   };
 
-  virtual void IntersectChildren(const Node& node, const BoundingBox& bounds,
+  virtual void IntersectChildren2(const Node& node, const BoundingBox& bounds,
       const Ray& ray, float, float, Node* children, BoundingBox* child_bounds,
       uint32_t& count) const {
     float t_near;
@@ -237,6 +252,7 @@ protected:
 
   virtual void BuildInternal(Node& node, WorkNodeType& work_node,
       WorkListType& next_list, uint32_t depth) {
+    //std::cout << "BuildInternal: start_num_children = " << node.num_children() << std::endl;
     ++this->num_internal_nodes_;
     WorkNodeType child_work_nodes[2]; // process children tentatively
     node.set_offset(this->nodes_.size()); // children will have nodes pushed
@@ -250,9 +266,11 @@ protected:
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
+    int num_children = 0;
     for (int j = 1; j >= 0; --j) {
       // If a child has a non-empty object list, process it.
       if (child_work_nodes[j].objects.size() > 0) {
+        ++num_children;
         node.set_num_children(node.num_children() + 1); // update parent size
         uint32_t count = child_work_nodes[j].objects.size();
         Node child;
@@ -273,6 +291,8 @@ protected:
         this->nodes_.push_back(this->EncodeNode(child));
       }
     }
+    node.set_num_children(num_children);
+    //std::cout << "BuildInternal: end_num_children = " << node.num_children() << std::endl;
   }
 };
 } // namespace ray

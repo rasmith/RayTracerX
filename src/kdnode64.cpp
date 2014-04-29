@@ -208,7 +208,7 @@ bool KdNode64::operator ==(const KdNode64& node) const {
   return type_ == node.type_ && order_ == node.order_
       && num_children_ == node.num_children_
       && num_objects_ == node.num_objects_ && offset_ == node.offset_
-      && split_value_ && node.split_value_;
+      && fabs(split_value_ - node.split_value_) <= 2e-18;
 }
 
 KdNode64&KdNode64::operator=(const KdNode64&node) {

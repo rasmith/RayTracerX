@@ -11,8 +11,8 @@ namespace ray {
 class Accelerator: public SceneShape {
 public:
   virtual ~Accelerator();
-  bool trace() const;
-  void set_trace(bool trace);
+  virtual bool trace() const;
+  virtual void set_trace(bool trace);
 protected:
   Accelerator();
   bool trace_;

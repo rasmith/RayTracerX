@@ -44,7 +44,7 @@ int num_timings = 1;
 int image_width = 1024;
 int image_height = 1024;
 glm::vec3 background_color(0.5f, 0.0f, 0.5f);
-TestOctree::EvaluationPolicy policy = TestOctree::kBinnedSAH;
+TestOctree::EvaluationPolicy policy = TestOctree::kCentroid;
 
 void ComputeLookAt(Scene& scene, glm::mat4x4& look_at) {
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
@@ -227,7 +227,7 @@ TEST(OctreeTest, OctantToOrientationTest) {
   }
 }
 
-
+/**
 TEST(RayTracerTest, SphereMeshTest) {
   std::string path = "../assets/sphere.obj";
   std::string output = "sphere_octree.jpg";
@@ -287,7 +287,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
-/**
+
 TEST(RayTracerTest, DragonMeshTest) {
   std::string path = "../assets/dragon.ply";
   std::string output = "dragon_octree.jpg";
@@ -377,10 +377,10 @@ TEST(RayTracerTest, TurbineMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
-
+**/
 TEST(RayTracerTest, SponzaMeshTest) {
   std::string path = "../assets/sponza.obj";
-  std::string output = "sponza.jpg";
+  std::string output = "sponza_octree.jpg";
 
   glm::vec3 eye, at, up;
   bool auto_camera = false;
@@ -411,7 +411,7 @@ TEST(RayTracerTest, SponzaMeshTest) {
 
 TEST(RayTracerTest, CathedralMeshTest) {
   std::string path = "../assets/cathedral.obj";
-  std::string output = "cathedral.jpg";
+  std::string output = "cathedral_octree.jpg";
 
   glm::vec3 eye, at, up;
   eye = glm::vec3(-10.7098f, -13.9444f, 0.299326f);
@@ -440,7 +440,7 @@ TEST(RayTracerTest, CathedralMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
-**/
+
 /**
  TEST(RayTracerTest, SanMiguelMeshTest) {
  std::string path = "../assets/san_miguel.obj";
@@ -505,10 +505,10 @@ TEST(RayTracerTest, FairyForestMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
-
+**/
 TEST(RayTracerTest, ConferenceMeshTest) {
   std::string path = "../assets/conference.obj";
-  std::string output = "conference.jpg";
+  std::string output = "conference_octree.jpg";
 
   bool auto_camera = false;
   glm::vec3 eye, at, up;
@@ -536,6 +536,6 @@ TEST(RayTracerTest, ConferenceMeshTest) {
   lights[1].type = Light::kDirectional;
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
-} **/
+}
 } // namespace ray
 

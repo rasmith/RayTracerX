@@ -115,7 +115,11 @@ bool BoundingBox::Intersect(const BoundingBox& bbox, BoundingBox& out) const {
 }
 
 bool BoundingBox::operator==(const BoundingBox& bbox) const {
-  return min_ == bbox.min() && max_ == bbox.max();
+  //return min_ == bbox.min() && max_ == bbox.max();
+  glm::vec3 diff0 = glm::abs(min_ - bbox.min_);
+  glm::vec3 diff1 = glm::abs(max_ - bbox.max_);
+  return diff0[0] <= 2e-18 && diff0[1] <= 2e-18 && diff1[0] <= 2e-18
+      && diff1[1] <= 2e-18;
 }
 
 BoundingBox& BoundingBox::operator =(const BoundingBox& bbox) {
