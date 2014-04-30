@@ -142,7 +142,8 @@ bool Trimesh::IntersectUnaccelerated(const Ray& ray, Isect& isect) const {
   Isect current, best;
   best.t_hit = std::numeric_limits<float>::max();
   for (uint32_t i = 0; i < faces_.size(); ++i) {
-    if (faces_[i].Intersect(ray, current) && current.t_hit < best.t_hit) {
+    if (faces_[i].Intersect(ray, current) && current.t_hit > 0.0f
+        && current.t_hit < best.t_hit) {
       best = current;
       hit = true;
     }
@@ -156,15 +157,16 @@ bool Trimesh::Intersect(const Ray& ray, Isect& isect) const {
   bool hit = false;
   if (accelerator_) {
     if (trace_) {
-      std::cout << "Trimesh::Intersect ";
-      hit = IntersectUnaccelerated(ray, isect);
-      std::cout << " t_hit = " << isect.t_hit << " obj =" << *isect.obj
-          << std::endl;
+      std::cout << "\nTrimesh::Intersect " << std::endl;
+      Isect isect2;
+      bool hit2 = IntersectUnaccelerated(ray, isect2);
+      std::cout << "Unnaccelerated: t_hit = " << isect2.t_hit << " hit2 ="
+          << hit2 << std::endl;
     }
     hit = IntersectAccelerated(ray, isect);
-    if(trace_)
-    std::cout << " t_hit = " << isect.t_hit << " obj =" << *isect.obj
-              << std::endl;
+    if (trace_)
+      std::cout << "Accelerated: t_hit = " << isect.t_hit << " hit ="
+          << hit << std::endl;
   } else
     hit = IntersectUnaccelerated(ray, isect);
   /**if (accelerator_) {

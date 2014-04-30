@@ -226,223 +226,223 @@ TEST(OctreeTest, OctantToOrientationTest) {
     EXPECT_EQ(octant, octree.OrientationToOctant(orientation));
   }
 }
-/**
- TEST(RayTracerTest, SphereMeshTest) {
- std::string path = "../assets/sphere.obj";
- std::string output = "sphere_octree.jpg";
 
- glm::vec3 eye = glm::vec3(0.0f, 0.0f, 1.2f);
- glm::vec3 at = glm::vec3(0.0f, 0.0f, 0.0f);
- glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+TEST(RayTracerTest, SphereMeshTest) {
+  std::string path = "../assets/sphere.obj";
+  std::string output = "sphere_octree.bmp";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye = glm::vec3(0.0f, 0.0f, 1.2f);
+  glm::vec3 at = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
- glm::vec3 point_light_color = glm::vec3(1.0f, 0.3f, 0.3f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.2f, 0.2f, 0.2f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.05f, 0.05f, 0.05f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(1.0f, 0.3f, 0.3f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
- }
+  glm::vec3 directional_light_color = glm::vec3(0.2f, 0.2f, 0.2f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.05f, 0.05f, 0.05f));
+  lights[1].type = Light::kDirectional;
 
- TEST(RayTracerTest, BunnyMeshTest) {
- std::string path = "../assets/bunny.ply";
- std::string output = "bunny_octree.jpg";
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
+}
 
- glm::vec3 eye = glm::vec3(-0.0168008f, 0.110153f, 0.225f);
- glm::vec3 at = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
- glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+TEST(RayTracerTest, BunnyMeshTest) {
+  std::string path = "../assets/bunny.ply";
+  std::string output = "bunny_octree.bmp";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye = glm::vec3(-0.0168008f, 0.110153f, 0.225f);
+  glm::vec3 at = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(glm::vec3(0.0, 1.0, 2.0f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
- }
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  lights[1].type = Light::kDirectional;
 
- TEST(RayTracerTest, DragonMeshTest) {
- std::string path = "../assets/dragon.ply";
- std::string output = "dragon_octree.jpg";
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
+}
 
- glm::vec3 eye = glm::vec3(-0.0058789f, 0.124951f, 0.275f);
- glm::vec3 at = glm::vec3(-0.0058789f, 0.124951f, -0.0046034f);
- glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+TEST(RayTracerTest, DragonMeshTest) {
+  std::string path = "../assets/dragon.ply";
+  std::string output = "dragon_octree.bmp";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye = glm::vec3(-0.0058789f, 0.124951f, 0.275f);
+  glm::vec3 at = glm::vec3(-0.0058789f, 0.124951f, -0.0046034f);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(glm::vec3(0.0, -1.0, 2.0f), glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(glm::vec3(0.0, -1.0, 2.0f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
- }
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  lights[1].type = Light::kDirectional;
 
- TEST(RayTracerTest, BuddhaMeshTest) {
- std::string path = "../assets/happy.ply";
- std::string output = "buddha_octree.jpg";
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
+}
 
- glm::vec3 eye = glm::vec3(-0.0054393f, 0.14769f, 0.275f);
- glm::vec3 at = glm::vec3(-0.0054393f, 0.148769, -0.00669f);
- glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+TEST(RayTracerTest, BuddhaMeshTest) {
+  std::string path = "../assets/happy.ply";
+  std::string output = "buddha_octree.bmp";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye = glm::vec3(-0.0054393f, 0.14769f, 0.275f);
+  glm::vec3 at = glm::vec3(-0.0054393f, 0.148769, -0.00669f);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(glm::vec3(0.0, -2.0, 2.0f), glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(glm::vec3(0.0, -2.0, 2.0f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
- }
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 1.0f));
+  lights[1].type = Light::kDirectional;
 
- TEST(RayTracerTest, TurbineMeshTest) {
- std::string path = "../assets/blade.ply";
- std::string output = "blade_octree.jpg";
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
+}
 
- glm::vec3 eye = glm::vec3(-274.564f, -282.243f, 950.0f);
- glm::vec3 at = glm::vec3(-274.564f, -282.243f, 254.327f);
- glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+TEST(RayTracerTest, TurbineMeshTest) {
+  std::string path = "../assets/blade.ply";
+  std::string output = "blade_octree.bmp";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye = glm::vec3(-274.564f, -282.243f, 950.0f);
+  glm::vec3 at = glm::vec3(-274.564f, -282.243f, 254.327f);
+  glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(glm::vec3(0.0, -400.0, 400.0f), glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(glm::vec3(0.0, -400.0, 400.0f), glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
- }
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
 
- TEST(RayTracerTest, SponzaMeshTest) {
- std::string path = "../assets/sponza.obj";
- std::string output = "sponza_octree.jpg";
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
+}
 
- glm::vec3 eye, at, up;
- bool auto_camera = false;
- eye = glm::vec3(-13.7738f, 1.08912f, 1.7613f);
- at = glm::vec3(-0.935384f, 1.35026f, -0.606493f);
- up = glm::vec3(-0.019667f, 0.9998f, 0.00362718f);
- int num_lights = 2;
- Light lights[2];
+TEST(RayTracerTest, SponzaMeshTest) {
+  std::string path = "../assets/sponza.obj";
+  std::string output = "sponza_octree.bmp";
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(eye, glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  glm::vec3 eye, at, up;
+  bool auto_camera = false;
+  eye = glm::vec3(-13.7738f, 1.08912f, 1.7613f);
+  at = glm::vec3(-0.935384f, 1.35026f, -0.606493f);
+  up = glm::vec3(-0.019667f, 0.9998f, 0.00362718f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
- }
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
 
- TEST(RayTracerTest, CathedralMeshTest) {
- std::string path = "../assets/cathedral.obj";
- std::string output = "cathedral_octree.jpg";
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+}
 
- glm::vec3 eye, at, up;
- eye = glm::vec3(-10.7098f, -13.9444f, 0.299326f);
- at = glm::vec3(-0.192988f, -12.8887f, -0.00787773f);
- up = glm::vec3(-0.0997908f, 0.995004f, 0.00291497f);
- bool auto_camera = false;
+TEST(RayTracerTest, CathedralMeshTest) {
+  std::string path = "../assets/cathedral.obj";
+  std::string output = "cathedral_octree.bmp";
 
- int num_lights = 2;
- Light lights[2];
+  glm::vec3 eye, at, up;
+  eye = glm::vec3(-10.7098f, -13.9444f, 0.299326f);
+  at = glm::vec3(-0.192988f, -12.8887f, -0.00787773f);
+  up = glm::vec3(-0.0997908f, 0.995004f, 0.00291497f);
+  bool auto_camera = false;
 
- glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[0].ka = point_light_color;
- lights[0].kd = point_light_color;
- lights[0].ks = point_light_color;
- lights[0].ray = Ray(eye, glm::vec3(0.0f));
- lights[0].type = Light::kPoint;
- lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
- 0.000045492f);
+  int num_lights = 2;
+  Light lights[2];
 
- glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
- lights[1].ka = directional_light_color;
- lights[1].kd = directional_light_color;
- lights[1].ks = directional_light_color;
- lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
- lights[1].type = Light::kDirectional;
+  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[0].ka = point_light_color;
+  lights[0].kd = point_light_color;
+  lights[0].ks = point_light_color;
+  lights[0].ray = Ray(eye, glm::vec3(0.0f));
+  lights[0].type = Light::kPoint;
+  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+      0.000045492f);
 
- SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
- }
- **/
+  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+  lights[1].ka = directional_light_color;
+  lights[1].kd = directional_light_color;
+  lights[1].ks = directional_light_color;
+  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+  lights[1].type = Light::kDirectional;
+
+  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+}
+
 TEST(RayTracerTest, ConferenceMeshTest) {
   std::string path = "../assets/conference.obj";
-  std::string output = "conference_octree.jpg";
+  std::string output = "conference_octree.bmp";
 
   bool auto_camera = false;
   glm::vec3 eye, at, up;
@@ -474,7 +474,7 @@ TEST(RayTracerTest, ConferenceMeshTest) {
 
 TEST(RayTracerTest, FairyForestMeshTest) {
   std::string path = "../assets/fairy_forest.obj";
-  std::string output = "fairy_forest.jpg";
+  std::string output = "fairy_forest.bmp";
 
   bool auto_camera = false;
   glm::vec3 eye, at, up;
@@ -503,37 +503,37 @@ TEST(RayTracerTest, FairyForestMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
+/**
+ TEST(RayTracerTest, SanMiguelMeshTest) {
+ std::string path = "../assets/san_miguel.obj";
+ std::string output = "san_miguel.bmp";
 
-TEST(RayTracerTest, SanMiguelMeshTest) {
-  std::string path = "../assets/san_miguel.obj";
-  std::string output = "san_miguel.jpg";
+ glm::vec3 eye, at, up;
+ eye = glm::vec3(22.4022f, 1.58558f, 13.3874f);
+ at = glm::vec3(15.0403f, 1.58558f, 8.88182f);
+ up = glm::vec3(0.0f, 1.0f, 0.0f);
+ bool auto_camera = false;
 
-  glm::vec3 eye, at, up;
-  eye = glm::vec3(22.4022f, 1.58558f, 13.3874f);
-  at = glm::vec3(15.0403f, 1.58558f, 8.88182f);
-  up = glm::vec3(0.0f, 1.0f, 0.0f);
-  bool auto_camera = false;
+ int num_lights = 2;
+ Light lights[2];
 
-  int num_lights = 2;
-  Light lights[2];
+ glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+ lights[0].ka = point_light_color;
+ lights[0].kd = point_light_color;
+ lights[0].ks = point_light_color;
+ lights[0].ray = Ray(eye, glm::vec3(0.0f));
+ lights[0].type = Light::kPoint;
+ lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
+ 0.000045492f);
 
-  glm::vec3 point_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
-  lights[0].ka = point_light_color;
-  lights[0].kd = point_light_color;
-  lights[0].ks = point_light_color;
-  lights[0].ray = Ray(eye, glm::vec3(0.0f));
-  lights[0].type = Light::kPoint;
-  lights[0].attenuation_coefficients = glm::vec3(0.25f, 0.003372407f,
-      0.000045492f);
+ glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
+ lights[1].ka = directional_light_color;
+ lights[1].kd = directional_light_color;
+ lights[1].ks = directional_light_color;
+ lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
+ lights[1].type = Light::kDirectional;
 
-  glm::vec3 directional_light_color = glm::vec3(0.4f, 0.4f, 0.4f);
-  lights[1].ka = directional_light_color;
-  lights[1].kd = directional_light_color;
-  lights[1].ks = directional_light_color;
-  lights[1].ray = Ray(glm::vec3(0.0f), glm::vec3(0.0f, -1.0f, -1.0f));
-  lights[1].type = Light::kDirectional;
-
-  SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
-}
+ SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
+ }**/
 } // namespace ray
 

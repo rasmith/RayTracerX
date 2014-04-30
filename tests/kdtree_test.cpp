@@ -216,10 +216,10 @@ TEST(KdtreeTest, LeafNodeEncodeTest) {
     EXPECT_EQ(leaf_node.offset(), test_node.offset());
   }
 }
-/**
+
 TEST(RayTracerTest, SphereMeshTest) {
   std::string path = "../assets/sphere.obj";
-  std::string output = "sphere_kdtree.jpg";
+  std::string output = "sphere_kdtree.bmp";
 
   glm::vec3 eye = glm::vec3(0.0f, 0.0f, 1.2f);
   glm::vec3 at = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -249,7 +249,7 @@ TEST(RayTracerTest, SphereMeshTest) {
 
 TEST(RayTracerTest, BunnyMeshTest) {
   std::string path = "../assets/bunny.ply";
-  std::string output = "bunny_kdtree.jpg";
+  std::string output = "bunny_kdtree.bmp";
 
   glm::vec3 eye = glm::vec3(-0.0168008f, 0.110153f, 0.225f);
   glm::vec3 at = glm::vec3(-0.0168008f, 0.110153f, -0.00148227f);
@@ -279,7 +279,7 @@ TEST(RayTracerTest, BunnyMeshTest) {
 
 TEST(RayTracerTest, DragonMeshTest) {
   std::string path = "../assets/dragon.ply";
-  std::string output = "dragon_kdtree.jpg";
+  std::string output = "dragon_kdtree.bmp";
 
   glm::vec3 eye = glm::vec3(-0.0058789f, 0.124951f, 0.275f);
   glm::vec3 at = glm::vec3(-0.0058789f, 0.124951f, -0.0046034f);
@@ -309,7 +309,7 @@ TEST(RayTracerTest, DragonMeshTest) {
 
 TEST(RayTracerTest, BuddhaMeshTest) {
   std::string path = "../assets/happy.ply";
-  std::string output = "buddha_kdtree.jpg";
+  std::string output = "buddha_kdtree.bmp";
 
   glm::vec3 eye = glm::vec3(-0.0054393f, 0.14769f, 0.275f);
   glm::vec3 at = glm::vec3(-0.0054393f, 0.148769, -0.00669f);
@@ -339,7 +339,7 @@ TEST(RayTracerTest, BuddhaMeshTest) {
 
 TEST(RayTracerTest, TurbineMeshTest) {
   std::string path = "../assets/blade.ply";
-  std::string output = "blade_kdtree.jpg";
+  std::string output = "blade_kdtree.bmp";
 
   glm::vec3 eye = glm::vec3(-274.564f, -282.243f, 950.0f);
   glm::vec3 at = glm::vec3(-274.564f, -282.243f, 254.327f);
@@ -369,7 +369,7 @@ TEST(RayTracerTest, TurbineMeshTest) {
 
 TEST(RayTracerTest, SponzaMeshTest) {
   std::string path = "../assets/sponza.obj";
-  std::string output = "sponza_kdtree.jpg";
+  std::string output = "sponza_kdtree.bmp";
 
   glm::vec3 eye, at, up;
   bool auto_camera = false;
@@ -400,7 +400,7 @@ TEST(RayTracerTest, SponzaMeshTest) {
 
 TEST(RayTracerTest, CathedralMeshTest) {
   std::string path = "../assets/cathedral.obj";
-  std::string output = "cathedral_kdtree.jpg";
+  std::string output = "cathedral_kdtree.bmp";
 
   glm::vec3 eye, at, up;
   eye = glm::vec3(-10.7098f, -13.9444f, 0.299326f);
@@ -429,10 +429,10 @@ TEST(RayTracerTest, CathedralMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
-**/
+
 TEST(RayTracerTest, ConferenceMeshTest) {
   std::string path = "../assets/conference.obj";
-  std::string output = "conference_kdtree.jpg";
+  std::string output = "conference_kdtree.bmp";
 
   bool auto_camera = false;
   glm::vec3 eye, at, up;
@@ -467,7 +467,7 @@ TEST(RayTracerTest, ConferenceMeshTest) {
 
 TEST(RayTracerTest, FairyForestMeshTest) {
   std::string path = "../assets/fairy_forest.obj";
-  std::string output = "fairy_forest_kdtree.jpg";
+  std::string output = "fairy_forest_kdtree.bmp";
 
   bool auto_camera = false;
   glm::vec3 eye, at, up;
@@ -497,6 +497,7 @@ TEST(RayTracerTest, FairyForestMeshTest) {
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
 
+/**
 TEST(RayTracerTest, SanMiguelMeshTest) {
   std::string path = "../assets/san_miguel.obj";
   std::string output = "san_miguel.jpg";
@@ -527,7 +528,7 @@ TEST(RayTracerTest, SanMiguelMeshTest) {
   lights[1].type = Light::kDirectional;
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
-}
+}**/
 }
 // namespace ray
 

@@ -97,15 +97,20 @@ public:
 protected:
   struct WorkNode {
     WorkNode() :
-        node_index(0), bounds(), objects() {
+        node_index(0), bounds(), objects(), work_info(NULL) {
     }
     WorkNode(const BoundingBox& bbox) :
-        node_index(0), bounds(bbox), objects() {
+        node_index(0), bounds(bbox), objects(), work_info(NULL) {
       objects.clear();
+    }
+    ~WorkNode() {
+      if (work_info)
+        delete work_info;
     }
     uint32_t node_index;
     BoundingBox bounds;
     ObjectVector objects;
+    void* work_info;
   };
   typedef std::vector<WorkNode> WorkList;
 
@@ -206,13 +211,15 @@ protected:
     Isect best;
     best.t_hit = std::numeric_limits<float>::max();
     if (this->trace_)
-      std::cout << "IntersectLeaf";
+      std::cout << "IntersectLeaf: ";
     const SceneObject* const * objects = &scene_objects_[leaf.offset()];
     for (uint32_t i = 0; i < leaf.num_objects(); ++i) {
       bool obj_hit = objects[i]->Intersect(ray, current);
       if (obj_hit && this->trace_)
-        std::cout << std::setprecision(9) << current.t_hit << " ";
-      if (obj_hit && current.t_hit > t_near && current.t_hit < t_far
+        std::cout << std::setprecision(9) << current.t_hit << " "
+            << " t_near = " << t_near << " t_far =" << t_far << " best = "
+            << best.t_hit << std::endl;
+      if (obj_hit && current.t_hit >= t_near && current.t_hit <= t_far + 10e-6
           && current.t_hit < best.t_hit) {
         best = current;
         hit = true;

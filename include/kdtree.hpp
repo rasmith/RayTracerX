@@ -44,6 +44,64 @@ protected:
   typedef typename TreeType::WorkNode WorkNodeType;
   typedef typename TreeType::WorkList WorkListType;
 
+  struct Event {
+    Event() :
+        value(0.0f), type(kStart), obj(NULL), id(GetNewId()) {
+    }
+    Event(const Event& e) :
+        value(e.value), type(e.type), obj(e.obj), id(e.id) {
+    }
+    explicit Event(float v, EventType t, const SceneObject* obj) :
+        value(v), type(t), obj(o), id(GetNewId()) {
+    }
+    bool operator<(const Event& e) {
+      return value < e.value
+          && static_cast<int>(type) < static_cast<int>(e.type) && id < e.id;
+    }
+    enum EventType {
+      kStart = 0, kEnd = 1
+    };
+    uint32_t GetNewId() {
+      static uint32_t next = 0;
+      return ++next;
+    }
+    float value;
+    EventType type;
+    const SceneObject* obj;
+    uint32_t id;
+  };
+
+  typedef std::vector<Event> EventList;
+
+  struct SahWorkInfo {
+    SahWorkInfo() {
+      for (int i = 0; i < 3; ++i)
+        events[i].clear();
+    }
+    ~SahWorkInfo() {
+      for (int i = 0; i < 3; ++i)
+        events[i].clear();
+    }
+    EventList events[3];
+  };
+
+  void CreateEvents(const ObjectVector& objects, SahWorkInfo& work_info) {
+    BoundingBox bounds;
+    const SceneObject* obj = NULL;
+    float value = 0.0f;
+    for (int i = 0; i < objects.size(); ++i) {
+      obj = objects[i];
+      bounds = obj->GetBounds();
+      for (int d = 0; d < 3; ++d) {
+        work_info.events[d].push_back(
+            Event(bounds.min()[d], Event::kStart, obj));
+      }
+      for (int d = 0; d < 3; ++d) {
+        work_info.events[d].push_back(Event(bounds.max()[d], Event::kEnd, obj));
+      }
+    }
+  }
+
   SplitPolicy split_policy_;
 
   virtual BoundingBox GetChildBounds(const Node& node,
@@ -137,39 +195,39 @@ protected:
     }
 
     /**Node* children2 = new Node[node.num_children()];
-    BoundingBox* child_bounds2 = new BoundingBox[node.num_children()];
-    uint32_t count2 = 0;
-    IntersectChildren2(node, bounds, ray, t_near, t_far, children2,
-        child_bounds2, count2);
-    if (count > 0) {
-      bool check = (count == count2) && (children2[0] == children[0])
-          && (child_bounds2[0] == child_bounds[0]);
-      if (!check) {
-        std::cout << "\n IntersectChildren: ray = " << ray << " v = "
-            << split_value << " t_near = " << t_near << " t_far = " << t_far
-            << " t_ split = " << t_split << std::endl;
-        std::cout << "nchild = " << nchild << " has_near = " << has_near
-            << " has_far = " << has_far << std::endl;
-        std::cout << "node = " << node << " bounds = " << bounds << std::endl;
-        std::cout << "Actual*******" << std::endl;
-        for (uint32_t i = 0; i < count; ++i) {
-          float t_n = 0.0f, t_f = 0.0f;
-          child_bounds[i].Intersect(ray, t_n, t_f);
-          std::cout << children[i] << " " << child_bounds[i] << " t_n = " << t_n
-              << " t_f = " << t_f << std::endl;
-        }
-        std::cout << "Expected*******" << std::endl;
-        for (uint32_t i = 0; i < count2; ++i) {
-          float t_n = 0.0f, t_f = 0.0f;
-          child_bounds2[i].Intersect(ray, t_n, t_f);
-          std::cout << children2[i] << " " << child_bounds2[i] << " t_n = "
-              << t_n << " t_f = " << t_f << std::endl;
-        }
-        std::cout << std::endl << std::flush;
-        assert(check);
-      }
-    }
-    **/
+     BoundingBox* child_bounds2 = new BoundingBox[node.num_children()];
+     uint32_t count2 = 0;
+     IntersectChildren2(node, bounds, ray, t_near, t_far, children2,
+     child_bounds2, count2);
+     if (count > 0) {
+     bool check = (count == count2) && (children2[0] == children[0])
+     && (child_bounds2[0] == child_bounds[0]);
+     if (!check) {
+     std::cout << "\n IntersectChildren: ray = " << ray << " v = "
+     << split_value << " t_near = " << t_near << " t_far = " << t_far
+     << " t_ split = " << t_split << std::endl;
+     std::cout << "nchild = " << nchild << " has_near = " << has_near
+     << " has_far = " << has_far << std::endl;
+     std::cout << "node = " << node << " bounds = " << bounds << std::endl;
+     std::cout << "Actual*******" << std::endl;
+     for (uint32_t i = 0; i < count; ++i) {
+     float t_n = 0.0f, t_f = 0.0f;
+     child_bounds[i].Intersect(ray, t_n, t_f);
+     std::cout << children[i] << " " << child_bounds[i] << " t_n = " << t_n
+     << " t_f = " << t_f << std::endl;
+     }
+     std::cout << "Expected*******" << std::endl;
+     for (uint32_t i = 0; i < count2; ++i) {
+     float t_n = 0.0f, t_f = 0.0f;
+     child_bounds2[i].Intersect(ray, t_n, t_f);
+     std::cout << children2[i] << " " << child_bounds2[i] << " t_n = "
+     << t_n << " t_f = " << t_f << std::endl;
+     }
+     std::cout << std::endl << std::flush;
+     assert(check);
+     }
+     }
+     **/
   }
 
   struct SortHolder {
@@ -208,9 +266,9 @@ protected:
       if (child_bounds[count].Intersect(ray, t_near, t_far)) {
         h[count] = SortHolder(t_near, t_far, children[count],
             child_bounds[count]);
-       // if (this->trace_)
-       //   std::cout << "i = " << i << " t_near = " << t_near << " t_far = "
-       //       << t_far << " child = " << children[count] << "\n";
+        // if (this->trace_)
+        //   std::cout << "i = " << i << " t_near = " << t_near << " t_far = "
+        //       << t_far << " child = " << children[count] << "\n";
         ++count;
       }
     }

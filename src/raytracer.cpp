@@ -103,6 +103,7 @@ glm::vec3 RayTracer::TraceRay(int pixel_x, int pixel_y) const {
   float x = pixel_x;
   float y = pixel_y;
   Ray ray = camera_->GenerateRay(x, y);
+  //scene_->set_trace(x == 139 && y >= 0 && y <= 30);
   return TraceRay(ray);
 }
 
@@ -112,6 +113,7 @@ glm::vec3 RayTracer::TraceRay(const Ray& ray) const {
   bool hit = scene_->Intersect(ray, isect);
   if (hit) {
     color = Shade(isect);
+    if(scene_->trace()) color = glm::vec3(1.0f, 0.0f, 0.0f);
     //color = 0.5f * (isect.normal + 1.0f);
     //std::cout << "normal = " << isect.normal << std::endl;
     ++hit_count;
