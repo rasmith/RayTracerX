@@ -9,6 +9,7 @@
 #define KDTREE_HPP_
 #include <stdint.h>
 #include <sys/types.h>
+#include <algorithm>
 #include "scene.hpp"
 #include "shape.hpp"
 #include "tree_base.hpp"
@@ -100,6 +101,20 @@ protected:
         work_info.events[d].push_back(Event(bounds.max()[d], Event::kEnd, obj));
       }
     }
+  }
+
+  void SortEvents(SahWorkInfo& work_info) {
+    for (int d = 0; d < 3; ++d)
+      std::sort(work_info.events[d].begin(), work_info.events[d].begin());
+  }
+
+  void DistributeEvents(float value, int dim, const SahWorkInfo& work_info,
+      SahWorkInfo* left, SahWorkInfo* right) {
+    for (int d = 0; d < 3; ++d);
+  }
+
+  void DistributeEvents(float value, int dim, int d, const EventList& events,
+      EventList& left_events, EventList& right_events) {
   }
 
   SplitPolicy split_policy_;
