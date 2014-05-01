@@ -47,7 +47,7 @@ protected:
 
   struct Event {
     Event() :
-        value(0.0f), type(kStart), obj(NULL), id(GetNewId()) {
+        value(0.0f), type(kStart), obj(NULL), id(0) {
     }
     Event(const Event& e) :
         value(e.value), type(e.type), obj(e.obj), id(e.id) {
@@ -155,7 +155,7 @@ protected:
       area_factor = total_area / (bounds.max()[d] - bounds.min()[d]);
       area_left = 0.0f;
       area_right = total_area;
-      for (int i = 0; i < info->events[d]; ++i) {
+      for (int i = 0; i < info->events[d].size(); ++i) {
         cost = left_count * area_left + right_count * area_right;
         if (cost < best_cost) {
           best_cost = cost;
@@ -204,7 +204,6 @@ protected:
     Node near = Node(), far = Node(), temp_node;
     BoundingBox near_bounds = BoundingBox(), far_bounds = BoundingBox(),
         temp_bounds;
-
     int nchild = 0;
     for (uint32_t i = 0; i < node.num_children(); ++i) {
       temp_node = this->GetIthChildOf(node, i);
@@ -353,25 +352,42 @@ protected:
     }
   }
 
-  void ProcessWorkInfo(WorkNodeType& work_node,
+  void DistributeEvents(float value, uint32_t split_dim, uint32_t list_dim,
+      SahWorkInfo* parent_info, SahWorkInfo* left_info,
+      SahWorkInfo* right_info) {
+    EventList* parent_list = &parent_info->events[list_dim];
+    EventList* left_list = (left_info ? &left_info->events[list_dim] : NULL);
+    EventList* right_list = (right_info ? &right_info->events[list_dim] : NULL);
+    Event e = Event();
+    BoundingBox b = BoundingBox();
+    std::reverse(parent_list->begin(), parent_list->end());
+    while(!parent_list->empty()) {
+      e = parent_list->back();
+      parent_list->pop_back();
+      b = e.obj->GetBounds();
+      if (left_list && b.min()[dim] <= value)
+        left_list->push_back(e);
+      if (right_list && b.max()[dim] >= value)
+        right_list->push_back(e);
+    }
+  }
+
+  virtual void ProcessWorkInfo(const Node& node, WorkNodeType& work_node,
       WorkNodeType* child_work_nodes) {
+    float value = node.split_value;
+    uint32_t split_dim = static_cast<uint32_t>(node.split_result);
+    WorkNodeType& left = child_work_nodes[0];
+    WorkNodeType& right = child_work_nodes[1];
+    SahWorkInfo* parent_info = reinterpret_cast<SahWorkInfo*>(work_node
+        .work_info);
+    SahWorkInfo* left_info = (
+        left.objects.size() > 0 ?
+            reinterpret_cast<SahWorkInfo*>(left.work_info) : NULL);
+    SahWorkInfo* right_info = (
+        right.objects.size() > 0 ?
+            reinterpret_cast<SahWorkInfo*>(right.work_info) : NULL);
     for (int d = 0; d < 3; ++d) {
-      for (int i = 0; i < work_node.work_info->events[d].size(); ++i) {
-        for (int j = 0; j < 2; ++j) {
-          if (child_work_nodes[j].objects.size() > 0) {
-            if (0 == j
-                && work_node.work_info->events[d][i].value
-                    <= work_node.work_info.value) {
-
-            }
-            if (1 == j
-                && work_node.work_info->events[d][i].value
-                    <= work_node.work_info.value) {
-
-            }
-          }
-        }
-      }
+      DistributeEvents(value, split_dim, d, parent_info, left_info, right_info);
     }
   }
 
@@ -391,7 +407,7 @@ protected:
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
-    ProcessWorkInfo(work_node, child_work_nodes);
+    ProcessWorkInfo(node, work_node, child_work_nodes);
     int num_children = 0;
     for (int j = 1; j >= 0; --j) {
       // If a child has a non-empty object list, process it.
