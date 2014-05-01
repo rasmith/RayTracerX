@@ -108,15 +108,6 @@ protected:
       std::sort(work_info.events[d].begin(), work_info.events[d].begin());
   }
 
-  void DistributeEvents(float value, int dim, const SahWorkInfo& work_info,
-      SahWorkInfo* left, SahWorkInfo* right) {
-    for (int d = 0; d < 3; ++d);
-  }
-
-  void DistributeEvents(float value, int dim, int d, const EventList& events,
-      EventList& left_events, EventList& right_events) {
-  }
-
   SplitPolicy split_policy_;
 
   virtual BoundingBox GetChildBounds(const Node& node,
@@ -132,18 +123,57 @@ protected:
 
   void EvaluateSpatialMedian(Node* parent, Node&, WorkNodeType& child_work,
       float& split_value, SplitResult& split_result) {
-    //std::cout << "EvaluateSpatialMedian" << std::endl;
     uint32_t dim = static_cast<uint32_t>(split_result);
     if (parent)
       dim = (static_cast<uint32_t>(parent->type()) + 1) % 3;
     split_value = 0.5f
         * (child_work.bounds.min()[dim] + child_work.bounds.max()[dim]);
     split_result = static_cast<SplitResult>(dim);
-    //std::cout << "split_result = " << split_result << std::endl;
   }
 
-  void EvaluateFullSAH(Node*, Node&, WorkNodeType&, float&, SplitResult&) {
-    //std::cout << "EvaluateFullSAH" << std::endl;
+  void EvaluateFullSAH(Node* parent, Node& node, WorkNodeType& work_node,
+      float& value, SplitResult& split_result) {
+    SahWorkInfo* info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
+    float cost = 0.0f;
+    float best_cost = std::numeric_limits<float>::max();
+    uint32_t best_dim = 0;
+    float best_value = 0.0f;
+    float total_area = work_node.bounds.GetArea();
+    float inv_area = 1.0f / total_area;
+    float area_left = 0.0f;
+    float area_right = 0.0f;
+    float area_factor = 0.0f;
+    flaot area_delta = 0.0f;
+    float last_value = 0.0f;
+    float current_value = 0.0f;
+    int left_count = 0;
+    int right_count = 0;
+    int total_count = work_node.objects().size();
+    for (uint32_t d = 0; d < 3; ++d) {
+      left_count = 0;
+      right_count = total_count;
+      area_factor = total_area / (bounds.max()[d] - bounds.min()[d]);
+      area_left = 0.0f;
+      area_right = total_area;
+      for (int i = 0; i < info->events[d]; ++i) {
+        cost = left_count * area_left + right_count * area_right;
+        if (cost < best_cost) {
+          best_cost = cost;
+          best_value = value;
+          best_dim = d;
+        }
+        current_value = info->events[d].value;
+        if (kStart == event[d].type)
+          ++left_count;
+        else if (kEnd == event[d].type)
+          --right_count;
+        area_delta = (current_value - last_value) * area_factor;
+        area_left += area_delta;
+        area_right -= area_delta;
+      }
+    }
+    value = best_value;
+    split_result = static_cast<SplitResult>(best_dim);
   }
 
   void EvaluateSplit(Node* parent, Node& child, WorkNodeType& child_work,
@@ -323,6 +353,28 @@ protected:
     }
   }
 
+  void ProcessWorkInfo(WorkNodeType& work_node,
+      WorkNodeType* child_work_nodes) {
+    for (int d = 0; d < 3; ++d) {
+      for (int i = 0; i < work_node.work_info->events[d].size(); ++i) {
+        for (int j = 0; j < 2; ++j) {
+          if (child_work_nodes[j].objects.size() > 0) {
+            if (0 == j
+                && work_node.work_info->events[d][i].value
+                    <= work_node.work_info.value) {
+
+            }
+            if (1 == j
+                && work_node.work_info->events[d][i].value
+                    <= work_node.work_info.value) {
+
+            }
+          }
+        }
+      }
+    }
+  }
+
   virtual void BuildInternal(Node& node, WorkNodeType& work_node,
       WorkListType& next_list, uint32_t depth) {
     //std::cout << "BuildInternal: start_num_children = " << node.num_children() << std::endl;
@@ -339,6 +391,7 @@ protected:
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
+    ProcessWorkInfo(work_node, child_work_nodes);
     int num_children = 0;
     for (int j = 1; j >= 0; --j) {
       // If a child has a non-empty object list, process it.
