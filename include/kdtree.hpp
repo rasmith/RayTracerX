@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <algorithm>
+#include <deque>
 #include "scene.hpp"
 #include "shape.hpp"
 #include "tree_base.hpp"
@@ -72,7 +73,9 @@ protected:
     uint32_t id;
   };
 
-  typedef std::vector<Event> EventList;
+  typedef std::list<Event> EventList;
+  typedef std::deque<Event> EventDeque;
+  typedef std::vector<Event> EventVector;
 
   struct SahWorkInfo {
     SahWorkInfo() {
@@ -86,29 +89,61 @@ protected:
     EventList events[3];
   };
 
+  SplitPolicy split_policy_;
+
   void CreateEvents(const ObjectVector& objects, SahWorkInfo& work_info) {
     BoundingBox bounds;
     const SceneObject* obj = NULL;
     float value = 0.0f;
-    for (int i = 0; i < objects.size(); ++i) {
-      obj = objects[i];
-      bounds = obj->GetBounds();
-      for (int d = 0; d < 3; ++d) {
+    EventList event_list;
+    for (int d = 0; d < 3; ++d) {
+      for (int i = 0; i < objects.size(); ++i) {
+        obj = objects[i];
+        bounds = obj->GetBounds();
         work_info.events[d].push_back(
             Event(bounds.min()[d], Event::kStart, obj));
-      }
-      for (int d = 0; d < 3; ++d) {
         work_info.events[d].push_back(Event(bounds.max()[d], Event::kEnd, obj));
       }
+      std::sort(work_info.events[d].begin(), work_info.events[d].end());
     }
   }
 
-  void SortEvents(SahWorkInfo& work_info) {
-    for (int d = 0; d < 3; ++d)
-      std::sort(work_info.events[d].begin(), work_info.events[d].begin());
+  void DistributeEvents(float value, uint32_t split_dim, uint32_t list_dim,
+      SahWorkInfo* parent_info, SahWorkInfo* left_info,
+      SahWorkInfo* right_info) {
+    EventList* parent_list = &parent_info->events[list_dim];
+    EventList* left_list = (left_info ? &left_info->events[list_dim] : NULL);
+    EventList* right_list = (right_info ? &right_info->events[list_dim] : NULL);
+    Event e = Event();
+    BoundingBox b = BoundingBox();
+    while (!parent_list->empty()) {
+      e = parent_list->front();
+      parent_list->pop_front();
+      b = e.obj->GetBounds();
+      if (left_list && b.min()[dim] <= value)
+        left_list->push_front(e);
+      if (right_list && b.max()[dim] >= value)
+        right_list->push_front(e);
+    }
   }
 
-  SplitPolicy split_policy_;
+  virtual void ProcessWorkInfo(const Node& node, WorkNodeType& work_node,
+      WorkNodeType* child_work_nodes) {
+    float value = node.split_value;
+    uint32_t split_dim = static_cast<uint32_t>(node.split_result);
+    WorkNodeType& left = child_work_nodes[0];
+    WorkNodeType& right = child_work_nodes[1];
+    SahWorkInfo* parent_info = reinterpret_cast<SahWorkInfo*>(work_node
+        .work_info);
+    SahWorkInfo* left_info = (
+        left.objects.size() > 0 ?
+            reinterpret_cast<SahWorkInfo*>(left.work_info) : NULL);
+    SahWorkInfo* right_info = (
+        right.objects.size() > 0 ?
+            reinterpret_cast<SahWorkInfo*>(right.work_info) : NULL);
+    for (int d = 0; d < 3; ++d)
+      DistributeEvents(value, split_dim, d, parent_info, left_info, right_info);
+  }
 
   virtual BoundingBox GetChildBounds(const Node& node,
       const BoundingBox& bounds, uint32_t i) const {
@@ -133,7 +168,7 @@ protected:
 
   void EvaluateFullSAH(Node* parent, Node& node, WorkNodeType& work_node,
       float& value, SplitResult& split_result) {
-    SahWorkInfo* info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
+    SahWorkInfo* info = NULL;
     float cost = 0.0f;
     float best_cost = std::numeric_limits<float>::max();
     uint32_t best_dim = 0;
@@ -143,12 +178,18 @@ protected:
     float area_left = 0.0f;
     float area_right = 0.0f;
     float area_factor = 0.0f;
-    flaot area_delta = 0.0f;
+    float area_delta = 0.0f;
     float last_value = 0.0f;
     float current_value = 0.0f;
     int left_count = 0;
     int right_count = 0;
     int total_count = work_node.objects().size();
+    if (parent) {
+      info = new SahWorkInfo;
+      CreateEvents(work_node.objects, *info);
+      work_node->work_info = reinterpret_cast<void*>(info);
+    } else
+      info = reinterpret_cast<SahWorkInfo*>(info);
     for (uint32_t d = 0; d < 3; ++d) {
       left_count = 0;
       right_count = total_count;
@@ -330,7 +371,7 @@ protected:
 
   virtual void BuildRoot(Node& root, WorkNodeType& work_root) {
     float split_value = 0.0f;
-    SplitResult split_result = kSplitZ;
+    SplitResult split_result = kSplitX;
     EvaluateSplit(NULL, root, work_root, split_value, split_result);
     if (work_root.objects.size() <= this->max_leaf_size_
         || 0 == this->max_depth_ || kLeaf == split_result)
@@ -349,45 +390,6 @@ protected:
     while (!work_node.objects.empty()) {
       this->scene_objects_.push_back(work_node.objects.back());
       work_node.objects.pop_back();
-    }
-  }
-
-  void DistributeEvents(float value, uint32_t split_dim, uint32_t list_dim,
-      SahWorkInfo* parent_info, SahWorkInfo* left_info,
-      SahWorkInfo* right_info) {
-    EventList* parent_list = &parent_info->events[list_dim];
-    EventList* left_list = (left_info ? &left_info->events[list_dim] : NULL);
-    EventList* right_list = (right_info ? &right_info->events[list_dim] : NULL);
-    Event e = Event();
-    BoundingBox b = BoundingBox();
-    std::reverse(parent_list->begin(), parent_list->end());
-    while(!parent_list->empty()) {
-      e = parent_list->back();
-      parent_list->pop_back();
-      b = e.obj->GetBounds();
-      if (left_list && b.min()[dim] <= value)
-        left_list->push_back(e);
-      if (right_list && b.max()[dim] >= value)
-        right_list->push_back(e);
-    }
-  }
-
-  virtual void ProcessWorkInfo(const Node& node, WorkNodeType& work_node,
-      WorkNodeType* child_work_nodes) {
-    float value = node.split_value;
-    uint32_t split_dim = static_cast<uint32_t>(node.split_result);
-    WorkNodeType& left = child_work_nodes[0];
-    WorkNodeType& right = child_work_nodes[1];
-    SahWorkInfo* parent_info = reinterpret_cast<SahWorkInfo*>(work_node
-        .work_info);
-    SahWorkInfo* left_info = (
-        left.objects.size() > 0 ?
-            reinterpret_cast<SahWorkInfo*>(left.work_info) : NULL);
-    SahWorkInfo* right_info = (
-        right.objects.size() > 0 ?
-            reinterpret_cast<SahWorkInfo*>(right.work_info) : NULL);
-    for (int d = 0; d < 3; ++d) {
-      DistributeEvents(value, split_dim, d, parent_info, left_info, right_info);
     }
   }
 
