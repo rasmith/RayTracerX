@@ -104,8 +104,6 @@ protected:
       objects.clear();
     }
     ~WorkNode() {
-      if (work_info)
-        delete work_info;
     }
     uint32_t node_index;
     BoundingBox bounds;
@@ -293,6 +291,7 @@ protected:
             variance_children);
       }
       nodes_[work_node.node_index] = EncodeNode(node);
+      work_node.objects.clear();
     }
     variance_objects /= num_nodes;
     variance_children /= num_internal;

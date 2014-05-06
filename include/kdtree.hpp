@@ -47,22 +47,23 @@ protected:
   typedef typename TreeType::WorkList WorkListType;
 
   struct Event {
+    enum EventType {
+      kStart = 0, kEnd = 1
+    };
     Event() :
         value(0.0f), type(kStart), obj(NULL), id(0) {
     }
     Event(const Event& e) :
         value(e.value), type(e.type), obj(e.obj), id(e.id) {
     }
-    explicit Event(float v, EventType t, const SceneObject* obj) :
+    explicit Event(float v, EventType t, const SceneObject* o) :
         value(v), type(t), obj(o), id(GetNewId()) {
     }
-    bool operator<(const Event& e) {
+    bool operator<(const Event& e) const {
       return value < e.value
           && static_cast<int>(type) < static_cast<int>(e.type) && id < e.id;
     }
-    enum EventType {
-      kStart = 0, kEnd = 1
-    };
+
     uint32_t GetNewId() {
       static uint32_t next = 0;
       return ++next;
@@ -73,8 +74,8 @@ protected:
     uint32_t id;
   };
 
-  typedef std::list<Event> EventList;
-  typedef std::deque<Event> EventDeque;
+  //typedef std::list<Event> EventList;
+  typedef std::deque<Event> EventList;
   typedef std::vector<Event> EventVector;
 
   struct SahWorkInfo {
@@ -94,10 +95,9 @@ protected:
   void CreateEvents(const ObjectVector& objects, SahWorkInfo& work_info) {
     BoundingBox bounds;
     const SceneObject* obj = NULL;
-    float value = 0.0f;
     EventList event_list;
-    for (int d = 0; d < 3; ++d) {
-      for (int i = 0; i < objects.size(); ++i) {
+    for (uint32_t d = 0; d < 3; ++d) {
+      for (uint32_t i = 0; i < objects.size(); ++i) {
         obj = objects[i];
         bounds = obj->GetBounds();
         work_info.events[d].push_back(
@@ -120,29 +120,40 @@ protected:
       e = parent_list->front();
       parent_list->pop_front();
       b = e.obj->GetBounds();
-      if (left_list && b.min()[dim] <= value)
+      if (left_list && b.min()[split_dim] <= value)
         left_list->push_front(e);
-      if (right_list && b.max()[dim] >= value)
+      if (right_list && b.max()[split_dim] >= value)
         right_list->push_front(e);
     }
   }
 
   virtual void ProcessWorkInfo(const Node& node, WorkNodeType& work_node,
       WorkNodeType* child_work_nodes) {
-    float value = node.split_value;
-    uint32_t split_dim = static_cast<uint32_t>(node.split_result);
-    WorkNodeType& left = child_work_nodes[0];
-    WorkNodeType& right = child_work_nodes[1];
-    SahWorkInfo* parent_info = reinterpret_cast<SahWorkInfo*>(work_node
-        .work_info);
-    SahWorkInfo* left_info = (
-        left.objects.size() > 0 ?
-            reinterpret_cast<SahWorkInfo*>(left.work_info) : NULL);
-    SahWorkInfo* right_info = (
-        right.objects.size() > 0 ?
-            reinterpret_cast<SahWorkInfo*>(right.work_info) : NULL);
-    for (int d = 0; d < 3; ++d)
-      DistributeEvents(value, split_dim, d, parent_info, left_info, right_info);
+    SahWorkInfo* parent_info = (
+        work_node.work_info ?
+            reinterpret_cast<SahWorkInfo*>(work_node.work_info) : NULL);
+    if (child_work_nodes && parent_info) {
+      float value = node.split_value();
+      uint32_t split_dim = static_cast<uint32_t>(node.type());
+      WorkNodeType& left = child_work_nodes[0];
+      WorkNodeType& right = child_work_nodes[1];
+
+      SahWorkInfo* left_info =
+          (left.objects.size() > 0 ? new SahWorkInfo : NULL);
+      SahWorkInfo* right_info = (
+          right.objects.size() > 0 ? new SahWorkInfo : NULL);
+      parent_info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
+
+      for (int d = 0; d < 3; ++d)
+        DistributeEvents(value, split_dim, d, parent_info, left_info,
+            right_info);
+      left.work_info = reinterpret_cast<void *>(left_info);
+      right.work_info = reinterpret_cast<void *>(right_info);
+    }
+    if (parent_info) {
+      delete parent_info;
+      work_node.work_info = NULL;
+    }
   }
 
   virtual BoundingBox GetChildBounds(const Node& node,
@@ -166,7 +177,7 @@ protected:
     split_result = static_cast<SplitResult>(dim);
   }
 
-  void EvaluateFullSAH(Node* parent, Node& node, WorkNodeType& work_node,
+  void EvaluateFullSAH(Node* parent, Node&, WorkNodeType& work_node,
       float& value, SplitResult& split_result) {
     SahWorkInfo* info = NULL;
     float cost = 0.0f;
@@ -174,7 +185,6 @@ protected:
     uint32_t best_dim = 0;
     float best_value = 0.0f;
     float total_area = work_node.bounds.GetArea();
-    float inv_area = 1.0f / total_area;
     float area_left = 0.0f;
     float area_right = 0.0f;
     float area_factor = 0.0f;
@@ -183,11 +193,13 @@ protected:
     float current_value = 0.0f;
     int left_count = 0;
     int right_count = 0;
-    int total_count = work_node.objects().size();
+    int total_count = work_node.objects.size();
+    EventList* events = NULL;
+    BoundingBox bounds = work_node.bounds;
     if (parent) {
       info = new SahWorkInfo;
       CreateEvents(work_node.objects, *info);
-      work_node->work_info = reinterpret_cast<void*>(info);
+      work_node.work_info = reinterpret_cast<void*>(info);
     } else
       info = reinterpret_cast<SahWorkInfo*>(info);
     for (uint32_t d = 0; d < 3; ++d) {
@@ -196,17 +208,18 @@ protected:
       area_factor = total_area / (bounds.max()[d] - bounds.min()[d]);
       area_left = 0.0f;
       area_right = total_area;
-      for (int i = 0; i < info->events[d].size(); ++i) {
+      events = &info->events[d];
+      for (uint32_t i = 0; i < events->size(); ++i) {
         cost = left_count * area_left + right_count * area_right;
         if (cost < best_cost) {
           best_cost = cost;
           best_value = value;
           best_dim = d;
         }
-        current_value = info->events[d].value;
-        if (kStart == event[d].type)
+        current_value = (*events)[i].value;
+        if (Event::kStart == (*events)[i].type)
           ++left_count;
-        else if (kEnd == event[d].type)
+        else if (Event::kEnd == (*events)[i].type)
           --right_count;
         area_delta = (current_value - last_value) * area_factor;
         area_left += area_delta;
@@ -385,6 +398,7 @@ protected:
 
   virtual void BuildLeaf(Node& node, WorkNodeType& work_node) {
     ++this->num_leaves_;
+    ProcessWorkInfo(node, work_node, NULL);
     node.set_offset(this->scene_objects_.size());
     node.set_num_objects(work_node.objects.size());
     while (!work_node.objects.empty()) {
@@ -409,7 +423,7 @@ protected:
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
-    ProcessWorkInfo(node, work_node, child_work_nodes);
+    ProcessWorkInfo(node, work_node, &child_work_nodes[0]);
     int num_children = 0;
     for (int j = 1; j >= 0; --j) {
       // If a child has a non-empty object list, process it.
