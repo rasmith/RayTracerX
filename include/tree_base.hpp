@@ -295,12 +295,13 @@ protected:
     }
     variance_objects /= num_nodes;
     variance_children /= num_internal;
+    std::cout << std::setprecision(2) << std::fixed;
     std::cout << " internal: " << num_internal << " num_leaves = "
         << num_leaves;
-    std::cout << " mean obj: " << round(mean_objects) << " stdev: "
-        << round(100.0f * sqrt(variance_objects)) / 100.0f;
-    std::cout << " mean child: " << round(mean_children) << " stdev: "
-        << round(100.0f * sqrt(variance_children)) / 100.0f;
+    std::cout << " mean obj: " << mean_objects << " stdev: "
+        << variance_objects;
+    std::cout << " mean child: " << mean_children << " stdev: "
+        << sqrt(variance_children);
   }
 
   void BuildTree(WorkNode& work_root) {

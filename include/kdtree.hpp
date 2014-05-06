@@ -25,7 +25,8 @@ public:
 
   Kdtree() :
       TreeBase<SceneObject, Node, EncodedNode, NodeFactory>::TreeBase(),
-          split_policy_(kSpatialMedian) {
+          split_policy_(kSpatialMedian), cost_intersect_(1.0f),
+          cost_traverse_(1.0f) {
   }
 
   virtual ~Kdtree() {
@@ -45,7 +46,6 @@ protected:
   typedef TreeBase<SceneObject, Node, EncodedNode, NodeFactory> TreeType;
   typedef typename TreeType::WorkNode WorkNodeType;
   typedef typename TreeType::WorkList WorkListType;
-
   struct Event {
     enum EventType {
       kStart = 0, kEnd = 1
@@ -59,9 +59,25 @@ protected:
     explicit Event(float v, EventType t, const SceneObject* o) :
         value(v), type(t), obj(o), id(GetNewId()) {
     }
+    bool operator==(const Event& e) const {
+      return (this == &e) || id == e.id;
+    }
+    bool operator!=(const Event& e) const {
+      return !(*this == e);
+    }
+    bool lt(const Event& e) const {
+      if (value < e.value)
+        return true;
+      if (static_cast<int>(type) < static_cast<int>(e.type))
+        return true;
+      if (id < e.id)
+        return true;
+      return false;
+    }
     bool operator<(const Event& e) const {
-      return value < e.value
-          && static_cast<int>(type) < static_cast<int>(e.type) && id < e.id;
+      if (*this == e)
+        return false;
+      return lt(e);
     }
 
     uint32_t GetNewId() {
@@ -91,6 +107,12 @@ protected:
   };
 
   SplitPolicy split_policy_;
+  float cost_intersect_;
+  float cost_traverse_;
+
+  float GetLeafCost(const ObjectVector& objs, const BoundingBox&) const {
+    return cost_intersect_ * objs.size();
+  }
 
   void CreateEvents(const ObjectVector& objects, SahWorkInfo& work_info) {
     BoundingBox bounds;
@@ -156,15 +178,72 @@ protected:
     }
   }
 
-  virtual BoundingBox GetChildBounds(const Node& node,
-      const BoundingBox& bounds, uint32_t i) const {
-    BoundingBox child_bounds = bounds;
-    uint32_t dim = static_cast<uint32_t>(node.type());
-    if (i == 0)
-      child_bounds.max()[dim] = node.split_value();
-    else
-      child_bounds.min()[dim] = node.split_value();
-    return child_bounds;
+  void EvaluateFullSAH(Node* parent, Node&, WorkNodeType& work_node,
+      float& value, SplitResult& split_result) {
+    std::cout << "EvaluateFullSAH: ";
+    SahWorkInfo* info = NULL;
+    float cost = 0.0f;
+    float best_cost = std::numeric_limits<float>::max();
+    uint32_t best_dim = 0;
+    float best_value = 0.0f;
+    float area_left = 0.0f;
+    float area_right = 0.0f;
+    float current_value = 0.0f;
+    int left_count = 0;
+    int right_count = 0;
+    int total_count = work_node.objects.size();
+    EventList* events = NULL;
+    BoundingBox bounds = work_node.bounds;
+    float total_area = bounds.GetArea();
+    float inv_area = 1.0f / total_area;
+    std::cout << " total_area = " << total_area << " bounds = " << bounds
+        << std::endl;
+    if (!parent) {
+      //std::cout << "Root!" << std::endl;
+      info = new SahWorkInfo;
+      CreateEvents(work_node.objects, *info);
+      work_node.work_info = reinterpret_cast<void*>(info);
+    } else
+      info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
+    for (uint32_t d = 0; d < 3; ++d) {
+      std::cout << "d = " << d << ":";
+      left_count = 0;
+      right_count = total_count;
+      events = &info->events[d];
+      float min_val = bounds.min()[d];
+      float max_val = bounds.max()[d];
+      for (uint32_t i = 0; i < events->size(); ++i) {
+        current_value = (*events)[i].value;
+        current_value = glm::clamp(current_value, min_val, max_val);
+        area_left = total_area * (current_value - min_val)
+            / (max_val - min_val);
+        area_right = total_area - area_right;
+        cost = cost_traverse_
+            + cost_intersect_ * inv_area
+                * (left_count * area_left + right_count * area_right);
+        std::cout << current_value << " ";
+        if (cost < best_cost) {
+          best_cost = cost;
+          best_value = current_value;
+          best_dim = d;
+        }
+        if (Event::kStart == (*events)[i].type)
+          ++left_count;
+        else if (Event::kEnd == (*events)[i].type)
+          --right_count;
+      }
+      std::cout << std::endl;
+    }
+    float leaf_cost = GetLeafCost(work_node.objects, bounds);
+    if (best_cost > leaf_cost)
+      split_result = kLeaf;
+    else {
+      value = best_value;
+      split_result = static_cast<SplitResult>(best_dim);
+    }
+    std::cout << "split_result = " << split_result << " " << " best_value = "
+        << best_value << " best_cost = " << best_cost << " leaf_cost = "
+        << leaf_cost << std::endl;
   }
 
   void EvaluateSpatialMedian(Node* parent, Node&, WorkNodeType& child_work,
@@ -175,59 +254,6 @@ protected:
     split_value = 0.5f
         * (child_work.bounds.min()[dim] + child_work.bounds.max()[dim]);
     split_result = static_cast<SplitResult>(dim);
-  }
-
-  void EvaluateFullSAH(Node* parent, Node&, WorkNodeType& work_node,
-      float& value, SplitResult& split_result) {
-    SahWorkInfo* info = NULL;
-    float cost = 0.0f;
-    float best_cost = std::numeric_limits<float>::max();
-    uint32_t best_dim = 0;
-    float best_value = 0.0f;
-    float total_area = work_node.bounds.GetArea();
-    float area_left = 0.0f;
-    float area_right = 0.0f;
-    float area_factor = 0.0f;
-    float area_delta = 0.0f;
-    float last_value = 0.0f;
-    float current_value = 0.0f;
-    int left_count = 0;
-    int right_count = 0;
-    int total_count = work_node.objects.size();
-    EventList* events = NULL;
-    BoundingBox bounds = work_node.bounds;
-    if (parent) {
-      info = new SahWorkInfo;
-      CreateEvents(work_node.objects, *info);
-      work_node.work_info = reinterpret_cast<void*>(info);
-    } else
-      info = reinterpret_cast<SahWorkInfo*>(info);
-    for (uint32_t d = 0; d < 3; ++d) {
-      left_count = 0;
-      right_count = total_count;
-      area_factor = total_area / (bounds.max()[d] - bounds.min()[d]);
-      area_left = 0.0f;
-      area_right = total_area;
-      events = &info->events[d];
-      for (uint32_t i = 0; i < events->size(); ++i) {
-        cost = left_count * area_left + right_count * area_right;
-        if (cost < best_cost) {
-          best_cost = cost;
-          best_value = value;
-          best_dim = d;
-        }
-        current_value = (*events)[i].value;
-        if (Event::kStart == (*events)[i].type)
-          ++left_count;
-        else if (Event::kEnd == (*events)[i].type)
-          --right_count;
-        area_delta = (current_value - last_value) * area_factor;
-        area_left += area_delta;
-        area_right -= area_delta;
-      }
-    }
-    value = best_value;
-    split_result = static_cast<SplitResult>(best_dim);
   }
 
   void EvaluateSplit(Node* parent, Node& child, WorkNodeType& child_work,
@@ -244,6 +270,17 @@ protected:
       EvaluateSpatialMedian(parent, child, child_work, split_value,
           split_result);
     }
+  }
+
+  virtual BoundingBox GetChildBounds(const Node& node,
+      const BoundingBox& bounds, uint32_t i) const {
+    BoundingBox child_bounds = bounds;
+    uint32_t dim = static_cast<uint32_t>(node.type());
+    if (i == 0)
+      child_bounds.max()[dim] = node.split_value();
+    else
+      child_bounds.min()[dim] = node.split_value();
+    return child_bounds;
   }
 
   virtual void IntersectChildren2(const Node& node, const BoundingBox& bounds,

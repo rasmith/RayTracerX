@@ -37,14 +37,14 @@ bool use_timing = true;
 bool display_progress = true;
 bool display_stats = false;
 bool use_accelerator = true;
-bool print_tree = false;
+bool print_tree = true;
 int num_timings = 1;
 int image_width = 1024;
 int image_height = 1024;
-int max_depth = 25;
-int max_leaf_size = 8;
+int max_depth = 3;
+int max_leaf_size = 32;
 glm::vec3 background_color(0.5f, 0.0f, 0.5f);
-TestKdtree::SplitPolicy policy = TestKdtree::kSpatialMedian;
+TestKdtree::SplitPolicy policy = TestKdtree::kFullSAH;
 
 void ComputeLookAt(Scene& scene, glm::mat4x4& look_at) {
   Trimesh* trimesh = static_cast<Trimesh*>(scene.scene_objects()[0]);
@@ -246,7 +246,7 @@ TEST(RayTracerTest, SphereMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, false);
 }
-
+/**
 TEST(RayTracerTest, BunnyMeshTest) {
   std::string path = "../assets/bunny.ply";
   std::string output = "bunny_kdtree.bmp";
@@ -496,7 +496,7 @@ TEST(RayTracerTest, FairyForestMeshTest) {
 
   SetupAndRun(path, output, &lights[0], num_lights, eye, at, up, auto_camera);
 }
-
+**/
 /**
 TEST(RayTracerTest, SanMiguelMeshTest) {
   std::string path = "../assets/san_miguel.obj";
