@@ -51,19 +51,40 @@ protected:
       kStart = 0, kEnd = 1
     };
     Event() :
-        value(0.0f), type(kStart), obj(NULL), id(0) {
+        value(0.0f), type(kStart), obj(NULL), id(GetNewId()) {
     }
     Event(const Event& e) :
         value(e.value), type(e.type), obj(e.obj), id(e.id) {
     }
-    explicit Event(float v, EventType t, const SceneObject* o) :
+    Event(float v, EventType t, const SceneObject* o) :
         value(v), type(t), obj(o), id(GetNewId()) {
     }
-    bool operator<(const Event& e) const {
-      return value < e.value
-          && static_cast<int>(type) < static_cast<int>(e.type) && id < e.id;
+    void operator=(const Event& e) {
+      Copy(e);
     }
-
+    void Copy(const Event&e) {
+      value = e.value;
+      type = e.type;
+      obj = e.obj;
+      id = e.id;
+      assert(!(*this < e) && !(e < *this));
+    }
+    bool operator<(const Event& e) const {
+      assert(obj != NULL);
+      if (this == &e)
+        return false;
+      if (value < e.value)
+        return true;
+      if (value > e.value)
+        return false;
+      if (type < e.type)
+        return true;
+      if (type > e.type)
+        return false;
+      if (id < e.id)
+        return true;
+      return false;
+    }
     uint32_t GetNewId() {
       static uint32_t next = 0;
       return ++next;
@@ -93,6 +114,9 @@ protected:
   SplitPolicy split_policy_;
 
   void CreateEvents(const ObjectVector& objects, SahWorkInfo& work_info) {
+    //if (this->trace_) {
+    //std::cout << "EvaluateFullSAH:begin sorting\n";
+    //}
     BoundingBox bounds;
     const SceneObject* obj = NULL;
     EventList event_list;
@@ -106,6 +130,9 @@ protected:
       }
       std::sort(work_info.events[d].begin(), work_info.events[d].end());
     }
+    //if (this->trace_) {
+    //std::cout << "EvaluateFullSAH:end sorting\n";
+    // }
   }
 
   void DistributeEvents(float value, uint32_t split_dim, uint32_t list_dim,
@@ -121,9 +148,9 @@ protected:
       parent_list->pop_front();
       b = e.obj->GetBounds();
       if (left_list && b.min()[split_dim] <= value)
-        left_list->push_front(e);
+        left_list->push_back(e);
       if (right_list && b.max()[split_dim] >= value)
-        right_list->push_front(e);
+        right_list->push_back(e);
     }
   }
 
@@ -142,13 +169,12 @@ protected:
           (left.objects.size() > 0 ? new SahWorkInfo : NULL);
       SahWorkInfo* right_info = (
           right.objects.size() > 0 ? new SahWorkInfo : NULL);
-      parent_info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
 
       for (int d = 0; d < 3; ++d)
         DistributeEvents(value, split_dim, d, parent_info, left_info,
             right_info);
-      left.work_info = reinterpret_cast<void *>(left_info);
-      right.work_info = reinterpret_cast<void *>(right_info);
+      left.work_info = reinterpret_cast<void*>(left_info);
+      right.work_info = reinterpret_cast<void*>(right_info);
     }
     if (parent_info) {
       delete parent_info;
@@ -165,6 +191,10 @@ protected:
     else
       child_bounds.min()[dim] = node.split_value();
     return child_bounds;
+  }
+
+  float GetLeafCost(int num_objects) const {
+    return static_cast<float>(num_objects);
   }
 
   void EvaluateSpatialMedian(Node* parent, Node&, WorkNodeType& child_work,
@@ -196,21 +226,30 @@ protected:
     int total_count = work_node.objects.size();
     EventList* events = NULL;
     BoundingBox bounds = work_node.bounds;
-    if (parent) {
+    std::cout << "EvaluateFullSAH: bounds = " << bounds << "\n";
+    if (!parent) {
       info = new SahWorkInfo;
       CreateEvents(work_node.objects, *info);
       work_node.work_info = reinterpret_cast<void*>(info);
     } else
-      info = reinterpret_cast<SahWorkInfo*>(info);
+      info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
+    assert(info != NULL);
     for (uint32_t d = 0; d < 3; ++d) {
+      std::cout << "d = " << d;
+      float extent = bounds.max()[d] - bounds.min()[d];
+      if (extent == 0.0f)  continue;
       left_count = 0;
       right_count = total_count;
-      area_factor = total_area / (bounds.max()[d] - bounds.min()[d]);
+      area_factor = total_area / extent;
       area_left = 0.0f;
       area_right = total_area;
       events = &info->events[d];
+      std::cout << " area_factor = " << area_factor  << " ";
+      assert(events != NULL);
       for (uint32_t i = 0; i < events->size(); ++i) {
         cost = left_count * area_left + right_count * area_right;
+        std::cout << cost;
+        if (i < events->size() - 1) std::cout << ' ';
         if (cost < best_cost) {
           best_cost = cost;
           best_value = value;
@@ -225,9 +264,12 @@ protected:
         area_left += area_delta;
         area_right -= area_delta;
       }
+      std::cout << '\n';
     }
     value = best_value;
     split_result = static_cast<SplitResult>(best_dim);
+    if (best_cost > GetLeafCost(work_node.objects.size()))
+      split_result = kLeaf;
   }
 
   void EvaluateSplit(Node* parent, Node& child, WorkNodeType& child_work,
@@ -423,7 +465,15 @@ protected:
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
-    ProcessWorkInfo(node, work_node, &child_work_nodes[0]);
+    if (kFullSAH == split_policy_)
+      ProcessWorkInfo(node, work_node, &child_work_nodes[0]);
+    if (kFullSAH == split_policy_)
+      for (uint32_t j = 0; j < 2; ++j)
+        assert(
+            (child_work_nodes[j].objects.size() > 0 &&
+                child_work_nodes[j].work_info != NULL) ||
+                (child_work_nodes[j].objects.size() == 0 &&
+                    child_work_nodes[j].work_info == NULL));
     int num_children = 0;
     for (int j = 1; j >= 0; --j) {
       // If a child has a non-empty object list, process it.
