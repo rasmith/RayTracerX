@@ -42,13 +42,16 @@ protected:
   enum SplitResult {
     kSplitX = 0, kSplitY, kSplitZ, kLeaf
   };
+  enum PlanarSplitSide {
+    kPlanarLeft, kPlanarRight
+  };
   typedef TreeBase<SceneObject, Node, EncodedNode, NodeFactory> TreeType;
   typedef typename TreeType::WorkNode WorkNodeType;
   typedef typename TreeType::WorkList WorkListType;
 
   struct Event {
     enum EventType {
-      kStart = 0, kEnd = 1
+      kEnd = 0, kPlanar = 1, kStart = 2
     };
     Event() :
         value(0.0f), type(kStart), obj(NULL), id(GetNewId()) {
@@ -100,7 +103,7 @@ protected:
   typedef std::vector<Event> EventVector;
 
   struct SahWorkInfo {
-    SahWorkInfo() {
+    SahWorkInfo() : split_side(kPlanarLeft) {
       for (int i = 0; i < 3; ++i)
         events[i].clear();
     }
@@ -109,6 +112,7 @@ protected:
         events[i].clear();
     }
     EventList events[3];
+    PlanarSplitSide split_side;
   };
 
   SplitPolicy split_policy_;
@@ -124,9 +128,15 @@ protected:
       for (uint32_t i = 0; i < objects.size(); ++i) {
         obj = objects[i];
         bounds = obj->GetBounds();
-        work_info.events[d].push_back(
-            Event(bounds.min()[d], Event::kStart, obj));
-        work_info.events[d].push_back(Event(bounds.max()[d], Event::kEnd, obj));
+        if (bounds.max()[d] == bounds.min()[d]){
+          work_info.events[d].push_back(
+                        Event(bounds.min()[d], Event::kPlanar, obj));
+        } else {
+          work_info.events[d].push_back(
+              Event(bounds.min()[d], Event::kStart, obj));
+          work_info.events[d].push_back(
+              Event(bounds.max()[d], Event::kEnd, obj));
+        }
       }
       std::sort(work_info.events[d].begin(), work_info.events[d].end());
     }
@@ -156,6 +166,8 @@ protected:
 
   virtual void ProcessWorkInfo(const Node& node, WorkNodeType& work_node,
       WorkNodeType* child_work_nodes) {
+    if (kFullSAH != split_policy_)
+      return;
     SahWorkInfo* parent_info = (
         work_node.work_info ?
             reinterpret_cast<SahWorkInfo*>(work_node.work_info) : NULL);
@@ -180,6 +192,13 @@ protected:
       delete parent_info;
       work_node.work_info = NULL;
     }
+    if(child_work_nodes)
+    for (uint32_t j = 0; j < 2; ++j)
+      assert(
+          (child_work_nodes[j].objects.size() > 0 &&
+           child_work_nodes[j].work_info != NULL) ||
+          (child_work_nodes[j].objects.size() == 0 &&
+           child_work_nodes[j].work_info == NULL));
   }
 
   virtual BoundingBox GetChildBounds(const Node& node,
@@ -207,26 +226,92 @@ protected:
     split_result = static_cast<SplitResult>(dim);
   }
 
+  float ComputeSAH(int left_count, int right_count, float left_area,
+      float right_area, float total_area) const {
+    float cost_traverse = 1.0f;
+    float cost_intersect = 1.0f;
+    return cost_traverse
+        + cost_intersect * (left_area * left_count + right_area * right_count)
+            / total_area;
+  }
+
+  void UpdateCounts(const Event& event, int& right_count, int& left_count,
+      int& planar_count) const {
+    switch (event.type) {
+    case Event::kEnd:
+      --right_count;
+      break;
+    case Event::kPlanar:
+      ++planar_count;
+      break;
+    case Event::kStart:
+      ++left_count;
+      break;
+    default:
+      break;
+    }
+  }
+
+  void UpdateCost(float current_value, float min_val, float max_val, float area,
+      float sum_other, float prod_other, int left_count, int right_count,
+      int planar_count, float& best_cost, float& best_value,
+      PlanarSplitSide& best_side) const {
+    float area_left = (current_value - min_val) * sum_other + prod_other;
+    float area_right = (max_val - current_value) * sum_other + prod_other;
+    float cost_left = ComputeSAH(left_count + planar_count, right_count,
+        area_left, area_right, area);
+    float cost_right = ComputeSAH(left_count, right_count + planar_count,
+        area_left, area_right, area);
+    float cost = std::min(cost_left, cost_right);
+    PlanarSplitSide side = (cost_left < cost_right ? kPlanarLeft : kPlanarRight);
+    if (cost < best_cost) {
+      best_cost = cost;
+      best_side = side;
+      best_value = current_value;
+    }
+  }
+
+  // FindBestPlaneInList find the best plane in the "events" list.
+  // Since the number of events will probably differ from the number of
+  // objects, the number of objects needs to be passed in as "num_objects".
+  // Since this function does not take a dimension as an argument,
+  // it asks for the minimum and maximum values of the respective
+  // dimension and these are to be passed in as "min_val" and "max_val",
+  // respectively. To make the necessary calculations, the extents of the other
+  // dimensions are needed,  which are passed in as "extent0" and "extent1".
+  // The area of the surrounding bounding box needs to be passed in as "area".
+  // Finally, the best cost, best split value, and corresponding planar
+  // split side will be returned into "best_cost", "best_value", and
+  // "best_side", respectively.
+  void FindBestPlaneInList(const EventList& events, float extent0,
+      float extent1, float min_val, float max_val, int num_objects, float area,
+      float& best_cost, float& best_value, PlanarSplitSide& best_side) const {
+    const float sum_other = 2.0f * (extent0 + extent1);
+    const float prod_other = 2.0f * (extent0 * extent1);
+    int left_count = 0, right_count = num_objects, planar_count = 0;
+    best_cost = std::numeric_limits<float>::max();
+    best_value = std::numeric_limits<float>::max();
+    for (uint32_t i = 0; i < events.size(); ++i) {
+      float current_value = glm::clamp(events[i].value, min_val, max_val);
+      UpdateCounts(events[i], left_count, right_count, planar_count);
+      uint32_t next = i + 1;
+      bool update_cost = (next == events.size()
+          || current_value != glm::clamp(events[next].value, min_val, max_val));
+      if (update_cost)
+        UpdateCost(current_value, min_val, max_val, area, sum_other, prod_other,
+            left_count, right_count, planar_count, best_cost, best_value,
+            best_side);
+    }
+  }
+
   void EvaluateFullSAH(Node* parent, Node&, WorkNodeType& work_node,
       float& value, SplitResult& split_result) {
     SahWorkInfo* info = NULL;
-    float cost = 0.0f;
-    float best_cost = std::numeric_limits<float>::max();
-    uint32_t best_dim = 0;
-    float best_value = 0.0f;
-    float total_area = work_node.bounds.GetArea();
-    float area_left = 0.0f;
-    float area_right = 0.0f;
-    float area_factor = 0.0f;
-    float area_delta = 0.0f;
-    float last_value = 0.0f;
+    PlanarSplitSide current_side = kPlanarLeft;
+    float best_cost = std::numeric_limits<float>::max(), current_cost = 0.0f;
     float current_value = 0.0f;
-    int left_count = 0;
-    int right_count = 0;
-    int total_count = work_node.objects.size();
-    EventList* events = NULL;
+    float total_area = work_node.bounds.GetArea();
     BoundingBox bounds = work_node.bounds;
-    std::cout << "EvaluateFullSAH: bounds = " << bounds << "\n";
     if (!parent) {
       info = new SahWorkInfo;
       CreateEvents(work_node.objects, *info);
@@ -234,40 +319,21 @@ protected:
     } else
       info = reinterpret_cast<SahWorkInfo*>(work_node.work_info);
     assert(info != NULL);
+    glm::vec3 extents = bounds.max() - bounds.min();
+    const uint32_t kOtherIndices[3][2] = {{1, 2}, {0, 2}, {0, 1}};
     for (uint32_t d = 0; d < 3; ++d) {
-      std::cout << "d = " << d;
-      float extent = bounds.max()[d] - bounds.min()[d];
-      if (extent == 0.0f)  continue;
-      left_count = 0;
-      right_count = total_count;
-      area_factor = total_area / extent;
-      area_left = 0.0f;
-      area_right = total_area;
-      events = &info->events[d];
-      std::cout << " area_factor = " << area_factor  << " ";
-      assert(events != NULL);
-      for (uint32_t i = 0; i < events->size(); ++i) {
-        cost = left_count * area_left + right_count * area_right;
-        std::cout << cost;
-        if (i < events->size() - 1) std::cout << ' ';
-        if (cost < best_cost) {
-          best_cost = cost;
-          best_value = value;
-          best_dim = d;
-        }
-        current_value = (*events)[i].value;
-        if (Event::kStart == (*events)[i].type)
-          ++left_count;
-        else if (Event::kEnd == (*events)[i].type)
-          --right_count;
-        area_delta = (current_value - last_value) * area_factor;
-        area_left += area_delta;
-        area_right -= area_delta;
+      FindBestPlaneInList(info->events[d], extents[kOtherIndices[d][0]],
+          extents[kOtherIndices[d][1]], bounds.min()[d], bounds.max()[d],
+          work_node.objects.size(), total_area, current_cost, current_value,
+          current_side);
+      if (current_cost < best_cost) {
+        best_cost = current_cost;
+        split_result = static_cast<SplitResult>(d);
+        value = current_value;
+        // Squirrel away the planar split side here.
+        info->split_side = current_side;
       }
-      std::cout << '\n';
     }
-    value = best_value;
-    split_result = static_cast<SplitResult>(best_dim);
     if (best_cost > GetLeafCost(work_node.objects.size()))
       split_result = kLeaf;
   }
@@ -465,15 +531,7 @@ protected:
         if (obj->GetBounds().Overlap(child_work_nodes[j].bounds))
           child_work_nodes[j].objects.push_back(obj);
     }
-    if (kFullSAH == split_policy_)
-      ProcessWorkInfo(node, work_node, &child_work_nodes[0]);
-    if (kFullSAH == split_policy_)
-      for (uint32_t j = 0; j < 2; ++j)
-        assert(
-            (child_work_nodes[j].objects.size() > 0 &&
-                child_work_nodes[j].work_info != NULL) ||
-                (child_work_nodes[j].objects.size() == 0 &&
-                    child_work_nodes[j].work_info == NULL));
+    ProcessWorkInfo(node, work_node, &child_work_nodes[0]);
     int num_children = 0;
     for (int j = 1; j >= 0; --j) {
       // If a child has a non-empty object list, process it.

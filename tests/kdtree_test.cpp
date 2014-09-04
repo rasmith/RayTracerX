@@ -41,7 +41,7 @@ bool print_tree = false;
 int num_timings = 1;
 int image_width = 1024;
 int image_height = 1024;
-int max_depth = 3;
+int max_depth = 15;
 int max_leaf_size = 8;
 glm::vec3 background_color(0.5f, 0.0f, 0.5f);
 TestKdtree::SplitPolicy policy = TestKdtree::kFullSAH;
