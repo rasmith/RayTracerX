@@ -153,13 +153,16 @@ protected:
     EventList* right_list = (right_info ? &right_info->events[list_dim] : NULL);
     Event e = Event();
     BoundingBox b = BoundingBox();
+    bool is_left = (parent_info->split_side == kPlanarLeft);
     while (!parent_list->empty()) {
       e = parent_list->front();
       parent_list->pop_front();
       b = e.obj->GetBounds();
-      if (left_list && b.min()[split_dim] <= value)
+      bool planar_left = (e.type == kPlanar && is_left);
+      bool planar_right = (e.type == kPlanar && !is_left);
+      if (left_list && (planar_left || b.min()[split_dim] <= value))
         left_list->push_back(e);
-      if (right_list && b.max()[split_dim] >= value)
+      if (right_list && (planar_right || b.max()[split_dim] >= value))
         right_list->push_back(e);
     }
   }
