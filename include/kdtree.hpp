@@ -48,6 +48,11 @@ class Kdtree : public TreeBase<SceneObject, Node, EncodedNode, NodeFactory> {
     kPlanarLeft,
     kPlanarRight
   };
+  enum SplitClassification {
+    kLeftOnly,
+    kRightOnly,
+    kBoth
+  };
   typedef TreeBase<SceneObject, Node, EncodedNode, NodeFactory> TreeType;
   typedef typename TreeType::WorkNode WorkNodeType;
   typedef typename TreeType::WorkList WorkListType;
@@ -94,6 +99,7 @@ class Kdtree : public TreeBase<SceneObject, Node, EncodedNode, NodeFactory> {
   // typedef std::list<Event> EventList;
   typedef std::deque<Event> EventList;
   typedef std::vector<Event> EventVector;
+  typedef std::vector<SplitClassification> ClassifyList;
 
   struct SahWorkInfo {
     SahWorkInfo() : split_side(kPlanarLeft) {
@@ -103,15 +109,13 @@ class Kdtree : public TreeBase<SceneObject, Node, EncodedNode, NodeFactory> {
       for (int i = 0; i < 3; ++i) events[i].clear();
     }
     EventList events[3];
+    ClassifyList classify_list;
     PlanarSplitSide split_side;
   };
 
   SplitPolicy split_policy_;
 
   void CreateEvents(const ObjectVector& objects, SahWorkInfo& work_info) {
-    // if (this->trace_) {
-    // std::cout << "EvaluateFullSAH:begin sorting\n";
-    //}
     BoundingBox bounds;
     const SceneObject* obj = NULL;
     EventList event_list;
@@ -131,9 +135,11 @@ class Kdtree : public TreeBase<SceneObject, Node, EncodedNode, NodeFactory> {
       }
       std::sort(work_info.events[d].begin(), work_info.events[d].end());
     }
-    // if (this->trace_) {
-    // std::cout << "EvaluateFullSAH:end sorting\n";
-    // }
+  }
+
+  void ClassifyObjects(const EventList& events, float value, SahWorkInfo* info) {
+    for(int i = 0; i < info->events.size(); ++i) {
+    }
   }
 
   void DistributeEvents(float value, uint32_t split_dim, uint32_t list_dim,
